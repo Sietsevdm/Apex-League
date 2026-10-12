@@ -1,4 +1,11 @@
 export const dutch: Record<string, string> = {
+  "Player registration": "Spelersinschrijving",
+  "Registration open": "Inschrijving open",
+  "Copy season name": "Seizoensnaam kopiëren",
+  "Season name:": "Seizoensnaam:",
+  "Open or close registration manually for each active season. Archived seasons must be reopened first.": "Open of sluit de inschrijving handmatig per actief seizoen. Open gearchiveerde seizoenen eerst opnieuw.",
+  "Create a season in Racing → Seasons & lineup to manage registration.": "Maak een seizoen aan bij Races → Seizoenen en deelnemers om de inschrijving te beheren.",
+
   "Delete season": "Seizoen verwijderen",
   "Confirm deletion": "Verwijdering bevestigen",
   "Login screen": "Inlogscherm",

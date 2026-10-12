@@ -1,5 +1,5 @@
-# Version 0.8.5
+# Version 0.8.6
 
-- Archived season cards have Delete season, with name confirmation and an encrypted backup before deletion. All season records and memberships are removed; accounts, other seasons, settings and banners remain.
-- Settings → Branding includes editable login introduction, headline, highlighted headline, description, footer, sign-in heading and description. Empty fields restore default text.
-- Settings → Appearance includes independent Login headings and Login text controls for font, size, weight, line height and spacing. Existing font settings are preserved.
+- Members always shows a Player registration panel listing all seasons. Active seasons have manual open/close controls; archived seasons explain their status and offer Reopen season.
+- Season deletion/purge confirmation ignores leading/trailing whitespace, repeated or non-breaking spaces, Unicode normalization and letter case. The complete name is still required.
+- Confirmation shows the required name and provides Copy season name. Server and UI use the same comparison. Backups remain required before deletion.

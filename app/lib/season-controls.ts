@@ -20,3 +20,8 @@ export function classifyImportedDrivers(season: Season, starters: string[]) {
     driver.replacementOnly = !known.has(driver.id);
   return true;
 }
+
+export function seasonNameMatches(input: string, name: string) {
+  const normalize = (value: string) => value.normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
+  return Boolean(normalize(name)) && normalize(input) === normalize(name);
+}

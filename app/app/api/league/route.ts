@@ -1,4 +1,4 @@
-import { registrationOpen, predictionDrivers, classifyImportedDrivers } from "@/lib/season-controls";
+import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { transaction, demoMode } from "@/lib/store";
@@ -1002,7 +1002,7 @@ export async function POST(req: NextRequest) {
       } else if (b.action === "deleteArchivedSeason") {
         const season = s.seasons.find(season => season.id === b.seasonId && season.archived);
         if (!season) fail("Select an archived season.");
-        if (b.confirmation !== season.name) fail("Type the season name to confirm.");
+        if (typeof b.confirmation !== "string" || !seasonNameMatches(b.confirmation, season.name)) fail("Type the season name to confirm.");
         try { await createBackup(s); }
         catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
         deleteArchivedSeasons(s, [season.id]);
@@ -1010,7 +1010,7 @@ export async function POST(req: NextRequest) {
       } else if (b.action === "purgeSeason") {
         const season = s.seasons.find((season) => season.id === b.seasonId);
         if (!season) fail("Unknown season.");
-        if (b.confirmation !== season.name) fail("Type the season name to confirm.");
+        if (typeof b.confirmation !== "string" || !seasonNameMatches(b.confirmation, season.name)) fail("Type the season name to confirm.");
         try { await createBackup(s); }
         catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
         purgeSeason(s, season.id);

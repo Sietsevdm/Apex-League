@@ -2715,3 +2715,7 @@ footer {
 .auth-story p, .auth-card > p { font-size: calc(13px * var(--loginText-size, 1)); }
 .auth-story .eyebrow, .auth-story > small { font-size: calc(10px * var(--loginText-size, 1)); }
 @media(max-width: 760px) { .auth-story h1 { font-size: calc(44px * var(--loginTitle-size, 1)); } .auth-story p { font-size: calc(11px * var(--loginText-size, 1)); } }
+
+.registration-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.registration-row .button-row { flex-wrap: wrap; }
+@media(max-width: 760px) { .registration-row { align-items: flex-start; flex-direction: column; } }

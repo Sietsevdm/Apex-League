@@ -1,5 +1,5 @@
 "use client";
-import { registrationOpen, predictionDrivers } from "@/lib/season-controls";
+import { registrationOpen, predictionDrivers, seasonNameMatches } from "@/lib/season-controls";
 import { useLocale, LocaleProvider } from "@/lib/i18n";
 import { useEffect, useState, useCallback, useRef } from "react";
 import ShareCard from "./ShareCard";
@@ -2685,11 +2685,12 @@ function Archive({
                 </div>
                 {purging === season.id && <div className="season-purge">
                   <p className="muted">{tr("Remove this season and its races, predictions, results and receipts. Accounts, settings and banners are kept. An encrypted backup is created first.")}</p>
+                  <p className="tiny">{tr("Season name:")} <strong>{season.name}</strong> <button className="text-button" disabled={busy} onClick={() => navigator.clipboard.writeText(season.name)}>{tr("Copy season name")}</button></p>
                   <label>{tr("Type the season name to confirm")}
-                    <input value={confirmation} disabled={busy} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" />
+                    <input placeholder={season.name} value={confirmation} disabled={busy} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" />
                   </label>
                   <div className="button-row">
-                    <button className="secondary" disabled={busy || confirmation !== season.name} onClick={async () => {
+                    <button className="secondary" disabled={busy || !seasonNameMatches(confirmation, season.name)} onClick={async () => {
                       setBusy(true); setError("");
                       try { await call({ action: season.archived ? "deleteArchivedSeason" : "purgeSeason", seasonId: season.id, confirmation }); setPurging(null); setConfirmation(""); }
                       catch (e) { setError((e as Error).message); }
@@ -3989,6 +3990,18 @@ function Members({
   return (
     <>
       <section className="panel">
+        <h2>{tr("Player registration")}</h2>
+        <p className="muted">{tr("Open or close registration manually for each active season. Archived seasons must be reopened first.")}</p>
+        {s.seasons.map(item => <div className="registration-row" key={item.id}>
+          <div><strong>{item.name}</strong><p className="tiny">{tr(item.archived ? "Archived" : registrationOpen(item) ? "Registration open" : "Registration closed")}</p></div>
+          <div className="button-row">
+            <button className="secondary" disabled={item.archived} onClick={() => call({ action: "registration", seasonId: item.id, closed: registrationOpen(item) })}>{tr(registrationOpen(item) ? "Close registration" : "Open registration")}</button>
+            {item.archived && <button className="secondary" onClick={() => call({ action: "archive", seasonId: item.id, archived: false })}>{tr("Reopen season")}</button>}
+          </div>
+        </div>)}
+        {!s.seasons.length && <p className="muted">{tr("Create a season in Racing → Seasons & lineup to manage registration.")}</p>}
+      </section>
+      <section className="panel">
         <h2>{tr("Invite your friends")}</h2>
         <p className="muted">
           {tr(
@@ -3997,9 +4010,6 @@ function Members({
               : "Registration is closed. Reopen it to invite more players.",
           )}
         </p>
-        {season && !season.archived && <button className="secondary" onClick={() => call({ action: "registration", seasonId: season.id, closed: Boolean(open) })}>
-          {tr(open ? "Close registration" : "Open registration")}
-        </button>}
         <div className="invite-box">
           <code>
             {tr(

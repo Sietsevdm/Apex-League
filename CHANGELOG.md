@@ -1,0 +1,71 @@
+# Changelog
+
+Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
+
+## 0.8.6
+- Registration controls remain visible in Members, including when an archived season is selected. Each active season has manual open/close controls.
+- Deletion confirmation accepts the complete name despite case, Unicode or invisible whitespace differences. Added a copy-name control.
+- Consolidated documentation and introduced this changelog. Removed local temporary test/preview artifacts and superseded release packages.
+
+## 0.8.5
+- Added explicit Delete season on archived cards, requiring name confirmation and a successful encrypted backup.
+- Added editable login copy and independent login heading/body font controls.
+
+## 0.8.4
+- Added automatic identification of substitutes in existing imported lineups; saved records and results are retained.
+- Included the manual registration and grouped admin navigation changes from 0.8.3.
+
+## 0.8.3
+- Added manual player registration controls, independent of championship-pick deadlines.
+- Grouped admin tools into Overview, Racing, Players and Settings; moved replacement confirmation to Race weekends.
+- Scoped replacements to their confirmed race/session; new imports distinguish starters from later substitutes.
+
+## 0.8.2
+- Moved archive/reopen and per-season Purge controls inside season cards.
+- Removed the separate deletion panel and admin archive/purge controls.
+- Purge can target an active season, preserving other seasons, accounts, settings and banners.
+
+## 0.8.1
+- Added archive controls to Season Archive and corrected points spacing.
+- Reused included banners across season years and improved circuit matching.
+
+## 0.8.0
+- Added public versioned AMD64/ARM64 Docker images, automated publication and GitHub releases.
+- Added admin update notices and Portainer updates through APEX_IMAGE.
+
+## 0.7.1
+- Kept GP maximum at 23; set Sprint maximum to 12 (8 exact positions, pole 2, fastest lap 1, first retirement 1).
+- Corrected mobile avatar sizing so badges stay circular.
+
+## 0.7.0
+- Included 2027 banners in the app; retained custom-folder and manual image priority.
+- Added protected season cleanup with backups and account/settings/banner preservation.
+- Moved receipts and copy-previous-picks beside Closes in.
+- Changed the calendar to three desktop columns and placed Sprint badges below round numbers; corrected spacing.
+
+## 0.6.0
+- Added circuit image-folder matching and responsive login artwork with optional desktop/mobile overrides.
+
+## 0.5.1
+- Distributed a patch package following 0.5.0. Separate historical patch notes were not recorded.
+
+## 0.5.0
+- Added session-specific driver replacement/scoring policies and audited announcements.
+- Added scoring previews, season setup wizard, submission status, app installation guidance and accessibility improvements.
+
+## 0.4.1
+- Corrected font-group mappings across player/admin pages and preserved responsive sizes.
+
+## 0.4.0
+- Added encrypted backups/recovery, submission receipts, copy-previous-picks and deadline calendar downloads.
+- Added passkeys, season awards, result provenance, backup health and launch checks.
+- Added detailed typography controls and persistent circuit facts in banners.
+
+## 0.3.0
+- Added English/Dutch interface controls, circuit details and adjustable font sizes.
+
+## 0.2.0
+- Added daily calendar sync with history and manual checks, plus downloadable/shared results artwork.
+
+## 0.1.0
+- Initial self-hosted prediction league with GP/Sprint picks, scoring, admin tools, PostgreSQL and Docker deployment.

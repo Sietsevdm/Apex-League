@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { seed } from "../lib/seed";
-import { registrationOpen, migrateRegistration, predictionDrivers, classifyImportedDrivers } from "../lib/season-controls";
+import { registrationOpen, migrateRegistration, predictionDrivers, classifyImportedDrivers, seasonNameMatches } from "../lib/season-controls";
 test("Registration preserves upgrade status then changes only through manual state", () => {
   const s = seed(true), season = s.seasons[0];
   season.cutoff = "2000-01-01T00:00:00Z";
@@ -53,4 +53,11 @@ test("Existing imported lineups hide substitutes without removing saved driver r
   assert.equal(season.drivers.at(-1)!.replacementOnly, true);
   assert.ok(!predictionDrivers(s, season, s.events[0], "gp").some(d => d.id === "legacy-sub"));
   assert.equal(season.drivers.length, starters.length + 1);
+});
+
+test("Season confirmation ignores invisible spacing and case but requires the complete name", () => {
+  assert.equal(seasonNameMatches("2027 season", "  2027\u00a0  Season  "), true);
+  assert.equal(seasonNameMatches("Cafe\u0301 2027", "Café 2027"), true);
+  assert.equal(seasonNameMatches("2027", "2027 season"), false);
+  assert.equal(seasonNameMatches("", "   "), false);
 });
