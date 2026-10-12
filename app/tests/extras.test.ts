@@ -111,3 +111,15 @@ test("Font controls reject injected families, missing groups and invalid numeric
   );
   assert.equal(validFonts({ body: defaultFonts.body }), false);
 });
+
+test("Older typography settings retain their fonts and gain login defaults", async () => {
+  const { defaultFonts, resolvedFonts, validFonts } = await import("../lib/typography");
+  const old = structuredClone(defaultFonts) as any;
+  delete old.loginTitle; delete old.loginText;
+  old.body.family = "georgia";
+  const merged = resolvedFonts({ text: 100, headings: 100, banner: 100, groups: old });
+  assert.equal(merged.body.family, "georgia");
+  assert.equal(merged.loginTitle.family, "barlow");
+  assert.equal(merged.loginText.family, "dm");
+  assert.equal(validFonts(merged), true);
+});

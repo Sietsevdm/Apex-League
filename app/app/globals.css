@@ -2703,3 +2703,15 @@ footer {
 
 .admin-navigation { margin-bottom: 24px; }
 .admin-subtabs { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+.auth-story h1, .auth-story h1 em, .auth-card h2 {
+  font-family: var(--loginTitle-family); font-weight: var(--loginTitle-weight); line-height: var(--loginTitle-height); letter-spacing: var(--loginTitle-spacing);
+}
+.auth-story h1 { font-size: calc(70px * var(--loginTitle-size, 1)); }
+.auth-card h2 { font-size: calc(28px * var(--loginTitle-size, 1)); }
+.auth-story p, .auth-story .eyebrow, .auth-story > small, .auth-card > p {
+  font-family: var(--loginText-family); font-weight: var(--loginText-weight); line-height: var(--loginText-height); letter-spacing: var(--loginText-spacing);
+}
+.auth-story p, .auth-card > p { font-size: calc(13px * var(--loginText-size, 1)); }
+.auth-story .eyebrow, .auth-story > small { font-size: calc(10px * var(--loginText-size, 1)); }
+@media(max-width: 760px) { .auth-story h1 { font-size: calc(44px * var(--loginTitle-size, 1)); } .auth-story p { font-size: calc(11px * var(--loginText-size, 1)); } }

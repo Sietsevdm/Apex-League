@@ -238,6 +238,11 @@ test("API enforces privacy, roles, deadlines, registration and idempotent public
       ).status,
       409,
     );
+    assert.equal((await post({ action: "loginText", loginText: { headline: "Our league" } }, "demo-1")).status, 403);
+    assert.equal((await post({ action: "loginText", loginText: { headline: "Our league", welcome: "Welcome to our grid" } })).status, 200);
+    const publicLogin = await get("signed-out");
+    assert.equal(publicLogin.loginText.headline, "Our league");
+    assert.equal(publicLogin.loginText.welcome, "Welcome to our grid");
     const revealed = await get();
     assert.ok(
       revealed.state.entries.some(

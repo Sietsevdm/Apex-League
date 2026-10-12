@@ -22,6 +22,8 @@ export const fontGroups = [
   "labels",
   "tables",
   "numbers",
+  "loginTitle",
+  "loginText",
 ] as const;
 export type FontGroup = (typeof fontGroups)[number];
 export type Typography = {
@@ -34,17 +36,17 @@ export const defaultFonts = Object.fromEntries(
   fontGroups.map((key) => [
     key,
     {
-      family: key === "heading" || key === "banner" ? "barlow" : "dm",
+      family: key === "heading" || key === "banner" || key === "loginTitle" ? "barlow" : "dm",
       size: 100,
-      weight: key === "body" || key === "tables" ? 400 : 600,
-      lineHeight: key === "heading" || key === "banner" ? 1.1 : 1.5,
+      weight: key === "body" || key === "tables" || key === "loginText" ? 400 : 600,
+      lineHeight: key === "heading" || key === "banner" || key === "loginTitle" ? 1.1 : 1.5,
       spacing: 0,
     },
   ]),
 ) as Record<FontGroup, FontControl>;
 export function resolvedFonts(typography?: Typography) {
   return (
-    typography?.groups ||
+    (typography?.groups ? { ...defaultFonts, ...typography.groups } : undefined) ||
     (Object.fromEntries(
       fontGroups.map((key) => [
         key,

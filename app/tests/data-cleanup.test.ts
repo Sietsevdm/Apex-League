@@ -71,6 +71,17 @@ test("Deletion API enforces admin access, confirmation, archive state and succes
     assert.equal((await post(single)).status, 200);
     await transaction((s) => { assert.deepEqual(s.seasons.map((season) => season.id), ["sample-season"]); assert.ok(s.entries.length > 0); });
     assert.equal((await post(single)).status, 400);
+    await transaction(s => { s.seasons.push({ ...structuredClone(s.seasons[0]), id: "archive-delete", name: "Archive delete", archived: true }); });
+    const deletion = { action: "deleteArchivedSeason", seasonId: "archive-delete", confirmation: "Archive delete" };
+    assert.equal((await post(deletion, "demo-1")).status, 403);
+    assert.equal((await post({ ...deletion, confirmation: "wrong" })).status, 400);
+    assert.equal((await post({ ...deletion, seasonId: "sample-season" })).status, 400);
+    delete process.env.BACKUP_SECRET;
+    assert.equal((await post(deletion)).status, 400);
+    await transaction(s => { assert.equal(s.seasons.length, 2); });
+    process.env.BACKUP_SECRET = "cleanup-tests-secret-more-than-32-characters";
+    assert.equal((await post(deletion)).status, 200);
+    await transaction(s => { assert.deepEqual(s.seasons.map(season => season.id), ["sample-season"]); });
     const response = await post(request);
     assert.equal(response.status, 200);
     const data = await response.json();

@@ -116,6 +116,7 @@ function view(s: State, u: User | undefined) {
     return {
       authenticated: false,
       demo: demoMode,
+      loginText: s.settings.loginText,
       name: s.settings.name,
       logo: s.settings.logo,
       typography: s.settings.typography,
@@ -643,6 +644,11 @@ export async function POST(req: NextRequest) {
           ...(sizes.groups ? { groups: structuredClone(sizes.groups) } : {}),
         };
         audit(s, u, "Updated font sizes");
+      } else if (b.action === "loginText") {
+        const fields = ["eyebrow", "headline", "accent", "description", "footer", "welcome", "subtitle"] as const;
+        if (!b.loginText || typeof b.loginText !== "object") fail("Invalid login text.");
+        s.settings.loginText = Object.fromEntries(fields.map(key => [key, text(b.loginText[key] ?? "", 500)]));
+        audit(s, u, "Updated login screen text");
       } else if (b.action === "branding") {
         s.settings.name = text(b.name, 80) || s.settings.name;
         s.settings.welcome = text(b.welcome, 500);
@@ -993,6 +999,14 @@ export async function POST(req: NextRequest) {
           u,
           `${season.archived ? "Archived" : "Reopened"} ${season.name}`,
         );
+      } else if (b.action === "deleteArchivedSeason") {
+        const season = s.seasons.find(season => season.id === b.seasonId && season.archived);
+        if (!season) fail("Select an archived season.");
+        if (b.confirmation !== season.name) fail("Type the season name to confirm.");
+        try { await createBackup(s); }
+        catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
+        deleteArchivedSeasons(s, [season.id]);
+        audit(s, u, `Deleted archived season: ${season.name}`);
       } else if (b.action === "purgeSeason") {
         const season = s.seasons.find((season) => season.id === b.seasonId);
         if (!season) fail("Unknown season.");

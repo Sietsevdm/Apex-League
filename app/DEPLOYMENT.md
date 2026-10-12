@@ -7,7 +7,7 @@ This application is designed for your existing Docker / Portainer / Nginx Proxy 
 ## Easy updates with Portainer
 
 Repository: https://github.com/Sietsevdm/Apex-League
-Image: `ghcr.io/sietsevdm/apex-league:0.8.4`
+Image: `ghcr.io/sietsevdm/apex-league:0.8.5`
 
 ### One-time setup
 
@@ -15,15 +15,15 @@ Image: `ghcr.io/sietsevdm/apex-league:0.8.4`
 2. The `ghcr.io/sietsevdm/apex-league` package is public (verified on 12 October 2026); wait for the selected version's successful release before updating, so no GHCR password is needed. If a future package is private, its owner can use **Package settings → Change visibility → Public**, or add a GHCR registry to Portainer with a token limited to reading packages. Package visibility is separate from repository visibility.
 3. Back up the app through **Admin → Data & history** and separately copy `/opt/apex-league/images`. Keep your existing stack configuration and previous image.
 4. Open your **existing** stack in Portainer. Replace its Compose text with this release's `compose.yml`. Preserve the stack name, all existing secret values, database/backups volumes and Nginx configuration.
-5. Add `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.4` and `UPDATES_REPOSITORY=Sietsevdm/Apex-League` as stack environment variables. Both app and calendar worker use the same `APEX_IMAGE`.
+5. Add `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.5` and `UPDATES_REPOSITORY=Sietsevdm/Apex-League` as stack environment variables. Both app and calendar worker use the same `APEX_IMAGE`.
 6. Choose **Update the stack**, enabling **Re-pull image and redeploy** if offered. For a private image select the configured registry.
-7. Verify the app and database are healthy, the worker is running, sign in and check your existing league data. The admin panel should show installed version 0.8.4.
+7. Verify the app and database are healthy, the worker is running, sign in and check your existing league data. The admin panel should show installed version 0.8.5.
 
 ### Each future update
 
 1. In **Admin studio → App updates**, check the installed version, available release and notes. The notice checks automatically when Admin studio opens, and offers a manual check. It never installs an update itself.
 2. Create/download a backup and separately preserve the image folder.
-3. In Portainer's existing stack, change only **APEX_IMAGE** to the exact image shown in the notice, for example `ghcr.io/sietsevdm/apex-league:0.8.4`.
+3. In Portainer's existing stack, change only **APEX_IMAGE** to the exact image shown in the notice, for example `ghcr.io/sietsevdm/apex-league:0.8.5`.
 4. Choose **Update the stack** with image pulling enabled. Both app and worker update together. No source upload or VPS build is needed.
 5. Refresh the app and verify its installed version and data. Keep the backup until satisfied.
 
@@ -39,17 +39,17 @@ If no published image is available, upload the contents of the release's `app` f
 
 ```sh
 cd /opt/apex-league
-docker build -t apex-league:0.8.4 .
+docker build -t apex-league:0.8.5 .
 ```
 
-Set `APEX_IMAGE=apex-league:0.8.4` in Portainer and update without re-pulling the local image. This fallback requires uploads/builds; the registry path above does not.
+Set `APEX_IMAGE=apex-league:0.8.5` in Portainer and update without re-pulling the local image. This fallback requires uploads/builds; the registry path above does not.
 
 ## 1. Alternative: build the image on the VPS
 
 Copy the `app` directory to a directory such as `/opt/apex-league` on your VPS, excluding `node_modules`, `.next` and `.data`. From that directory:
 
 ```sh
-docker build -t apex-league:0.8.4 .
+docker build -t apex-league:0.8.5 .
 ```
 
 The image must exist on the same Docker host managed by Portainer. On a multi-node/Swarm installation, publish it to your own registry and use the registry image in the stack instead. This Compose file targets standalone Docker, not Swarm.
@@ -159,7 +159,7 @@ Verify HTTPS login; create two player accounts; submit a practice prediction; ch
 
 Version 0.4.1 additionally corrects all interface font mappings, preserving responsive base sizes. Labels & helper text controls calendar session labels; Body text controls the corresponding dates. Headings, banner titles, navigation, controls, tables and statistics each use their own group. The editor shows examples for each group. Existing saved font settings remain intact.
 
-Use image tag `apex-league:0.8.4` and the accompanying updated stack. Keep the existing database volume and secrets when upgrading. The current saved colour scheme is retained; preset themes and colour selection have been removed.
+Use image tag `apex-league:0.8.5` and the accompanying updated stack. Keep the existing database volume and secrets when upgrading. The current saved colour scheme is retained; preset themes and colour selection have been removed.
 
 Add `BACKUP_SECRET` to the Portainer stack environment. Generate a separate random secret of at least 32 characters; do not use the example placeholder. Keep a copy in your password manager. The secret encrypts backups using AES-256-GCM and must remain the same to restore existing files. Changing it makes older files unreadable unless you restore their original secret.
 
@@ -185,7 +185,7 @@ Passkeys use SimpleWebAuthn's verified registration and authentication flows. Co
 Performance proposals remain separate: image compression/separate asset storage, visibility-aware refresh, moving manual external fetches outside transactions, and non-destructive backup verification with isolated recovery drills. The daily background calendar worker already fetches outside transactions.
 
 
-## Version 0.8.4: circuit image folder and responsive login artwork
+## Version 0.8.5: circuit image folder and responsive login artwork
 
 The stack mounts `/opt/apex-league/images` read-only at `/app/images`. Before deploying the updated stack, create the host directory and make uploaded files readable by the app's non-root user (directories 755, images 644 is sufficient). Place only public circuit/login artwork here. Supported types: WebP, JPG, JPEG, PNG, maximum 20 MB per image. User-supplied SVG files are not served.
 
@@ -197,10 +197,10 @@ Login artwork: a new scalable night-circuit SVG matching Apex's turquoise/navy s
 
 Important: filesystem images are not included in encrypted database backups or exports. Back up `/opt/apex-league/images` separately, alongside the league backup and deployment secrets. Existing inline uploaded images remain covered by database backups. Folder contents are public via the image endpoint; do not put credentials or private files in this folder.
 
-Upgrade: upload the new source contents into `/opt/apex-league` without removing the images folder or existing Docker volumes. Run `mkdir -p /opt/apex-league/images`, then `docker build -t apex-league:0.8.4 .`. Replace the Portainer stack with the updated Compose file, retaining all seven environment variable values and both named volumes. Both app and worker use image 0.8.4; the worker HTTP healthcheck remains disabled. Keep the Nginx upstream `apex:3000` and APP_URL `https://apex.mr-gadget.xyz`.
+Upgrade: upload the new source contents into `/opt/apex-league` without removing the images folder or existing Docker volumes. Run `mkdir -p /opt/apex-league/images`, then `docker build -t apex-league:0.8.5 .`. Replace the Portainer stack with the updated Compose file, retaining all seven environment variable values and both named volumes. Both app and worker use image 0.8.5; the worker HTTP healthcheck remains disabled. Keep the Nginx upstream `apex:3000` and APP_URL `https://apex.mr-gadget.xyz`.
 
 
-## Version 0.8.4 — banners and admin cleanup
+## Version 0.8.5 — banners and admin cleanup
 
 2027 banners are included in the app and Docker image as a fallback when the VPS image folder is empty. Custom folder images and manual uploads retain priority. Numbered image filenames and country/adjective variants are recognised.
 
@@ -208,10 +208,10 @@ Admins manage seasons from Season Archive. Each card contains Archive season (or
 
 Prediction receipts and Copy previous picks sit beside Closes in, with receipts in a dropdown. The race calendar uses three columns on desktop, two on narrower screens and one on phones. Standings text includes spaces between counts and labels.
 
-Upgrade using image apex-league:0.8.4 and the included Compose file; preserve existing environment variables, Docker volumes and /opt/apex-league/images. No VPS deployment or live data deletion has been performed.
+Upgrade using image apex-league:0.8.5 and the included Compose file; preserve existing environment variables, Docker volumes and /opt/apex-league/images. No VPS deployment or live data deletion has been performed.
 
 
-## Version 0.8.4 — Sprint scoring
+## Version 0.8.5 — Sprint scoring
 GP remains 23 maximum. Sprint now awards 8 exact finishing positions, 2 pole, 1 fastest lap and 1 first retirement/none: 12 maximum. Prediction labels, league rules and perfect-session awards use the new totals. Scores are calculated from stored predictions/results, so existing published Sprint scores and standings will recalculate on upgrade. No live data changed.
 
 
@@ -224,3 +224,7 @@ Packaged circuit photos are reusable across season years, including test seasons
 ## Manual registration and admin navigation
 
 Admin → Players → Members has Open registration / Close registration. Existing seasons preserve their current registration status on upgrade, then change only when an admin presses the button. New seasons start open. Championship picks still use their existing deadline. Racing contains Race weekends, Results & scoring and Seasons & lineup; Players contains Members and Announcements; Settings contains Banners, Branding, Appearance and Data & history. Confirm replacements in Racing → Race weekends for the specific race and session.
+
+## Login screen and archived-season deletion
+
+Edit login copy in Settings → Branding → Login screen; empty fields use the defaults. Change login fonts in Settings → Appearance → Login headings / Login text. Archived season cards offer Delete season. Type the season name to confirm. An encrypted backup must succeed first; accounts, other seasons, settings and banner files remain.

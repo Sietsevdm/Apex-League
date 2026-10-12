@@ -134,6 +134,7 @@ export type State = {
   backupHealth?: { lastSuccess?: string; lastAttempt?: string; error?: string };
   schema: number;
   settings: {
+    loginText?: Partial<Record<"eyebrow" | "headline" | "accent" | "description" | "footer" | "welcome" | "subtitle", string>>;
     name: string;
     welcome: string;
     theme: Theme;

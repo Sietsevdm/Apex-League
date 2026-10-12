@@ -37,6 +37,8 @@ export function TypographyEditor({ s, call }: { s: State; call: Call }) {
   const [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
   const examples = {
+    loginTitle: "Login screen headline and welcome title.",
+    loginText: "Login screen introduction, description and footer.",
     body: "Descriptions, announcements, driver names outside tables, circuit details and session dates.",
     heading: "Page titles, panel headings and race names in the calendar.",
     banner: "Grand Prix titles in the race banner and banner preview.",
@@ -55,6 +57,8 @@ export function TypographyEditor({ s, call }: { s: State; call: Call }) {
   const change = (values: Partial<FontControl>) =>
     setGroups({ ...groups, [selected]: { ...v, ...values } });
   const labels = {
+    loginTitle: "Login headings",
+    loginText: "Login text",
     body: "Body text",
     heading: "Headings",
     banner: "Banner titles",

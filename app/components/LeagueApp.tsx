@@ -79,6 +79,7 @@ import {
 type Data = {
   loginImage?: string;
   loginMobileImage?: string;
+  loginText?: State["settings"]["loginText"];
   authenticated: boolean;
   demo: boolean;
   userId?: string;
@@ -723,25 +724,25 @@ export function Auth({
           {tr(data.name || "Apex League")}
         </div>
         <div>
-          <div className="eyebrow">{tr("THE NEXT RACE STARTS WITH YOU")}</div>
+          <div className="eyebrow">{tr(data.loginText?.eyebrow || "THE NEXT RACE STARTS WITH YOU")}</div>
           <h1>
-            {tr("Friends on the grid.")}
+            {tr(data.loginText?.headline || "Friends on the grid.")}
             <br />
-            <em>{tr("Rivals on Sunday.")}</em>
+            <em>{tr(data.loginText?.accent || "Rivals on Sunday.")}</em>
           </h1>
           <p>
-            {tr("Make your picks. Follow the points. Own the bragging rights.")}
+            {tr(data.loginText?.description || "Make your picks. Follow the points. Own the bragging rights.")}
           </p>
         </div>
-        <small>{tr("Your private Formula 1 prediction league.")}</small>
+        <small>{tr(data.loginText?.footer || "Your private Formula 1 prediction league.")}</small>
       </div>
       <div className="auth-card">
-        <h2>{tr(register ? "Join your friends" : "Welcome back")}</h2>
+        <h2>{tr(register ? "Join your friends" : data.loginText?.welcome || "Welcome back")}</h2>
         <p>
           {tr(
             register
               ? "You need an invitation and an open season."
-              : "Your next prediction is waiting.",
+              : data.loginText?.subtitle || "Your next prediction is waiting.",
           )}
         </p>
         {!register && <PasskeyLogin call={call} onError={setError} />}
@@ -2680,7 +2681,7 @@ function Archive({
                   <button className="secondary" disabled={busy} onClick={() => call({ action: "archive", seasonId: season.id, archived: !season.archived })}>
                     {tr(season.archived ? "Reopen season" : "Archive season")}
                   </button>
-                  <button className="secondary" disabled={busy} onClick={() => { setPurging(season.id); setConfirmation(""); setError(""); }}>{tr("Purge")}</button>
+                  <button className="secondary" disabled={busy} onClick={() => { setPurging(season.id); setConfirmation(""); setError(""); }}>{tr(season.archived ? "Delete season" : "Purge")}</button>
                 </div>
                 {purging === season.id && <div className="season-purge">
                   <p className="muted">{tr("Remove this season and its races, predictions, results and receipts. Accounts, settings and banners are kept. An encrypted backup is created first.")}</p>
@@ -2690,10 +2691,10 @@ function Archive({
                   <div className="button-row">
                     <button className="secondary" disabled={busy || confirmation !== season.name} onClick={async () => {
                       setBusy(true); setError("");
-                      try { await call({ action: "purgeSeason", seasonId: season.id, confirmation }); setPurging(null); setConfirmation(""); }
+                      try { await call({ action: season.archived ? "deleteArchivedSeason" : "purgeSeason", seasonId: season.id, confirmation }); setPurging(null); setConfirmation(""); }
                       catch (e) { setError((e as Error).message); }
                       finally { setBusy(false); }
-                    }}>{tr(busy ? "Saving…" : "Confirm purge")}</button>
+                    }}>{tr(busy ? "Saving…" : season.archived ? "Confirm deletion" : "Confirm purge")}</button>
                     <button className="secondary" disabled={busy} onClick={() => setPurging(null)}>{tr("Cancel")}</button>
                   </div>
                   {error && <p className="form-error" role="alert">{tr(error)}</p>}
@@ -3004,7 +3005,7 @@ function Admin({
       )}
       {tr(tab === "appearance" && <Appearance s={s} call={call} />)}
       {tr(tab === "banners" && <Banners s={s} season={season} call={call} />)}
-      {tr(tab === "branding" && <Branding s={s} call={call} />)}
+      {tr(tab === "branding" && <><Branding s={s} call={call} /><LoginTextEditor s={s} call={call} /></>)}
       {tr(
         tab === "events" &&
           (season ? (
@@ -3336,6 +3337,27 @@ function Banners({
       </p>
     </>
   );
+}
+function LoginTextEditor({ s, call }: { s: State; call: Call }) {
+  const { t: tr } = useLocale();
+  const [values, setValues] = useState(s.settings.loginText || {});
+  const [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const fields = [
+    ["eyebrow", "Login introduction", "THE NEXT RACE STARTS WITH YOU"],
+    ["headline", "Login headline", "Friends on the grid."],
+    ["accent", "Highlighted headline", "Rivals on Sunday."],
+    ["description", "Login description", "Make your picks. Follow the points. Own the bragging rights."],
+    ["footer", "Login footer", "Your private Formula 1 prediction league."],
+    ["welcome", "Sign-in heading", "Welcome back"],
+    ["subtitle", "Sign-in description", "Your next prediction is waiting."],
+  ] as const;
+  return <section className="panel narrow">
+    <h2>{tr("Login screen")}</h2>
+    <p className="muted">{tr("Leave a field empty to use the default text. Change login fonts in Settings → Appearance using Login headings and Login text.")}</p>
+    {fields.map(([key, label, fallback]) => <label key={key}>{tr(label)}<input maxLength={500} value={values[key] || ""} placeholder={tr(fallback)} onChange={e => setValues({ ...values, [key]: e.target.value })} /></label>)}
+    <button className="primary" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await call({ action: "loginText", loginText: values }); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}>{tr(busy ? "Saving…" : "Save login text")}</button>
+    {error && <p role="alert" className="form-error">{tr(error)}</p>}
+  </section>;
 }
 function Branding({ s, call }: { s: State; call: Call }) {
   const { t: tr, language, setLanguage, date } = useLocale();

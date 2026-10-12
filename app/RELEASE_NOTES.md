@@ -1,7 +1,5 @@
-# Version 0.8.4
+# Version 0.8.5
 
-- Player registration is opened and closed manually in Admin → Players → Members. Upgrade preserves the current open/closed state; new seasons start open. Championship and session prediction deadlines remain unchanged.
-- Admin navigation groups tools into Overview, Racing, Players and Settings. Replacement controls moved to Race weekends.
-- Replacement drivers appear in prediction menus only for their confirmed race/session; validation applies the same restriction.
-
-- Existing imported lineups with more than 20 drivers are checked against the opening-round lineup on sign-in. Later substitutes are hidden until confirmed for the selected session. Saved driver records, predictions and results are preserved. A provider outage leaves the saved lineup intact and retries later.
+- Archived season cards have Delete season, with name confirmation and an encrypted backup before deletion. All season records and memberships are removed; accounts, other seasons, settings and banners remain.
+- Settings → Branding includes editable login introduction, headline, highlighted headline, description, footer, sign-in heading and description. Empty fields restore default text.
+- Settings → Appearance includes independent Login headings and Login text controls for font, size, weight, line height and spacing. Existing font settings are preserved.
