@@ -1,5 +1,5 @@
-# Version 0.8.10
+# Version 0.8.11
 
-Race weekends now opens with the calendar and sync status. The date/time editor opens through Edit or New event, and driver replacement controls open through Manage replacements. Closing an editor unloads its controls.
+Fixed the driver-name label rendering itself recursively instead of displaying the name. This caused runaway rendering and memory use, freezing pages with driver labels. Team-color markers remain.
 
-This reduces initial rendering as a compatibility workaround for reported browser hangs. The freeze could not be reproduced in the testing browser, so resolution on affected devices is not yet confirmed.
+The performance recording identified the recursive driver-label function and several gigabytes of browser heap growth. A component rendering regression check now covers names, team markers and fallback labels.

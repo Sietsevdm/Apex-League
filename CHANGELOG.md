@@ -2,6 +2,11 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.11
+
+- Fixed infinite rendering in driver-name labels: the label accidentally rendered itself instead of the driver name, consuming memory and freezing pages that display labels.
+- Added a rendering regression check for driver names, team markers, empty selections and no-retirement labels.
+
 ## 0.8.10
 
 - Race weekend editing and driver replacement forms load only when opened, reducing work when entering Admin Studio → Race weekends.

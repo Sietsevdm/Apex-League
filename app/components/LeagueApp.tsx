@@ -1,4 +1,5 @@
 "use client";
+import DriverLabel from "./DriverLabel";
 import { registrationOpen, predictionDrivers, seasonNameMatches } from "@/lib/season-controls";
 import { useLocale, LocaleProvider } from "@/lib/i18n";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -192,11 +193,6 @@ function DriverSelect({
     </select>
     </span>
   );
-}
-function DriverLabel({ season, id }: { season: Season; id: string }) {
-  const { t: tr } = useLocale();
-  const driver = season.drivers.find(d => d.id === id);
-  return <span className="driver-label">{driver && <span className="driver-color" aria-hidden="true" style={{ backgroundColor: driver.color }} />}{<DriverLabel season={season} id={id} />}</span>;
 }
 function driverName(season: Season, id: string) {
   return id === "none"
