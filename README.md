@@ -4,7 +4,7 @@ F1 Prediction League. Self-hosted F1 prediction league for friends, with English
 
 ## Install and update
 
-Use the ready-built image `ghcr.io/sietsevdm/apex-league:0.8.3` with [app/compose.yml](app/compose.yml). Follow the [deployment and update guide](app/DEPLOYMENT.md) for Portainer and Nginx Proxy Manager.
+Use the ready-built image `ghcr.io/sietsevdm/apex-league:0.8.4` with [app/compose.yml](app/compose.yml). Follow the [deployment and update guide](app/DEPLOYMENT.md) for Portainer and Nginx Proxy Manager.
 
 The admin panel shows stable release updates. Change APEX_IMAGE in the existing Portainer stack and pull/redeploy to install one.
 

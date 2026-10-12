@@ -1,4 +1,4 @@
-# Version 0.8.3
+# Version 0.8.4
 
 - Player registration is opened and closed manually in Admin → Players → Members. Upgrade preserves the current open/closed state; new seasons start open. Championship and session prediction deadlines remain unchanged.
 - Admin navigation groups tools into Overview, Racing, Players and Settings. Replacement controls moved to Race weekends.
