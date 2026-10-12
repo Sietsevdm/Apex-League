@@ -1,0 +1,73 @@
+services:
+  apex:
+    image: ${APEX_IMAGE:-ghcr.io/sietsevdm/apex-league:0.8.0}
+    container_name: apex
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://apex:${DB_PASSWORD}@db:5432/apex
+      APP_URL: ${APP_URL}
+      BOOTSTRAP_EMAIL: ${BOOTSTRAP_EMAIL}
+      BOOTSTRAP_PASSWORD: ${BOOTSTRAP_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+      CALENDAR_SYNC_SECRET: ${CALENDAR_SYNC_SECRET}
+      BACKUP_SECRET: ${BACKUP_SECRET}
+      BACKUP_DIR: /app/backups
+      BANNER_IMAGE_DIR: /app/images
+      DEMO_MODE: "false"
+      UPDATES_REPOSITORY: ${UPDATES_REPOSITORY:-Sietsevdm/Apex-League}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "3000"
+    volumes:
+      - apex_backups:/app/backups
+      - /opt/apex-league/images:/app/images:ro
+    networks:
+      - backend
+      - proxy
+    security_opt:
+      - no-new-privileges:true
+  calendar-worker:
+    image: ${APEX_IMAGE:-ghcr.io/sietsevdm/apex-league:0.8.0}
+    restart: unless-stopped
+    # This background process has no HTTP server; do not inherit the web probe.
+    healthcheck:
+      disable: true
+    command: ["node", "scripts/calendar-worker.mjs"]
+    environment:
+      CALENDAR_SYNC_URL: http://apex:3000/api/calendar-sync
+      CALENDAR_SYNC_SECRET: ${CALENDAR_SYNC_SECRET}
+    depends_on:
+      apex:
+        condition: service_healthy
+    networks:
+      - backend
+    security_opt:
+      - no-new-privileges:true
+  db:
+    image: postgres:17-bookworm
+    container_name: apex-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: apex
+      POSTGRES_USER: apex
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - apex_database:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apex -d apex"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+networks:
+  backend:
+    internal: true
+  proxy:
+    external: true
+    name: proxy
+volumes:
+  apex_database:
+  apex_backups:
