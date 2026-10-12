@@ -2,6 +2,10 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.8
+- Spaced Jolpica requests to stay within the documented burst limit, including multi-request lineup/team imports.
+- Includes the lineup, team-marker and registration-text fixes below.
+
 ## 0.8.7
 - Calendar imports fill empty driver/constructor lineups even after the championship-pick deadline. Background sync also fetches missing lineups.
 - Imported drivers include team names/colors where provider results supply constructor associations; manual lineups and saved IDs are preserved.

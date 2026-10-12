@@ -1,5 +1,14 @@
 type Json = Record<string, any>;
+const providerClock = globalThis as unknown as { apexProviderNextRequest?: number };
+async function waitForProviderSlot() {
+  const now = Date.now();
+  const start = Math.max(now, providerClock.apexProviderNextRequest || now);
+  providerClock.apexProviderNextRequest = start + 300;
+  if (start > now) await new Promise(resolve => setTimeout(resolve, start - now));
+}
+
 async function fetchData(route: string): Promise<Json> {
+  await waitForProviderSlot();
   const response = await fetch(
     `https://api.jolpi.ca/ergast/f1/${route}?limit=100`,
     {
