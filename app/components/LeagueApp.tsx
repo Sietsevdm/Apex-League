@@ -3457,8 +3457,10 @@ function EventAdmin({
     calendarOverride: true,
   };
   const [form, setForm] = useState(fresh),
-    [busy, setBusy] = useState(false);
-  const edit = (e: Event) =>
+    [busy, setBusy] = useState(false),
+    [editorOpen, setEditorOpen] = useState(false);
+  const edit = (e: Event) => {
+    setEditorOpen(true);
     setForm({
       ...fresh,
       ...e,
@@ -3469,6 +3471,7 @@ function EventAdmin({
       sprintQualifying: localInput(e.sprintQualifying || ""),
       sprintRace: localInput(e.sprintRace || ""),
     });
+  };
   return (
     <>
       <CalendarSync s={s} season={season} call={call} />
@@ -3531,16 +3534,17 @@ function EventAdmin({
       <section className="panel">
         <div className="section-title">
           <h2>{tr(form.id ? "Edit weekend" : "Add a weekend")}</h2>
-          <button className="text-button" onClick={() => setForm(fresh)}>
+          <button className="text-button" onClick={() => { setForm(fresh); setEditorOpen(!editorOpen); }} aria-expanded={editorOpen}>
             <Plus size={16} />
-            {tr("New event")}
+            {tr(editorOpen ? "Close editor" : "New event")}
           </button>
         </div>
-        <form
+        {editorOpen && <form
           onSubmit={async (e) => {
             e.preventDefault();
             await call({ action: "event", seasonId: season.id, ...form });
             setForm(fresh);
+            setEditorOpen(false);
           }}
         >
           <div className="form-grid">
@@ -3638,7 +3642,7 @@ function EventAdmin({
             {tr("Save weekend")}
             <Save size={17} />
           </button>
-        </form>
+        </form>}
       </section>
     </>
   );

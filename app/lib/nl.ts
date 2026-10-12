@@ -1,4 +1,6 @@
 export const dutch: Record<string, string> = {
+  "Close editor": "Editor sluiten",
+  "Manage replacements": "Vervangingen beheren",
   "The banner switches to the next race at midnight on Monday after the current race weekend (Amsterdam time).": "De banner wisselt naar de volgende race op maandag om middernacht na het huidige raceweekend (Amsterdamse tijd).",
 
   "Import previous year's lineup": "Coureurslijst van vorig jaar importeren",

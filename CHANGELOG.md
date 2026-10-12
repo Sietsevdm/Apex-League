@@ -2,6 +2,11 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.10
+
+- Race weekend editing and driver replacement forms load only when opened, reducing work when entering Admin Studio → Race weekends.
+- Compatibility workaround for reported browser hangs; the root cause remains unconfirmed and requires verification on affected devices.
+
 ## 0.8.9
 - Automatic banners switch to the next race on Monday at midnight after the current race weekend, in Europe/Amsterdam time, rather than waiting for first practice.
 - Saturday races, gaps between races, daylight saving and unconfirmed session times are handled. Manual overrides and the final season banner remain supported.

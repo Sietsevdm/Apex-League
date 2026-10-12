@@ -106,6 +106,7 @@ export function ReplacementAdmin({
   call: Call;
 }) {
   const { t } = useLocale();
+  const [open, setOpen] = useState(false);
   const events = s.events.filter((e) => e.seasonId === season.id);
   const [id, setId] = useState(
       events.find((e) => !e.practiceRound && Date.parse(e.race) > Date.now())
@@ -127,13 +128,16 @@ export function ReplacementAdmin({
     0) as number;
   return (
     <section className="panel">
-      <h2>{t("Driver replacements")}</h2>
+      <div className="section-title">
+        <h2>{t("Driver replacements")}</h2>
+        <button className="secondary" aria-expanded={open} onClick={() => setOpen(!open)}>{t(open ? "Close editor" : "Manage replacements")}</button>
+      </div>
       <p className="muted">
         {t(
           "Set a session policy before publishing results. Original predictions and receipts are preserved; championship picks stay unchanged.",
         )}
       </p>
-      <form
+      {open && <form
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
@@ -267,7 +271,7 @@ export function ReplacementAdmin({
         >
           {t("Confirm replacement")}
         </button>
-      </form>
+      </form>}
     </section>
   );
 }
