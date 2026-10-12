@@ -1,8 +1,6 @@
-## 0.8.0
-- Admin studio shows the installed version, checks stable releases and displays release notes and the new image name.
-- Portainer uses APEX_IMAGE for both the app and calendar worker. Routine updates require changing one version and pulling the image.
-- Images are tested and built for AMD64 and ARM64; a release is announced only after publishing succeeds.
-- Includes automatic banner fixes, protected season cleanup, three-column calendar, inline prediction tools and circular mobile profile badge.
-- GP maximum is 23; Sprint maximum is 12. Existing Sprint scores recalculate from stored predictions/results on upgrade.
+## 0.8.1
+- Admins can archive/reopen seasons and select/delete archived seasons directly on Season Archive. Active seasons must be archived before deletion. Typed confirmation and encrypted backup are still required.
+- Season Archive remains accessible after deleting the last season and separates the points value from its label.
+- Bundled circuit photos now link for season years other than 2027, with circuit identifier/name matching for custom event names. Custom season-specific images and manual uploads retain priority.
 
-Back up before upgrading. Keep environment values, database/backups volumes, image folder and existing stack name. No automatic installation or database purge occurs.
+Create a backup, set APEX_IMAGE to ghcr.io/sietsevdm/apex-league:0.8.1 in the existing Portainer stack, and update with image pulling enabled. Both app and worker use the same setting. No records are deleted by the upgrade.

@@ -2692,3 +2692,7 @@ footer {
 
 .update-image { display: block; margin: 12px 0; overflow-wrap: anywhere; }
 .update-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.archive-item { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.archive-item .archive-card { width: 100%; height: 100%; text-align: left; }
+.archive-item > .secondary { align-self: flex-start; }

@@ -63,7 +63,32 @@ export function matchedBanner(event: Event, year: number, assets: Asset[]) {
     portuguese: ["portugal"], spanish: ["spain"], turkish: ["turkiye"],
     "saudi-arabian": ["saudi-arabia"], canadian: ["canada"],
   };
-  const short = name.replace(/-grand-prix$/, "");
+  const short = name.replace(/-(grand-prix|gp)$/, "");
+  const circuitBanners: Record<string, string> = {
+    bahrain: "bahrain", jeddah: "saudi-arabian", albert_park: "australian",
+    shanghai: "chinese", suzuka: "japanese", miami: "miami", villeneuve: "canadian",
+    monaco: "monaco", madring: "spanish", silverstone: "british", spa: "belgian",
+    hungaroring: "hungarian", monza: "italian", marina_bay: "singapore",
+    baku: "azerbaijan", americas: "united-states", rodriguez: "mexican",
+    interlagos: "sao-paulo", vegas: "las-vegas", las_vegas: "las-vegas",
+    losail: "qatar", yas_marina: "abu-dhabi", istanbul: "turkish", portimao: "portuguese",
+  };
+  const circuitNames: Record<string, string> = {
+    "bahrain-international-circuit": "bahrain", "jeddah-corniche-circuit": "saudi-arabian",
+    "albert-park-grand-prix-circuit": "australian", "albert-park-circuit": "australian",
+    "shanghai-international-circuit": "chinese", "suzuka-circuit": "japanese",
+    "suzuka-international-racing-course": "japanese", "silverstone-circuit": "british",
+    "circuit-gilles-villeneuve": "canadian", "circuit-de-monaco": "monaco",
+    "circuit-de-spa-francorchamps": "belgian", "hungaroring": "hungarian",
+    "autodromo-nazionale-di-monza": "italian", "marina-bay-street-circuit": "singapore",
+    "baku-city-circuit": "azerbaijan", "circuit-of-the-americas": "united-states",
+    "autodromo-hermanos-rodriguez": "mexican", "autodromo-jose-carlos-pace": "sao-paulo",
+    "interlagos": "sao-paulo", "las-vegas-strip-circuit": "las-vegas",
+    "lusail-international-circuit": "qatar", "losail-international-circuit": "qatar",
+    "yas-marina-circuit": "abu-dhabi", "istanbul-park": "turkish",
+    "autodromo-internacional-do-algarve": "portuguese",
+  };
+  const circuitRace = circuitBanners[event.providerCircuitId || ""] || circuitNames[imageSlug(event.circuit)];
   const keys = [
     ...new Set(
       [
@@ -72,6 +97,7 @@ export function matchedBanner(event: Event, year: number, assets: Asset[]) {
         ...(aliases[short] || []).flatMap((key) => [key, `${key}-grand-prix`]),
         imageSlug(event.providerCircuitId || ""),
         imageSlug(event.circuit),
+        ...(circuitRace ? [circuitRace, `${circuitRace}-grand-prix`] : []),
       ].filter(Boolean),
     ),
   ];
@@ -91,6 +117,8 @@ export async function decorateImages<T>(data: T): Promise<T> {
   const custom = await imageCatalog();
   const bundled = (await imageCatalog(path.join(process.cwd(), "public", "banners")))
     .map((asset) => ({ ...asset, url: asset.url.replace("/api/images/", "/banners/") }));
+  // Packaged photographs are reusable circuit assets; custom year folders remain year-specific.
+  const sharedBundled = bundled.map((asset) => ({ ...asset, key: asset.key.replace(/^\d{4}\//, "") }));
   const assets = [...custom, ...bundled];
   response.loginImage =
     assets.find((a) => a.key === "login")?.url || "/login-race.svg";
@@ -100,7 +128,7 @@ export async function decorateImages<T>(data: T): Promise<T> {
   if (s) {
     const matches = s.events.map((event) => {
       const year = s.seasons.find((x) => x.id === event.seasonId)?.year || 0;
-      const asset = matchedBanner(event, year, custom) || matchedBanner(event, year, bundled);
+      const asset = matchedBanner(event, year, custom) || matchedBanner(event, year, bundled) || matchedBanner(event, year, sharedBundled);
       const saved = s.settings.savedBannerPhotos?.find((photo) => photo.year === year && imageSlug(photo.name) === imageSlug(event.name) && imageSlug(photo.circuit) === imageSlug(event.circuit));
       if ((!event.photo || ["/circuit-night.svg", "/circuit-day.svg"].includes(event.photo)) && saved) { event.photo = saved.photo; event.focal = saved.focal; event.credit = saved.credit; }
       const manual = Boolean(event.photo && !["/circuit-night.svg", "/circuit-day.svg"].includes(event.photo) && !event.photo.startsWith("/api/images/") && !event.photo.startsWith("/banners/"));

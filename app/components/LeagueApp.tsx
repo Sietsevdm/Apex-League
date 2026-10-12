@@ -539,7 +539,7 @@ function LeagueContent() {
         )}
         <main id="main-content" tabIndex={-1}>
           {tr(
-            !season && page !== "admin" && page !== "profile" ? (
+            !season && page !== "admin" && page !== "profile" && page !== "archive" ? (
               <>
                 <Heading
                   title={tr("Welcome to your league")}
@@ -566,6 +566,8 @@ function LeagueContent() {
                   go("home");
                 }}
               />
+            ) : page === "archive" ? (
+              <Archive s={s} call={call} isAdmin={me.role === "admin" && !preview} onSelect={(id) => { setSeasonId(id); go("leaderboard"); }} />
             ) : page === "profile" ? (
               <Profile me={me} call={call} />
             ) : (
@@ -630,17 +632,7 @@ function LeagueContent() {
                     ),
                   )}
                   {tr(page === "league" && <Rules s={s} season={season} />)}
-                  {tr(
-                    page === "archive" && (
-                      <Archive
-                        s={s}
-                        onSelect={(id) => {
-                          setSeasonId(id);
-                          go("leaderboard");
-                        }}
-                      />
-                    ),
-                  )}
+
                 </>
               )
             ),
@@ -2629,9 +2621,13 @@ function Rules({ s, season }: { s: State; season: Season }) {
 function Archive({
   s,
   onSelect,
+  call,
+  isAdmin,
 }: {
   s: State;
   onSelect: (id: string) => void;
+  call: Call;
+  isAdmin: boolean;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   return (
@@ -2646,9 +2642,9 @@ function Archive({
           s.seasons.map((season) => {
             const rows = standings(s, season.id);
             return (
+              <div className="archive-item" key={season.id}>
               <button
                 className="panel archive-card"
-                key={season.id}
                 onClick={() => onSelect(season.id)}
               >
                 <CalendarDays />
@@ -2668,15 +2664,20 @@ function Archive({
                   )}
                 </p>
                 <strong>
-                  {tr(rows[0]?.total || 0)}
+                  {tr(rows[0]?.total || 0)}{" "}
                   {tr("points")}
                   <ArrowUpRight size={18} />
                 </strong>
               </button>
+              {isAdmin && <button className="secondary" onClick={() => call({ action: "archive", seasonId: season.id, archived: !season.archived })}>
+                {tr(season.archived ? "Reopen season" : "Archive season")}
+              </button>}
+              </div>
             );
           }),
         )}
       </div>
+      {isAdmin && <DataCleanup s={s} call={call} archivedOnly />}
     </>
   );
 }
@@ -3105,7 +3106,7 @@ function HexEditor({
     />
   );
 }
-function DataCleanup({ s, call }: { s: State; call: Call }) {
+function DataCleanup({ s, call, archivedOnly = false }: { s: State; call: Call; archivedOnly?: boolean }) {
   const { t: tr } = useLocale();
   const [selected, setSelected] = useState<string[]>([]);
   const [confirmation, setConfirmation] = useState("");
@@ -3128,11 +3129,12 @@ function DataCleanup({ s, call }: { s: State; call: Call }) {
     {archived.map((season) => <label className="checkbox" key={season.id}>
       <input type="checkbox" checked={validSelected.includes(season.id)} disabled={busy} onChange={(e) => setSelected(e.target.checked ? [...validSelected, season.id] : validSelected.filter((id) => id !== season.id))} />{season.name}
     </label>)}
-    {!archived.length && <p className="tiny">{tr("No archived seasons to delete.")}</p>}
+    {!archived.length && <p className="tiny">{tr("No archived seasons to delete. Archive a season first using its Archive season button.")}</p>}
     <label>{tr("Type DELETE ARCHIVED SEASONS to confirm")}
       <input value={confirmation} disabled={busy} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" />
     </label>
     <button className="secondary" disabled={busy || !validSelected.length || confirmation !== "DELETE ARCHIVED SEASONS"} onClick={() => execute("deleteSeasons")}>{tr("Delete selected seasons")}</button>
+    {!archivedOnly && <>
     <h2>{tr("Purge database")}</h2>
     <p className="muted">{tr("Clear all seasons, races, predictions, results, receipts and season memberships. Keep every account, admin settings, branding and banner files. This clears all season data, including real data.")}</p>
     <p className="tiny">{s.seasons.length} {tr("seasons")} · {s.events.length} {tr("race weekends")}</p>
@@ -3140,6 +3142,7 @@ function DataCleanup({ s, call }: { s: State; call: Call }) {
       <input value={purgeConfirmation} disabled={busy} onChange={(e) => setPurgeConfirmation(e.target.value)} autoComplete="off" />
     </label>
     <button className="secondary" disabled={busy || purgeConfirmation !== "PURGE SEASON DATA"} onClick={() => execute("purgeSeasonData")}>{tr(busy ? "Saving…" : "Purge season data")}</button>
+    </>}
     <p className="tiny">{tr("An encrypted backup is created before deletion. If the backup fails, nothing is deleted. Banner files and uploaded photos are kept. Uploaded photos are reused when the same race and circuit are added for that year.")}</p>
     {error && <p className="form-error" role="alert">{tr(error)}</p>}
   </section>;

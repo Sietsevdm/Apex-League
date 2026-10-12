@@ -866,4 +866,5 @@ export const dutch: Record<string, string> = {
   "No public release is available yet, or the repository cannot be accessed.": "Er is nog geen openbare versie beschikbaar, of de repository is niet bereikbaar.",
   "Updates are installed through Portainer. Your accounts, settings, banners and database stay in their existing storage.": "Updates worden via Portainer geïnstalleerd. Je accounts, instellingen, banners en database blijven op hun bestaande opslaglocatie.",
   "Create a backup, then update APEX_IMAGE in your existing Portainer stack to the image below and choose Update the stack with image pulling enabled.": "Maak een back-up, wijzig APEX_IMAGE in je bestaande Portainer-stack naar de onderstaande image en kies Update the stack met het ophalen van images ingeschakeld.",
+  "No archived seasons to delete. Archive a season first using its Archive season button.": "Geen gearchiveerde seizoenen om te verwijderen. Archiveer eerst een seizoen met de knop Seizoen archiveren.",
 };

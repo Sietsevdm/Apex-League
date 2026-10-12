@@ -109,3 +109,23 @@ test("Bundled 2027 banners work without a mounted VPS folder", async () => {
     else process.env.BANNER_IMAGE_DIR = original;
   }
 });
+
+test("Bundled photographs link for other season years and circuit identifiers without changing custom year precedence", async () => {
+  const original = process.env.BANNER_IMAGE_DIR;
+  process.env.BANNER_IMAGE_DIR = path.resolve(".data", "absent-image-folder");
+  try {
+    const state = seed(true);
+    state.seasons[0].year = 2026;
+    state.events.find((e) => e.id === "singapore")!.name = "My Singapore event";
+    state.events.find((e) => e.id === "singapore")!.providerCircuitId = "marina_bay";
+    const response = await decorateImages({ authenticated: true, userId: "demo-admin", state });
+    for (const id of ["bahrain", "jeddah", "singapore", "suzuka"]) {
+      const event = response.state.events.find((e) => e.id === id);
+      if (event) assert.match(event.photo, /^\/banners\/2027\//);
+    }
+    assert.match(response.state.events.find((e) => e.id === "singapore")!.photo, /singapore-grand-prix/);
+    const event = { ...state.events[0], name: "Local test race", providerCircuitId: "silverstone" };
+    assert.equal(matchedBanner(event, 2026, [{ file: "british-grand-prix.webp", key: "british-grand-prix", url: "circuit" }])?.url, "circuit");
+    assert.equal(matchedBanner(event, 2026, [{ file: "2027/british-grand-prix.webp", key: "2027/british-grand-prix", url: "wrong-year" }]), undefined);
+  } finally { if (original === undefined) delete process.env.BANNER_IMAGE_DIR; else process.env.BANNER_IMAGE_DIR = original; }
+});
