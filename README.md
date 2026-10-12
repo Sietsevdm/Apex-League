@@ -1,2 +1,2 @@
 # Apex-League
-F1 Predition league
+F1 Prediction League
