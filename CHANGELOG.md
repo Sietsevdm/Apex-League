@@ -2,6 +2,10 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.9
+- Automatic banners switch to the next race on Monday at midnight after the current race weekend, in Europe/Amsterdam time, rather than waiting for first practice.
+- Saturday races, gaps between races, daylight saving and unconfirmed session times are handled. Manual overrides and the final season banner remain supported.
+
 ## 0.8.8
 - Spaced Jolpica requests to stay within the documented burst limit, including multi-request lineup/team imports.
 - Includes the lineup, team-marker and registration-text fixes below.

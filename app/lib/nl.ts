@@ -1,4 +1,6 @@
 export const dutch: Record<string, string> = {
+  "The banner switches to the next race at midnight on Monday after the current race weekend (Amsterdam time).": "De banner wisselt naar de volgende race op maandag om middernacht na het huidige raceweekend (Amsterdamse tijd).",
+
   "Import previous year's lineup": "Coureurslijst van vorig jaar importeren",
   "This uses the previous season as a starting point. Review driver transfers and team names in Seasons & lineup before opening predictions.": "Dit gebruikt het vorige seizoen als uitgangspunt. Controleer transfers en teamnamen bij Seizoenen en deelnemers voordat je voorspellingen opent.",
 

@@ -3224,7 +3224,7 @@ function Banners({
         </p>
         <p className="muted">
           {tr(
-            "The banner switches at first practice, then stays until the next weekend\u2019s first practice starts.",
+            "The banner switches to the next race at midnight on Monday after the current race weekend (Amsterdam time).",
           )}
         </p>
         <label>

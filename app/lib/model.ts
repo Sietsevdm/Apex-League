@@ -344,15 +344,35 @@ export function standings(s: State, seasonId: string) {
   });
   return rows;
 }
+function bannerRaceDay(event: Event) {
+  if (event.raceDate && /^\d{4}-\d{2}-\d{2}$/.test(event.raceDate)) {
+    const day = Date.parse(`${event.raceDate}T00:00:00Z`);
+    if (Number.isFinite(day)) return day;
+  }
+  const instant = Date.parse(event.race || event.practice);
+  if (!Number.isFinite(instant)) return Infinity;
+  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Amsterdam", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(instant);
+  const value = (type: string) => Number(parts.find(part => part.type === type)!.value);
+  return Date.UTC(value("year"), value("month") - 1, value("day"));
+}
+function bannerMonday(event: Event) {
+  const day = bannerRaceDay(event);
+  if (!Number.isFinite(day)) return Infinity;
+  const weekday = new Date(day).getUTCDay();
+  const monday = day + (((8 - weekday) % 7) || 7) * 86400000;
+  // Amsterdam's offset at Monday midnight includes the applicable summer/winter time.
+  const zone = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Amsterdam", timeZoneName: "shortOffset" }).formatToParts(monday).find(part => part.type === "timeZoneName")!.value;
+  const offset = zone.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+  const minutes = offset ? (Number(offset[2]) * 60 + Number(offset[3] || 0)) * (offset[1] === "+" ? 1 : -1) : 0;
+  return monday - minutes * 60000;
+}
 export function bannerEvent(s: State, seasonId: string, now = Date.now()) {
   const events = s.events
-    .filter((e) => e.seasonId === seasonId && !e.practiceRound)
-    .sort((a, b) => Date.parse(a.practice) - Date.parse(b.practice));
-  return (
-    events.find((e) => e.id === s.settings.bannerOverride) ||
-    events.filter((e) => Date.parse(e.practice) <= now).at(-1) ||
-    events[0]
-  );
+    .filter(event => event.seasonId === seasonId && !event.practiceRound)
+    .sort((a, b) => bannerRaceDay(a) - bannerRaceDay(b));
+  return events.find(event => event.id === s.settings.bannerOverride)
+    || events.find(event => now < bannerMonday(event))
+    || events.at(-1);
 }
 export function complete(p: Picks, kind: "gp" | "sprint") {
   return (

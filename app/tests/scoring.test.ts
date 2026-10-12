@@ -105,14 +105,24 @@ test("deadline is exactly one hour before qualifying and persisted lock survives
   e.qualifying = new Date(Date.now() + 100 * 3600000).toISOString();
   assert.equal(locked(e, "gp"), true);
 });
-test("banner stays on current circuit until next first practice", () => {
-  const s = seed(true),
-    now = Date.parse(s.events[2].practice) + 1;
-  assert.equal(bannerEvent(s, "sample-season", now)?.id, "singapore");
-  assert.equal(
-    bannerEvent(s, "sample-season", Date.parse(s.events[3].practice))?.id,
-    "suzuka",
-  );
+test("Banner switches at Amsterdam Monday midnight after a race, including off weeks", () => {
+  const s = seed(true), base = s.events[0];
+  s.events = [{ ...base, id: "current", raceDate: "2026-10-11", race: "2026-10-11T14:00:00Z" }, { ...base, id: "next", raceDate: "2026-10-25", race: "2026-10-25T14:00:00Z" }];
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-10-11T21:59:59Z"))?.id, "current");
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-10-11T22:00:00Z"))?.id, "next");
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-10-16T12:00:00Z"))?.id, "next");
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-12-01T12:00:00Z"))?.id, "next");
+  s.settings.bannerOverride = "current";
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-10-12T12:00:00Z"))?.id, "current");
+});
+test("Monday banner switch respects winter time, Saturday races and unconfirmed session times", () => {
+  const s = seed(true), base = s.events[0];
+  s.events = [{ ...base, id: "current", practice: "", race: "", raceDate: "2026-10-25" }, { ...base, id: "next", practice: "", race: "", raceDate: "2026-11-07" }];
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-10-25T22:59:59Z"))?.id, "current");
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-10-25T23:00:00Z"))?.id, "next");
+  s.events.push({ ...base, id: "third", raceDate: "2026-11-15" });
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-11-08T22:59:59Z"))?.id, "next");
+  assert.equal(bannerEvent(s, "sample-season", Date.parse("2026-11-08T23:00:00Z"))?.id, "third");
 });
 test("equal players share place and all-zero weekends give no wins", () => {
   const s = seed(true);
