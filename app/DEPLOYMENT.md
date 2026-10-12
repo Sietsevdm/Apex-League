@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.6`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.7`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Admin studio → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Settings → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.6`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.7`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -24,7 +24,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.6` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.7` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -64,6 +64,8 @@ GP predictions can score 23 points; Sprint predictions can score 12. Each sessio
 The worker wakes hourly and checks enabled, non-archived seasons when 24 hours have elapsed since the previous attempt. Unknown session times remain unconfirmed; predictions stay closed until a deadline is known. Sync preserves predictions, photos, results, locked deadlines and manual schedule overrides. Missing races are retained for organiser review.
 
 Calendar imports use Jolpica's Ergast-compatible API. Retirement order, Driver of the Day and Sprint pole may require manual confirmation. Provider availability and publication timing affect imports.
+
+Calendar import and background sync fill missing driver/constructor lineups even after the championship deadline. Imported team names/colors use available race results. Existing lineups and manual team colors are retained. If the selected season has no published drivers, use Import previous year's lineup as an explicitly chosen starting point and review transfers/team names before using it.
 
 New imports distinguish opening-round drivers from later substitutes. Existing imported lineups with more than 20 drivers are checked against the opening round when an authenticated client loads the league. A provider outage leaves the saved lineup intact and retries later. Substitute drivers appear in prediction menus only for a confirmed race/session. Existing records and scoring history remain stored.
 
@@ -111,4 +113,4 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.6 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.6` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.7 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.7` and update without re-pulling that local image. For development commands, see [README.md](README.md).

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { seed } from "../lib/seed";
-import { registrationOpen, migrateRegistration, predictionDrivers, classifyImportedDrivers, seasonNameMatches } from "../lib/season-controls";
+import { registrationOpen, migrateRegistration, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "../lib/season-controls";
 test("Registration preserves upgrade status then changes only through manual state", () => {
   const s = seed(true), season = s.seasons[0];
   season.cutoff = "2000-01-01T00:00:00Z";
@@ -60,4 +60,36 @@ test("Season confirmation ignores invisible spacing and case but requires the co
   assert.equal(seasonNameMatches("Cafe\u0301 2027", "Café 2027"), true);
   assert.equal(seasonNameMatches("2027", "2027 season"), false);
   assert.equal(seasonNameMatches("", "   "), false);
+});
+
+test("An empty lineup imports after the pick deadline while saved IDs and manual choices survive", () => {
+  const s = seed(true), season = s.seasons[0];
+  const drivers = structuredClone(season.drivers);
+  season.cutoff = "2000-01-01T00:00:00Z"; season.drivers = []; season.constructors = [];
+  mergeImportedLineup(season, { drivers, constructors: ["McLaren"] });
+  assert.equal(season.drivers.length, drivers.length);
+  assert.deepEqual(season.constructors, ["McLaren"]);
+  season.drivers[0].team = "Manual team"; season.drivers[0].color = "#123456";
+  const ids = season.drivers.map(d => d.id);
+  mergeImportedLineup(season, { drivers: [{ ...drivers[0], team: "Other", color: "#FFFFFF" }], constructors: ["Other"] });
+  assert.deepEqual(season.drivers.map(d => d.id), ids);
+  assert.equal(season.drivers[0].team, "Manual team");
+  assert.equal(season.drivers[0].color, "#123456");
+});
+test("Lineup imports attach constructor names and team colors to drivers", async () => {
+  const original = globalThis.fetch;
+  try {
+    globalThis.fetch = async input => {
+      const url = String(input);
+      const driver = { driverId: "norris", givenName: "Lando", familyName: "Norris" };
+      return Response.json({ MRData: {
+        DriverTable: { Drivers: [driver] }, ConstructorTable: { Constructors: [{ name: "McLaren" }] },
+        RaceTable: { Races: url.includes("results") ? [{ Results: [{ Driver: driver, Constructor: { constructorId: "mclaren", name: "McLaren" } }] }] : [] }
+      } });
+    };
+    const { fetchLineup } = await import("../lib/provider");
+    const imported = await fetchLineup(2026);
+    assert.equal(imported.drivers[0].team, "McLaren");
+    assert.equal(imported.drivers[0].color, "#FF8700");
+  } finally { globalThis.fetch = original; }
 });

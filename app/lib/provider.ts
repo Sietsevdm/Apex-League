@@ -47,28 +47,49 @@ export async function fetchCalendar(year: number) {
     throw new Error("Calendar provider returned an invalid response.");
   return calendarEvents(data.RaceTable.Races, year);
 }
-export async function importCalendar(year: number) {
-  const [schedule, drivers, constructors, openingDrivers] = await Promise.all([
-    fetchData(`${year}/`),
+export function teamColor(id: string) {
+  const key = id.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (key.includes("mclaren")) return "#FF8700";
+  if (key.includes("ferrari")) return "#FF5A65";
+  if (key.includes("mercedes")) return "#55DEC9";
+  if (key.includes("astonmartin")) return "#7EC398";
+  if (key.includes("williams")) return "#75A5FF";
+  if (key.includes("alpine") || key.includes("renault")) return "#E697D5";
+  if (key.includes("racingbull") || key === "rb" || key.includes("alphatauri") || key.includes("tororosso")) return "#99AFFA";
+  if (key.includes("redbull")) return "#5594F5";
+  if (key.includes("haas")) return "#DFDFDF";
+  if (key.includes("audi") || key.includes("sauber")) return "#E3E3E3";
+  if (key.includes("cadillac")) return "#BEB6A7";
+  return "#8BA7BD";
+}
+export async function fetchLineup(year: number) {
+  const [drivers, constructors, openingDrivers, firstResults, latestResults] = await Promise.all([
     fetchData(`${year}/drivers/`),
     fetchData(`${year}/constructors/`),
     fetchData(`${year}/1/drivers/`),
+    fetchData(`${year}/1/results/`).catch(() => ({} as Json)),
+    fetchData(`${year}/last/results/`).catch(() => ({} as Json)),
   ]);
-  const races = schedule.RaceTable?.Races || [];
   const starters = new Set((openingDrivers.DriverTable?.Drivers || []).map((d: Json) => d.driverId));
+  const teams = new Map<string, Json>();
+  for (const data of [firstResults, latestResults])
+    for (const race of data.RaceTable?.Races || [])
+      for (const row of race.Results || []) if (row.Driver?.driverId && row.Constructor)
+        teams.set(row.Driver.driverId, row.Constructor);
   return {
     drivers: (drivers.DriverTable?.Drivers || []).map((d: Json) => ({
-      id: d.driverId,
+      id: String(d.driverId),
       replacementOnly: starters.size > 0 && !starters.has(d.driverId),
       name: `${d.givenName} ${d.familyName}`,
-      team: "",
-      color: "#8BA7BD",
+      team: String(teams.get(d.driverId)?.name || ""),
+      color: teamColor(String(teams.get(d.driverId)?.constructorId || "")),
     })),
-    constructors: (constructors.ConstructorTable?.Constructors || []).map(
-      (c: Json) => c.name,
-    ),
-    events: calendarEvents(races, year),
+    constructors: (constructors.ConstructorTable?.Constructors || []).map((c: Json) => String(c.name)),
   };
+}
+export async function importCalendar(year: number) {
+  const [events, lineup] = await Promise.all([fetchCalendar(year), fetchLineup(year)]);
+  return { ...lineup, events };
 }
 export async function importResults(
   year: number,

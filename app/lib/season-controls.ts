@@ -25,3 +25,15 @@ export function seasonNameMatches(input: string, name: string) {
   const normalize = (value: string) => value.normalize("NFC").trim().replace(/\s+/g, " ").toLowerCase();
   return Boolean(normalize(name)) && normalize(input) === normalize(name);
 }
+
+export function mergeImportedLineup(season: Season, imported: { drivers: Season["drivers"]; constructors: string[] }) {
+  // Fill missing records even after the pick deadline; never replace saved IDs or manual lineups.
+  if (!season.drivers.length) season.drivers = imported.drivers;
+  else for (const driver of season.drivers) {
+    const match = imported.drivers.find(d => d.id === driver.id);
+    if (!match) continue;
+    if (!driver.team && match.team) driver.team = match.team;
+    if (!driver.color || driver.color === "#8BA7BD") driver.color = match.color;
+  }
+  if (!season.constructors.length) season.constructors = imported.constructors;
+}

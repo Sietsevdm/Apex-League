@@ -2,6 +2,13 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.7
+- Calendar imports fill empty driver/constructor lineups even after the championship-pick deadline. Background sync also fetches missing lineups.
+- Imported drivers include team names/colors where provider results supply constructor associations; manual lineups and saved IDs are preserved.
+- Added small team-color bars beside selected drivers and driver names in results/comparisons.
+- Replaced the outdated registration deadline message with manual open/closed status, fixing its missing space.
+- Empty/unpublished provider lineups explain how to copy or enter the season lineup and offer an optional previous-year import for review.
+
 ## 0.8.6
 - Registration controls remain visible in Members, including when an archived season is selected. Each active season has manual open/close controls.
 - Deletion confirmation accepts the complete name despite case, Unicode or invisible whitespace differences. Added a copy-name control.

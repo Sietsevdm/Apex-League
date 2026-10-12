@@ -2719,3 +2719,8 @@ footer {
 .registration-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
 .registration-row .button-row { flex-wrap: wrap; }
 @media(max-width: 760px) { .registration-row { align-items: flex-start; flex-direction: column; } }
+
+.driver-color { display: inline-block; width: 3px; height: 1.1em; border-radius: 2px; flex: 0 0 3px; background: #8BA7BD; }
+.driver-select, .driver-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.driver-select { width: 100%; }
+.driver-select select { flex: 1; min-width: 0; }

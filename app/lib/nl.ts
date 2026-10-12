@@ -1,4 +1,11 @@
 export const dutch: Record<string, string> = {
+  "Import previous year's lineup": "Coureurslijst van vorig jaar importeren",
+  "This uses the previous season as a starting point. Review driver transfers and team names in Seasons & lineup before opening predictions.": "Dit gebruikt het vorige seizoen als uitgangspunt. Controleer transfers en teamnamen bij Seizoenen en deelnemers voordat je voorspellingen opent.",
+
+  "Registration is open. Your organiser closes it manually.": "De inschrijving is open. Je organisator sluit deze handmatig.",
+  "Registration is closed. Ask your organiser to reopen it.": "De inschrijving is gesloten. Vraag je organisator deze opnieuw te openen.",
+  "No driver lineup yet. Check now imports available drivers and teams. If Jolpica has not published this season, copy a lineup or enter it in Seasons & lineup.": "Nog geen coureurslijst. Nu controleren importeert beschikbare coureurs en teams. Als Jolpica dit seizoen nog niet heeft gepubliceerd, kopieer dan een lijst of voer deze in bij Seizoenen en deelnemers.",
+
   "Player registration": "Spelersinschrijving",
   "Registration open": "Inschrijving open",
   "Copy season name": "Seizoensnaam kopiëren",

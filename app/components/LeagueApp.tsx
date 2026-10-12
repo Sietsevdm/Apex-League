@@ -171,6 +171,8 @@ function DriverSelect({
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   return (
+    <span className="driver-select">
+      <span className="driver-color" aria-hidden="true" style={{ backgroundColor: season.drivers.find(d => d.id === value)?.color || "#8BA7BD" }} />
     <select
       aria-label={tr(label || "Select driver")}
       value={value}
@@ -188,7 +190,13 @@ function DriverSelect({
         )),
       )}
     </select>
+    </span>
   );
+}
+function DriverLabel({ season, id }: { season: Season; id: string }) {
+  const { t: tr } = useLocale();
+  const driver = season.drivers.find(d => d.id === id);
+  return <span className="driver-label">{driver && <span className="driver-color" aria-hidden="true" style={{ backgroundColor: driver.color }} />}{<DriverLabel season={season} id={id} />}</span>;
 }
 function driverName(season: Season, id: string) {
   return id === "none"
@@ -1978,7 +1986,7 @@ function Results({
                     r.order.map((id, i) => (
                       <li key={i}>
                         <span>{tr(i + 1)}</span>
-                        {tr(driverName(season, id))}
+                        {<DriverLabel season={season} id={id} />}
                       </li>
                     )),
                   )}
@@ -2179,10 +2187,10 @@ function Compare({
                           {tr(i + 1)}
                         </td>
                         <td>
-                          {tr(driverName(season, mine?.picks.order[i] || ""))}
+                          {<DriverLabel season={season} id={mine?.picks.order[i] || ""} />}
                         </td>
                         <td>
-                          {tr(driverName(season, other?.picks.order[i] || ""))}
+                          {<DriverLabel season={season} id={other?.picks.order[i] || ""} />}
                         </td>
                       </tr>
                     )),
@@ -2210,14 +2218,10 @@ function Compare({
                           )}
                         </td>
                         <td>
-                          {tr(
-                            driverName(season, mine?.picks[k as "pole"] || ""),
-                          )}
+                          <DriverLabel season={season} id={mine?.picks[k as "pole"] || ""} />
                         </td>
                         <td>
-                          {tr(
-                            driverName(season, other?.picks[k as "pole"] || ""),
-                          )}
+                          <DriverLabel season={season} id={other?.picks[k as "pole"] || ""} />
                         </td>
                       </tr>
                     )),
@@ -2391,7 +2395,7 @@ function Champions({
                       return (
                         <tr key={u.id}>
                           <td>{u.name}</td>
-                          <td>{tr(driverName(season, p?.driver || ""))}</td>
+                          <td>{<DriverLabel season={season} id={p?.driver || ""} />}</td>
                           <td>{tr(p?.constructor || "—")}</td>
                         </tr>
                       );
@@ -2579,9 +2583,7 @@ function Rules({ s, season }: { s: State; season: Season }) {
               )),
           )}
           <p className="tiny">
-            {tr("Registration closes")}
-            {tr(date(season.cutoff))}
-            {tr(". No new players can join after that deadline.")}
+            {tr(registrationOpen(season) ? "Registration is open. Your organiser closes it manually." : "Registration is closed. Ask your organiser to reopen it.")}
           </p>
         </section>
       </div>
@@ -3887,7 +3889,7 @@ function ResultAdmin({
                         })
                       }
                     />
-                    {tr(d.name)}
+                    <DriverLabel season={season} id={d.id} />
                   </label>
                 ),
               ),

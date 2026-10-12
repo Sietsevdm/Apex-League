@@ -1,5 +1,6 @@
-# Version 0.8.6
+# Version 0.8.7
 
-- Members always shows a Player registration panel listing all seasons. Active seasons have manual open/close controls; archived seasons explain their status and offer Reopen season.
-- Season deletion/purge confirmation ignores leading/trailing whitespace, repeated or non-breaking spaces, Unicode normalization and letter case. The complete name is still required.
-- Confirmation shows the required name and provides Copy season name. Server and UI use the same comparison. Backups remain required before deletion.
+- Fixed empty lineup imports after the championship deadline and included driver/constructor imports in background calendar sync.
+- Imported team information/colors where available and added team-color bars beside drivers. Manual lineups and IDs are retained.
+- Corrected the League page registration message to show manual status.
+- Unpublished lineups show guidance to copy, enter drivers or explicitly import the previous year for review rather than fabricate future-season data.

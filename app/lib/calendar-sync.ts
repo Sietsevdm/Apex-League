@@ -1,6 +1,7 @@
+import { mergeImportedLineup } from "./season-controls";
 import { randomUUID } from "node:crypto";
 import { State, Season, Event, cutoff, locked } from "./model";
-import { fetchCalendar } from "./provider";
+import { fetchCalendar, fetchLineup } from "./provider";
 import { transaction } from "./store";
 export type IncomingEvent = Omit<Event, "seasonId">;
 export function mergeCalendar(
@@ -211,13 +212,19 @@ export async function syncDueCalendars(
   const outcomes = [];
   for (const job of jobs) {
     try {
-      const incoming = await fetcher(job.year);
+      const [incoming, lineup] = await Promise.all([
+        fetcher(job.year),
+        fetcher === fetchCalendar ? fetchLineup(job.year).catch(() => undefined) : Promise.resolve(undefined),
+      ]);
       const result = await transaction((s) => {
         const season = s.seasons.find((x) => x.id === job.id);
         if (!season || season.calendarSync?.lease !== job.lease)
           return "skipped";
-        if (season.calendarSync.enabled && !season.archived)
+        if (season.calendarSync.enabled && !season.archived) {
+          if (lineup) mergeImportedLineup(season, lineup);
           recordCalendarSync(s, season, incoming, "Calendar scheduler", now);
+          if (!season.drivers.length) season.calendarSync.message += " Driver lineup unavailable; retrying on the next check.";
+        }
         delete season.calendarSync.lease;
         delete season.calendarSync.leaseUntil;
         return season.calendarSync.status;

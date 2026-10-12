@@ -38,6 +38,16 @@ export default function CalendarSync({
           " calendar as it is released. Dates can appear before session times; predictions stay closed until qualifying times are known.",
         )}
       </p>
+      {!season.drivers.length && <p className="muted">{tr("No driver lineup yet. Check now imports available drivers and teams. If Jolpica has not published this season, copy a lineup or enter it in Seasons & lineup.")}</p>}
+      {!season.drivers.length && !season.archived && <>
+        <button className="secondary" disabled={busy} onClick={async () => {
+          setBusy(true); setError("");
+          try { await call({ action: "previousYearLineup", seasonId: season.id }, true); }
+          catch (e) { setError((e as Error).message); }
+          finally { setBusy(false); }
+        }}>{tr("Import previous year's lineup")} ({season.year - 1})</button>
+        <p className="tiny">{tr("This uses the previous season as a starting point. Review driver transfers and team names in Seasons & lineup before opening predictions.")}</p>
+      </>}
       <label className="checkbox">
         <input
           type="checkbox"

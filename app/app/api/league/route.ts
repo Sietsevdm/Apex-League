@@ -1,4 +1,4 @@
-import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches } from "@/lib/season-controls";
+import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { transaction, demoMode } from "@/lib/store";
@@ -15,7 +15,7 @@ import {
   complete,
   emptyResult,
 } from "@/lib/model";
-import { importCalendar, importResults, openingDriverIds } from "@/lib/provider";
+import { importCalendar, importResults, openingDriverIds, fetchLineup } from "@/lib/provider";
 import { recordCalendarSync } from "@/lib/calendar-sync";
 import { validFonts } from "@/lib/typography";
 import {
@@ -781,17 +781,22 @@ export async function POST(req: NextRequest) {
           u,
           `${season.calendarSync.enabled ? "Enabled" : "Disabled"} daily calendar sync for ${season.name}`,
         );
+      } else if (b.action === "previousYearLineup") {
+        const season = s.seasons.find(x => x.id === b.seasonId && !x.archived);
+        if (!season || season.drivers.length) fail("Choose an active season with an empty lineup.");
+        const imported = await fetchLineup(season.year - 1);
+        if (!imported.drivers.length) fail("No lineup is available for the previous year.");
+        mergeImportedLineup(season, imported);
+        audit(s, u, `Imported ${season.year - 1} lineup as a starting point for ${season.name}; review drivers and teams`);
       } else if (b.action === "calendarImport") {
         const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season) fail("Unknown season.");
         try {
           const imported = await importCalendar(season.year);
-          if (Date.now() < Date.parse(season.cutoff)) {
-            if (!season.drivers.length) season.drivers = imported.drivers;
-            if (!season.constructors.length)
-              season.constructors = imported.constructors;
-          }
+          mergeImportedLineup(season, imported);
           recordCalendarSync(s, season, imported.events, u.name);
+          if (!season.drivers.length) season.calendarSync!.message += " Driver lineup is not published by Jolpica yet. Copy a lineup from another season or enter it manually.";
+
         } catch (error) {
           season.calendarSync ??= { enabled: false };
           season.calendarSync.lastAttempt = new Date().toISOString();
