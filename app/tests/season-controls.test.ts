@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { seed } from "../lib/seed";
-import { registrationOpen, migrateRegistration, predictionDrivers } from "../lib/season-controls";
+import { registrationOpen, migrateRegistration, predictionDrivers, classifyImportedDrivers } from "../lib/season-controls";
 test("Registration preserves upgrade status then changes only through manual state", () => {
   const s = seed(true), season = s.seasons[0];
   season.cutoff = "2000-01-01T00:00:00Z";
@@ -42,4 +42,15 @@ test("Calendar imports distinguish opening-round drivers from later substitutes"
     assert.equal(result.drivers[0].replacementOnly, false);
     assert.equal(result.drivers[1].replacementOnly, true);
   } finally { globalThis.fetch = original; }
+});
+
+test("Existing imported lineups hide substitutes without removing saved driver records", () => {
+  const s = seed(true), season = s.seasons[0];
+  const starters = season.drivers.map(d => d.id);
+  season.drivers.push({ id: "legacy-sub", name: "Substitute", team: "Team", color: "#fff" });
+  assert.equal(classifyImportedDrivers(season, ["unknown"]), false);
+  assert.equal(classifyImportedDrivers(season, starters), true);
+  assert.equal(season.drivers.at(-1)!.replacementOnly, true);
+  assert.ok(!predictionDrivers(s, season, s.events[0], "gp").some(d => d.id === "legacy-sub"));
+  assert.equal(season.drivers.length, starters.length + 1);
 });

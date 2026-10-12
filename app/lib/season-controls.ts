@@ -12,3 +12,11 @@ export function predictionDrivers(s: State, season: Season, event: Event, kind: 
   const confirmed = new Set((event.replacements || []).filter(r => r.kind === kind).map(r => r.to));
   return season.drivers.filter(d => (!d.replacementOnly && !targets.has(d.id)) || confirmed.has(d.id));
 }
+
+export function classifyImportedDrivers(season: Season, starters: string[]) {
+  const known = new Set(starters);
+  if (season.drivers.filter(d => known.has(d.id)).length < 10) return false;
+  for (const driver of season.drivers) if (driver.replacementOnly === undefined)
+    driver.replacementOnly = !known.has(driver.id);
+  return true;
+}

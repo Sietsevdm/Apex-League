@@ -99,3 +99,8 @@ export async function importResults(
       rows.find((v: Json) => v.FastestLap?.rank === "1")?.Driver.driverId || "",
   };
 }
+
+export async function openingDriverIds(year: number): Promise<string[]> {
+  const data = await fetchData(`${year}/1/drivers/`);
+  return (data.DriverTable?.Drivers || []).map((d: Json) => String(d.driverId));
+}

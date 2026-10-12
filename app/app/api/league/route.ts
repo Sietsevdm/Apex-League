@@ -1,4 +1,4 @@
-import { registrationOpen, predictionDrivers } from "@/lib/season-controls";
+import { registrationOpen, predictionDrivers, classifyImportedDrivers } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { transaction, demoMode } from "@/lib/store";
@@ -15,7 +15,7 @@ import {
   complete,
   emptyResult,
 } from "@/lib/model";
-import { importCalendar, importResults } from "@/lib/provider";
+import { importCalendar, importResults, openingDriverIds } from "@/lib/provider";
 import { recordCalendarSync } from "@/lib/calendar-sync";
 import { validFonts } from "@/lib/typography";
 import {
@@ -227,8 +227,27 @@ function view(s: State, u: User | undefined) {
   }
   return { authenticated: true, demo: demoMode, userId: u.id, state: safe };
 }
+const lineupRefreshAttempts = new Map<string, number>();
+async function refreshImportedLineups(req: NextRequest) {
+  const candidates = await transaction(s => {
+    if (!current(s, req)) return [];
+    return s.seasons.filter(season => !season.archived && season.drivers.length > 20 && season.drivers.some(d => d.replacementOnly === undefined) && Date.now() - (lineupRefreshAttempts.get(season.id) || 0) > 60 * 60 * 1000)
+      .map(season => ({ id: season.id, year: season.year }));
+  });
+  for (const candidate of candidates) {
+    lineupRefreshAttempts.set(candidate.id, Date.now());
+    try {
+      const starters = await openingDriverIds(candidate.year);
+      await transaction(s => {
+        const season = s.seasons.find(season => season.id === candidate.id && season.year === candidate.year);
+        if (season) classifyImportedDrivers(season, starters);
+      });
+    } catch { /* Keep the saved lineup when the calendar provider is unavailable; retry later. */ }
+  }
+}
 export async function GET(req: NextRequest) {
   try {
+    await refreshImportedLineups(req);
     const data = await transaction(async (s) => {
       await bootstrap(s);
       tick(s);
