@@ -27,7 +27,7 @@ import { passkeyAction } from "@/lib/passkeys";
 import { launchChecklist } from "@/lib/league-extras";
 import { submissionOverview } from "@/lib/enhancements";
 import { decorateImages } from "@/lib/banner-images";
-import { deleteArchivedSeasons, purgeSeasonData } from "@/lib/data-cleanup";
+import { deleteArchivedSeasons, purgeSeasonData, purgeSeason } from "@/lib/data-cleanup";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const globalLimits = globalThis as unknown as {
@@ -965,6 +965,14 @@ export async function POST(req: NextRequest) {
           u,
           `${season.archived ? "Archived" : "Reopened"} ${season.name}`,
         );
+      } else if (b.action === "purgeSeason") {
+        const season = s.seasons.find((season) => season.id === b.seasonId);
+        if (!season) fail("Unknown season.");
+        if (b.confirmation !== season.name) fail("Type the season name to confirm.");
+        try { await createBackup(s); }
+        catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
+        purgeSeason(s, season.id);
+        audit(s, u, `Purged season: ${season.name}`);
       } else if (b.action === "deleteSeasons" || b.action === "purgeSeasonData") {
         const phrase = b.action === "deleteSeasons" ? "DELETE ARCHIVED SEASONS" : "PURGE SEASON DATA";
         if (b.confirmation !== phrase) fail(`Type ${phrase} to confirm.`);

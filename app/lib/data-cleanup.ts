@@ -35,3 +35,8 @@ export function purgeSeasonData(s: State) {
   s.users.forEach((u) => { u.seasonIds = []; });
   s.settings.bannerOverride = "";
 }
+
+export function purgeSeason(s: State, id: string) {
+  if (!s.seasons.some((season) => season.id === id)) throw new Error("Unknown season.");
+  removeSeasons(s, new Set([id]));
+}

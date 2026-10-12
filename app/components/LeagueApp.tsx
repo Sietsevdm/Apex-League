@@ -2630,6 +2630,10 @@ function Archive({
   isAdmin: boolean;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
+  const [purging, setPurging] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
   return (
     <>
       <Heading
@@ -2642,9 +2646,9 @@ function Archive({
           s.seasons.map((season) => {
             const rows = standings(s, season.id);
             return (
-              <div className="archive-item" key={season.id}>
+              <section className="panel archive-item" key={season.id}>
               <button
-                className="panel archive-card"
+                className="archive-card"
                 onClick={() => onSelect(season.id)}
               >
                 <CalendarDays />
@@ -2669,15 +2673,35 @@ function Archive({
                   <ArrowUpRight size={18} />
                 </strong>
               </button>
-              {isAdmin && <button className="secondary" onClick={() => call({ action: "archive", seasonId: season.id, archived: !season.archived })}>
-                {tr(season.archived ? "Reopen season" : "Archive season")}
-              </button>}
-              </div>
+              {isAdmin && <>
+                <div className="button-row archive-actions">
+                  <button className="secondary" disabled={busy} onClick={() => call({ action: "archive", seasonId: season.id, archived: !season.archived })}>
+                    {tr(season.archived ? "Reopen season" : "Archive season")}
+                  </button>
+                  <button className="secondary" disabled={busy} onClick={() => { setPurging(season.id); setConfirmation(""); setError(""); }}>{tr("Purge")}</button>
+                </div>
+                {purging === season.id && <div className="season-purge">
+                  <p className="muted">{tr("Remove this season and its races, predictions, results and receipts. Accounts, settings and banners are kept. An encrypted backup is created first.")}</p>
+                  <label>{tr("Type the season name to confirm")}
+                    <input value={confirmation} disabled={busy} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" />
+                  </label>
+                  <div className="button-row">
+                    <button className="secondary" disabled={busy || confirmation !== season.name} onClick={async () => {
+                      setBusy(true); setError("");
+                      try { await call({ action: "purgeSeason", seasonId: season.id, confirmation }); setPurging(null); setConfirmation(""); }
+                      catch (e) { setError((e as Error).message); }
+                      finally { setBusy(false); }
+                    }}>{tr(busy ? "Saving…" : "Confirm purge")}</button>
+                    <button className="secondary" disabled={busy} onClick={() => setPurging(null)}>{tr("Cancel")}</button>
+                  </div>
+                  {error && <p className="form-error" role="alert">{tr(error)}</p>}
+                </div>}
+              </>}
+              </section>
             );
           }),
         )}
       </div>
-      {isAdmin && <DataCleanup s={s} call={call} archivedOnly />}
     </>
   );
 }
@@ -3012,7 +3036,6 @@ function Admin({
         tab === "data" && (
           <>
             <BackupPanel call={call} />
-            <DataCleanup s={s} call={call} />
             <section className="panel">
               <h2>{tr("Your league data")}</h2>
               <p className="muted">
@@ -3105,47 +3128,6 @@ function HexEditor({
       }}
     />
   );
-}
-function DataCleanup({ s, call, archivedOnly = false }: { s: State; call: Call; archivedOnly?: boolean }) {
-  const { t: tr } = useLocale();
-  const [selected, setSelected] = useState<string[]>([]);
-  const [confirmation, setConfirmation] = useState("");
-  const [purgeConfirmation, setPurgeConfirmation] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const archived = s.seasons.filter((season) => season.archived);
-  const validSelected = selected.filter((id) => archived.some((season) => season.id === id));
-  async function execute(action: "deleteSeasons" | "purgeSeasonData") {
-    setBusy(true); setError("");
-    try {
-      await call({ action, seasonIds: validSelected, confirmation: action === "deleteSeasons" ? confirmation : purgeConfirmation });
-      setSelected([]); setConfirmation(""); setPurgeConfirmation("");
-    } catch (e) { setError((e as Error).message); }
-    finally { setBusy(false); }
-  }
-  return <section className="panel">
-    <h2>{tr("Delete archived seasons")}</h2>
-    <p className="muted">{tr("Select archived seasons to delete their races, predictions, results, receipts and memberships. Active seasons and accounts are kept.")}</p>
-    {archived.map((season) => <label className="checkbox" key={season.id}>
-      <input type="checkbox" checked={validSelected.includes(season.id)} disabled={busy} onChange={(e) => setSelected(e.target.checked ? [...validSelected, season.id] : validSelected.filter((id) => id !== season.id))} />{season.name}
-    </label>)}
-    {!archived.length && <p className="tiny">{tr("No archived seasons to delete. Archive a season first using its Archive season button.")}</p>}
-    <label>{tr("Type DELETE ARCHIVED SEASONS to confirm")}
-      <input value={confirmation} disabled={busy} onChange={(e) => setConfirmation(e.target.value)} autoComplete="off" />
-    </label>
-    <button className="secondary" disabled={busy || !validSelected.length || confirmation !== "DELETE ARCHIVED SEASONS"} onClick={() => execute("deleteSeasons")}>{tr("Delete selected seasons")}</button>
-    {!archivedOnly && <>
-    <h2>{tr("Purge database")}</h2>
-    <p className="muted">{tr("Clear all seasons, races, predictions, results, receipts and season memberships. Keep every account, admin settings, branding and banner files. This clears all season data, including real data.")}</p>
-    <p className="tiny">{s.seasons.length} {tr("seasons")} · {s.events.length} {tr("race weekends")}</p>
-    <label>{tr("Type PURGE SEASON DATA to confirm")}
-      <input value={purgeConfirmation} disabled={busy} onChange={(e) => setPurgeConfirmation(e.target.value)} autoComplete="off" />
-    </label>
-    <button className="secondary" disabled={busy || purgeConfirmation !== "PURGE SEASON DATA"} onClick={() => execute("purgeSeasonData")}>{tr(busy ? "Saving…" : "Purge season data")}</button>
-    </>}
-    <p className="tiny">{tr("An encrypted backup is created before deletion. If the backup fails, nothing is deleted. Banner files and uploaded photos are kept. Uploaded photos are reused when the same race and circuit are added for that year.")}</p>
-    {error && <p className="form-error" role="alert">{tr(error)}</p>}
-  </section>;
 }
 function Appearance({ s, call }: { s: State; call: Call }) {
   return <TypographyEditor s={s} call={call} />;
@@ -4302,18 +4284,6 @@ function SeasonAdmin({
                   }
                 >
                   {tr("Award championship points")}
-                </button>
-                <button
-                  className="secondary"
-                  onClick={() =>
-                    call({
-                      action: "archive",
-                      seasonId: season.id,
-                      archived: !season.archived,
-                    })
-                  }
-                >
-                  {tr(season.archived ? "Reopen season" : "Archive season")}
                 </button>
               </div>
             </section>

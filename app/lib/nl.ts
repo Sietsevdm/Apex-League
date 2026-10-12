@@ -1,4 +1,9 @@
 export const dutch: Record<string, string> = {
+  "Purge": "Wissen",
+  "Confirm purge": "Wissen bevestigen",
+  "Type the season name to confirm": "Typ de seizoensnaam ter bevestiging",
+  "Remove this season and its races, predictions, results and receipts. Accounts, settings and banners are kept. An encrypted backup is created first.": "Verwijder dit seizoen met alle races, voorspellingen, resultaten en ontvangstbewijzen. Accounts, instellingen en banners blijven behouden. Eerst wordt een versleutelde back-up gemaakt.",
+
   "Too many attempts. Please wait a minute.":
     "Te veel pogingen. Wacht even een minuut.",
   "Invalid text value.": "Ongeldige tekstwaarde.",

@@ -1,6 +1,5 @@
-## 0.8.1
-- Admins can archive/reopen seasons and select/delete archived seasons directly on Season Archive. Active seasons must be archived before deletion. Typed confirmation and encrypted backup are still required.
-- Season Archive remains accessible after deleting the last season and separates the points value from its label.
-- Bundled circuit photos now link for season years other than 2027, with circuit identifier/name matching for custom event names. Custom season-specific images and manual uploads retain priority.
+# Version 0.8.2
 
-Create a backup, set APEX_IMAGE to ghcr.io/sietsevdm/apex-league:0.8.1 in the existing Portainer stack, and update with image pulling enabled. Both app and worker use the same setting. No records are deleted by the upgrade.
+- Archive/reopen and Purge buttons are inside each Season Archive card.
+- Removed the separate deletion section and archive/purge controls from Admin studio.
+- Purge targets one active or archived season and requires its name as confirmation and an encrypted backup. Other seasons, accounts, settings and banners are preserved.
