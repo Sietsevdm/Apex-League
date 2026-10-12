@@ -2,7 +2,7 @@
 
 This application is designed for your existing Docker / Portainer / Nginx Proxy Manager setup. It does not require Vercel, Supabase or Sites hosting. PostgreSQL runs privately alongside the application. The app is an independent fan league.
 
-**Already installed? Start with [Updating an existing installation](#updating-an-existing-installation).** The numbered installation steps below are for a first deployment.
+**Already installed? Start with [Easy updates with Portainer](#easy-updates-with-portainer).** The numbered installation steps below are for a first deployment.
 
 ## Easy updates with Portainer
 
