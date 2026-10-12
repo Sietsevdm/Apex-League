@@ -10,7 +10,7 @@ The admin panel shows stable release updates. Change APEX_IMAGE in the existing 
 
 ## Publish a release
 
-Update app/package.json and app/RELEASE_NOTES.md, then push to main. GitHub Actions tests the app, builds and pushes AMD64/ARM64 images and creates a release after success. Each release uses a fixed version tag; bump the version for subsequent changes. Workflow dispatch can retry a failed first publication. Set the GHCR package public once if you want unauthenticated pulls.
+Update app/package.json and app/RELEASE_NOTES.md, then push to main. GitHub Actions tests the app, builds and pushes AMD64/ARM64 images and creates a release after success. Each release uses a fixed version tag; bump the version for subsequent changes. Workflow dispatch can retry a failed first publication. The current GHCR image is public and needs no registry password.
 
 ## Development
 

@@ -12,7 +12,7 @@ Image: `ghcr.io/sietsevdm/apex-league:0.8.0`
 ### One-time setup
 
 1. Wait for the repository's **Actions → Test and publish Apex League** run to finish successfully. The workflow tests the app, builds AMD64/ARM64 images and then creates a stable release. Do not use an image until its build succeeds.
-2. On GitHub, open the **apex-league package → Package settings → Change visibility → Public**. GHCR packages start private; a public image lets your VPS pull it without a registry password. This visibility setting is separate from repository visibility. If you keep the package private, add a GHCR registry to Portainer with a token limited to reading packages instead.
+2. The published `ghcr.io/sietsevdm/apex-league:0.8.0` image is publicly pullable (verified on 12 October 2026), so no GHCR password is needed. If a future package is private, its owner can use **Package settings → Change visibility → Public**, or add a GHCR registry to Portainer with a token limited to reading packages. Package visibility is separate from repository visibility.
 3. Back up the app through **Admin → Data & history** and separately copy `/opt/apex-league/images`. Keep your existing stack configuration and previous image.
 4. Open your **existing** stack in Portainer. Replace its Compose text with this release's `compose.yml`. Preserve the stack name, all existing secret values, database/backups volumes and Nginx configuration.
 5. Add `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.0` and `UPDATES_REPOSITORY=Sietsevdm/Apex-League` as stack environment variables. Both app and calendar worker use the same `APEX_IMAGE`.
