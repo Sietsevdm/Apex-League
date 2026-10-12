@@ -265,7 +265,7 @@ export function ReplacementAdmin({
           className="primary"
           disabled={busy || !event || event[kind]?.published}
         >
-          {t("Save replacement policy")}
+          {t("Confirm replacement")}
         </button>
       </form>
     </section>
@@ -407,7 +407,7 @@ export function SeasonWizard({
               />
             </label>
             <label>
-              {t("Initial registration cutoff")}
+              {t("Initial championship-pick deadline")}
               <input
                 type="datetime-local"
                 required
@@ -469,7 +469,7 @@ export function SeasonWizard({
           <LaunchChecklist s={s} season={selected} />
           <p>
             {t(
-              "Finish missing items in Race weekends, Members and Banners. The season is created; this checklist does not open registration past its cutoff.",
+              "Finish missing items in Race weekends, Members and Banners. The season is created; registration is controlled manually in Members.",
             )}
           </p>
           <button

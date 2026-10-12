@@ -48,15 +48,18 @@ export async function fetchCalendar(year: number) {
   return calendarEvents(data.RaceTable.Races, year);
 }
 export async function importCalendar(year: number) {
-  const [schedule, drivers, constructors] = await Promise.all([
+  const [schedule, drivers, constructors, openingDrivers] = await Promise.all([
     fetchData(`${year}/`),
     fetchData(`${year}/drivers/`),
     fetchData(`${year}/constructors/`),
+    fetchData(`${year}/1/drivers/`),
   ]);
   const races = schedule.RaceTable?.Races || [];
+  const starters = new Set((openingDrivers.DriverTable?.Drivers || []).map((d: Json) => d.driverId));
   return {
     drivers: (drivers.DriverTable?.Drivers || []).map((d: Json) => ({
       id: d.driverId,
+      replacementOnly: starters.size > 0 && !starters.has(d.driverId),
       name: `${d.givenName} ${d.familyName}`,
       team: "",
       color: "#8BA7BD",

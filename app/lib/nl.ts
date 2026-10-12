@@ -1,4 +1,17 @@
 export const dutch: Record<string, string> = {
+  "Racing": "Races",
+  "Players": "Spelers",
+  "Settings": "Instellingen",
+  "Admin navigation": "Beheernavigatie",
+  "Close registration": "Inschrijving sluiten",
+  "Open registration": "Inschrijving openen",
+  "Registration is open until you close it.": "De inschrijving blijft open totdat je deze sluit.",
+  "Registration is closed. Reopen it to invite more players.": "De inschrijving is gesloten. Open deze opnieuw om meer spelers uit te nodigen.",
+  "Controlled manually in Members": "Handmatig geregeld bij Leden",
+  "Initial championship-pick deadline": "Eerste deadline voor kampioenschapsvoorspellingen",
+  "Confirm replacement": "Vervanging bevestigen",
+  "Readiness guidance; prediction deadlines are enforced automatically. Registration is controlled in Members.": "Voorspellingsdeadlines worden automatisch toegepast. De inschrijving regel je bij Leden.",
+
   "Purge": "Wissen",
   "Confirm purge": "Wissen bevestigen",
   "Type the season name to confirm": "Typ de seizoensnaam ter bevestiging",

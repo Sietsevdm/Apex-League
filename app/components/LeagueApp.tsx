@@ -1,4 +1,5 @@
 "use client";
+import { registrationOpen, predictionDrivers } from "@/lib/season-controls";
 import { useLocale, LocaleProvider } from "@/lib/i18n";
 import { useEffect, useState, useCallback, useRef } from "react";
 import ShareCard from "./ShareCard";
@@ -816,7 +817,7 @@ export function Auth({
                         <option key={x.id} value={x.id}>
                           {x.name}
                           {tr(
-                            Date.now() >= Date.parse(x.cutoff)
+                            x.registrationClosed
                               ? " · Registration closed"
                               : "",
                           )}
@@ -1270,6 +1271,7 @@ function Predictions({
         body="Your organiser will add the race calendar."
       />
     );
+  const predictionSeason = { ...season, drivers: predictionDrivers(s, season, e, kind) };
   const isLocked = locked(e, kind);
   const member = s.users
     .find((u) => u.id === meId)
@@ -1329,7 +1331,7 @@ function Predictions({
         </Pill>
       <PredictionExtras
         s={s}
-        season={season}
+        season={predictionSeason}
         meId={meId}
         event={e}
         kind={kind}
@@ -1395,7 +1397,7 @@ function Predictions({
                     </label>
                     <DriverSelect
                       value={v}
-                      season={season}
+                      season={predictionSeason}
                       label={tr(`Position ${i + 1}`)}
                       disabled={isLocked || !member}
                       onChange={(value) => {
@@ -1461,7 +1463,7 @@ function Predictions({
                 </span>
                 <DriverSelect
                   value={p[key] as string}
-                  season={season}
+                  season={predictionSeason}
                   none={key === "retirement"}
                   disabled={isLocked || !member}
                   label={tr(label)}
@@ -2587,7 +2589,7 @@ function Rules({ s, season }: { s: State; season: Season }) {
         <h3>{tr("Deadlines and privacy")}</h3>
         <p>
           {tr(
-            "Each prediction set locks one hour before its own qualifying session. Drafts do not score: submit your completed entry. Submitted picks become visible after locking. Season picks and player registration close one hour before the opening weekend\u2019s first qualifying session.",
+            "Each prediction set locks one hour before its own qualifying session. Drafts do not score: submit your completed entry. Submitted picks become visible after locking. Season picks close one hour before the opening weekend\u2019s first qualifying session. Player registration is opened and closed manually by your organiser.",
           )}
         </p>
         <h3>{tr("Equal points")}</h3>
@@ -2829,6 +2831,13 @@ function Admin({
     ["announcements", "Announcements"],
     ["data", "Data & history"],
   ];
+  const groups = [
+    { id: "overview", label: "Overview", tabs: ["overview"] },
+    { id: "racing", label: "Racing", tabs: ["events", "results", "seasons"] },
+    { id: "players", label: "Players", tabs: ["members", "announcements"] },
+    { id: "settings", label: "Settings", tabs: ["banners", "branding", "appearance", "data"] },
+  ];
+  const group = groups.find(g => g.tabs.includes(tab))!;
   const events = s.events.filter((e) => e.seasonId === season?.id);
   const unresolved = events.filter(
     (e) => Date.parse(e.race) < Date.now() && !e.gp?.published,
@@ -2845,20 +2854,15 @@ function Admin({
           {tr("Preview as player")}
         </button>
       </Heading>
-      <UpdateNotice />
-      <div className="admin-tabs">
-        {tr(
-          tabs.map(([id, label]) => (
-            <button
-              className={tab === id ? "selected" : ""}
-              key={id}
-              onClick={() => setTab(id)}
-            >
-              {tr(label)}
-            </button>
-          )),
-        )}
-      </div>
+      {tab === "overview" && <UpdateNotice />}
+      <nav className="admin-navigation" aria-label={tr("Admin navigation")}>
+        <div className="admin-tabs">
+          {groups.map(g => <button key={g.id} className={group.id === g.id ? "selected" : ""} onClick={() => setTab(g.tabs[0])}>{tr(g.label)}</button>)}
+        </div>
+        {group.tabs.length > 1 && <div className="admin-tabs admin-subtabs">
+          {tabs.filter(([id]) => group.tabs.includes(id)).map(([id, label]) => <button key={id} className={tab === id ? "selected" : ""} onClick={() => setTab(id)}>{tr(label)}</button>)}
+        </div>}
+      </nav>
       {tr(
         tab === "overview" && (
           <>
@@ -2884,11 +2888,11 @@ function Admin({
               <Metric
                 label={tr("REGISTRATION")}
                 value={
-                  season && Date.now() < Date.parse(season.cutoff)
+                  season && registrationOpen(season)
                     ? "Open"
                     : "Closed"
                 }
-                detail={season ? date(season.cutoff) : "Create a season first"}
+                detail={season ? "Controlled manually in Members" : "Create a season first"}
                 icon={<Shield />}
               />
             </div>
@@ -2995,7 +2999,7 @@ function Admin({
       {tab === "overview" && season && (
         <>
           <LaunchChecklist s={s} season={season} />
-          <ReplacementAdmin s={s} season={season} call={call} />
+
         </>
       )}
       {tr(tab === "appearance" && <Appearance s={s} call={call} />)}
@@ -3012,6 +3016,7 @@ function Admin({
             />
           )),
       )}
+      {tab === "events" && season && <ReplacementAdmin s={s} season={season} call={call} />}
       {tr(
         tab === "results" &&
           (season ? (
@@ -3601,7 +3606,7 @@ function EventAdmin({
           </div>
           <p className="tiny">
             {tr(
-              "Times use your device\u2019s timezone. Open deadlines follow qualifying changes. Locked entries stay locked. The first real event sets the registration and championship deadline.",
+              "Times use your device\u2019s timezone. Open deadlines follow qualifying changes. Locked entries stay locked. The first real event sets the championship deadline. Player registration is controlled manually.",
             )}
           </p>
           <button className="primary">
@@ -3958,7 +3963,7 @@ function Members({
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [copied, setCopied] = useState(false);
-  const open = season && Date.now() < Date.parse(season.cutoff);
+  const open = season && registrationOpen(season);
   return (
     <>
       <section className="panel">
@@ -3966,10 +3971,13 @@ function Members({
         <p className="muted">
           {tr(
             open
-              ? `Registration closes ${date(season.cutoff)}.`
-              : "Registration is closed. New players must wait for the next season.",
+              ? "Registration is open until you close it."
+              : "Registration is closed. Reopen it to invite more players.",
           )}
         </p>
+        {season && !season.archived && <button className="secondary" onClick={() => call({ action: "registration", seasonId: season.id, closed: Boolean(open) })}>
+          {tr(open ? "Close registration" : "Open registration")}
+        </button>}
         <div className="invite-box">
           <code>
             {tr(

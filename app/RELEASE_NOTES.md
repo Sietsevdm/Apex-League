@@ -1,5 +1,5 @@
-# Version 0.8.2
+# Version 0.8.3
 
-- Archive/reopen and Purge buttons are inside each Season Archive card.
-- Removed the separate deletion section and archive/purge controls from Admin studio.
-- Purge targets one active or archived season and requires its name as confirmation and an encrypted backup. Other seasons, accounts, settings and banners are preserved.
+- Player registration is opened and closed manually in Admin → Players → Members. Upgrade preserves the current open/closed state; new seasons start open. Championship and session prediction deadlines remain unchanged.
+- Admin navigation groups tools into Overview, Racing, Players and Settings. Replacement controls moved to Race weekends.
+- Replacement drivers appear in prediction menus only for their confirmed race/session; validation applies the same restriction.

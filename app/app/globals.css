@@ -2700,3 +2700,6 @@ footer {
 .archive-item .archive-card { border: 0; background: transparent; color: inherit; padding: 0; cursor: pointer; flex: 1; }
 .archive-actions { margin-top: 12px; flex-wrap: wrap; }
 .season-purge { border-top: 1px solid var(--border); padding-top: 16px; }
+
+.admin-navigation { margin-bottom: 24px; }
+.admin-subtabs { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border); }

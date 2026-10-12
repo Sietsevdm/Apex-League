@@ -244,6 +244,8 @@ test("API enforces privacy, roles, deadlines, registration and idempotent public
         (p: any) => p.userId === "demo-1" && p.eventId === "singapore",
       ),
     );
+    assert.equal((await post({ action: "registration", seasonId: "sample-season", closed: true }, "demo-1")).status, 403);
+    assert.equal((await post({ action: "registration", seasonId: "sample-season", closed: true })).status, 200);
     assert.equal(
       (
         await post({

@@ -1,3 +1,4 @@
+import { registrationOpen, predictionDrivers } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { transaction, demoMode } from "@/lib/store";
@@ -317,7 +318,7 @@ export async function POST(req: NextRequest) {
         const season = s.seasons.find(
           (v) => v.id === b.seasonId && !v.archived,
         );
-        if (!season || Date.now() >= Date.parse(season.cutoff))
+        if (!season || !registrationOpen(season))
           fail("Registration for this season is closed.");
         if (text(b.invite) !== s.settings.invite)
           fail("The invitation is invalid.");
@@ -352,7 +353,7 @@ export async function POST(req: NextRequest) {
         return {
           seasons: s.seasons
             .filter((x) => !x.archived)
-            .map((x) => ({ id: x.id, name: x.name, cutoff: x.cutoff })),
+            .map((x) => ({ id: x.id, name: x.name, registrationClosed: !registrationOpen(x) })),
         };
       if (!u) fail("Please sign in.", 401);
       if (b.action === "logout") {
@@ -418,7 +419,7 @@ export async function POST(req: NextRequest) {
           p.order.length !== (kind === "gp" ? 10 : 8)
         )
           fail("Invalid finishing order.");
-        const ids = season.drivers.map((d) => d.id);
+        const ids = predictionDrivers(s, season, e, kind).map((d) => d.id);
         const valid = (v: unknown, none = false) =>
           typeof v === "string" &&
           (v === "" || ids.includes(v) || (none && v === "none"));
@@ -570,7 +571,7 @@ export async function POST(req: NextRequest) {
             team = text(b.team, 80);
           if (!name || season.drivers.length >= 40)
             fail("Enter a driver name.");
-          season.drivers.push({ id: to, name, team, color: "#8BA7BD" });
+          season.drivers.push({ id: to, name, team, color: "#8BA7BD", replacementOnly: true });
         }
         const rule = {
           from,
@@ -684,7 +685,7 @@ export async function POST(req: NextRequest) {
         }
         if (b.seasonId) {
           const season = s.seasons.find((x) => x.id === b.seasonId);
-          if (!season || Date.now() >= Date.parse(season.cutoff))
+          if (!season || !registrationOpen(season))
             fail("Season registration is closed.");
           if (!member.seasonIds.includes(season.id))
             member.seasonIds.push(season.id);
@@ -699,6 +700,12 @@ export async function POST(req: NextRequest) {
         member.password = hashPassword(password);
         member.version++;
         audit(s, u, `Reset account access for ${member.name}`);
+      } else if (b.action === "registration") {
+        const season = s.seasons.find(x => x.id === b.seasonId);
+        if (!season || season.archived) fail("Choose an active season.");
+        if (typeof b.closed !== "boolean") fail("Choose registration status.");
+        season.registrationClosed = b.closed;
+        audit(s, u, `${b.closed ? "Closed" : "Opened"} registration for ${season.name}`);
       } else if (b.action === "createSeason") {
         const year = Number(b.year);
         if (!Number.isInteger(year) || year < 1950 || year > 2100)
@@ -710,6 +717,7 @@ export async function POST(req: NextRequest) {
           name: text(b.name, 100) || `${year} season`,
           drivers: previous?.drivers || [],
           constructors: previous?.constructors || [],
+          registrationClosed: false,
           cutoff: timestamp(b.cutoff),
           archived: false,
           calendarSync: { enabled: true },
@@ -730,6 +738,7 @@ export async function POST(req: NextRequest) {
         )
           fail("Provide 10–40 unique drivers.");
         season.drivers = drivers.map((d: any) => ({
+          replacementOnly: d.replacementOnly === true,
           id: text(d.id, 50),
           name: text(d.name, 80),
           team: text(d.team, 80),

@@ -1,3 +1,4 @@
+import { migrateRegistration } from "./season-controls";
 import { Pool } from "pg";
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -39,6 +40,7 @@ export async function transaction<T>(
           if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
           s = seed(true);
         }
+        migrateRegistration(s);
         const result = await work(s);
         await fs.writeFile(file + ".tmp", JSON.stringify(s));
         await fs.rename(file + ".tmp", file);
@@ -61,7 +63,8 @@ export async function transaction<T>(
       "SELECT payload FROM league_state WHERE id=1 FOR UPDATE",
     );
     const s: State = row.rows[0].payload;
-    const result = await work(s);
+    migrateRegistration(s);
+        const result = await work(s);
     await client.query("UPDATE league_state SET payload=$1 WHERE id=1", [
       JSON.stringify(s),
     ]);

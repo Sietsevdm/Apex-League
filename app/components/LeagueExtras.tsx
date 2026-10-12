@@ -426,7 +426,7 @@ export function LaunchChecklist({ s, season }: { s: State; season: Season }) {
       <h2>{tr("Season launch checklist")}</h2>
       <p className="tiny">
         {tr(
-          "Readiness guidance; registration and prediction deadlines remain enforced automatically.",
+          "Readiness guidance; prediction deadlines are enforced automatically. Registration is controlled in Members.",
         )}
       </p>
       <div className="checklist">

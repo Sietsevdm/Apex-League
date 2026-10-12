@@ -9,7 +9,7 @@ export type Theme = {
   text: string;
   muted: string;
 };
-export type Driver = { id: string; name: string; team: string; color: string };
+export type Driver = { replacementOnly?: boolean; id: string; name: string; team: string; color: string };
 export type Picks = {
   order: string[];
   pole: string;
@@ -94,6 +94,7 @@ export type User = {
   version: number;
 };
 export type Season = {
+  registrationClosed?: boolean;
   id: string;
   year: number;
   name: string;
