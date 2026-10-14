@@ -2,6 +2,12 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.12
+
+- Optimize public-page loading: self-host fonts, defer optional features and passkey libraries, and prioritize responsive login artwork. Add the login main landmark and configured font inheritance. See app/PERFORMANCE.md for the baseline, measurements and deployment verification.
+
+- Driver selectors group teammates by constructor alphabetically, then by driver name. Applies to predictions, championship picks, result entry and replacement controls; drivers without a constructor appear last. Saved picks and result positions are unchanged.
+
 ## 0.8.11
 
 - Fixed infinite rendering in driver-name labels: the label accidentally rendered itself instead of the driver name, consuming memory and freezing pages that display labels.

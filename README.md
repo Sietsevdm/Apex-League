@@ -7,6 +7,6 @@ A self-hosted F1 prediction league for friends, with English/Dutch UI, GP and Sp
 - [Development and release workflow](app/README.md)
 - [Current release notes](app/RELEASE_NOTES.md)
 
-Current Docker image: `ghcr.io/sietsevdm/apex-league:0.8.11`.
+Current Docker image: `ghcr.io/sietsevdm/apex-league:0.8.12`.
 
 The admin panel reports updates. Install a release by changing APEX_IMAGE in the existing Portainer stack and re-pulling/redeploying, following the deployment guide. Persistent volumes retain the league's accounts and data.

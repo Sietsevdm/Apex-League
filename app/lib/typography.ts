@@ -1,6 +1,6 @@
 export const fontFamilies = {
-  dm: '"DM Sans", system-ui, sans-serif',
-  barlow: '"Barlow Condensed", sans-serif',
+  dm: 'var(--font-dm, "DM Sans"), system-ui, sans-serif',
+  barlow: 'var(--font-barlow, "Barlow Condensed"), sans-serif',
   system: "system-ui, sans-serif",
   arial: "Arial, sans-serif",
   georgia: "Georgia, serif",

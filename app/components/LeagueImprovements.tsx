@@ -1,4 +1,5 @@
 "use client";
+import { driversByConstructor } from "@/lib/driver-order";
 import { useEffect, useState } from "react";
 import { State, Season, Event, Result, Picks, locked } from "@/lib/model";
 import { resultImpact, submissionOverview } from "@/lib/enhancements";
@@ -198,7 +199,7 @@ export function ReplacementAdmin({
               onChange={(e) => setFrom(e.target.value)}
             >
               <option value="">{t("Choose a driver")}</option>
-              {season.drivers.map((d) => (
+              {driversByConstructor(season.drivers).map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>
@@ -214,7 +215,7 @@ export function ReplacementAdmin({
               list="replacement-drivers"
             />
             <datalist id="replacement-drivers">
-              {season.drivers.map((d) => (
+              {driversByConstructor(season.drivers).map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>

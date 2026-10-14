@@ -1,31 +1,29 @@
 "use client";
 import DriverLabel from "./DriverLabel";
+import { driversByConstructor } from "@/lib/driver-order";
 import { registrationOpen, predictionDrivers, seasonNameMatches } from "@/lib/season-controls";
 import { useLocale, LocaleProvider } from "@/lib/i18n";
 import { useEffect, useState, useCallback, useRef } from "react";
-import ShareCard from "./ShareCard";
-import UpdateNotice from "./UpdateNotice";
-import {
-  SubmissionOverview,
-  ReplacementNotice,
-  ReplacementAdmin,
-  CorrectionPreview,
-  SeasonWizard,
-  InstallApp,
-} from "./LeagueImprovements";
-import {
-  TypographyEditor,
-  BackupPanel,
-  LaunchChecklist,
-  Awards,
-  CalendarDownload,
-  PredictionExtras,
-  Provenance,
-  PasskeyPanel,
-  PasskeyLogin,
-} from "./LeagueExtras";
+import dynamic from "next/dynamic";
+import PasskeyLogin from "./PasskeyLogin";
+const ShareCard = dynamic(() => import("./ShareCard"));
+const UpdateNotice = dynamic(() => import("./UpdateNotice"));
+const SubmissionOverview = dynamic(() => import("./LeagueImprovements").then(m => m.SubmissionOverview));
+const ReplacementNotice = dynamic(() => import("./LeagueImprovements").then(m => m.ReplacementNotice));
+const ReplacementAdmin = dynamic(() => import("./LeagueImprovements").then(m => m.ReplacementAdmin));
+const CorrectionPreview = dynamic(() => import("./LeagueImprovements").then(m => m.CorrectionPreview));
+const SeasonWizard = dynamic(() => import("./LeagueImprovements").then(m => m.SeasonWizard));
+const InstallApp = dynamic(() => import("./LeagueImprovements").then(m => m.InstallApp));
+const TypographyEditor = dynamic(() => import("./LeagueExtras").then(m => m.TypographyEditor));
+const BackupPanel = dynamic(() => import("./LeagueExtras").then(m => m.BackupPanel));
+const LaunchChecklist = dynamic(() => import("./LeagueExtras").then(m => m.LaunchChecklist));
+const Awards = dynamic(() => import("./LeagueExtras").then(m => m.Awards));
+const CalendarDownload = dynamic(() => import("./LeagueExtras").then(m => m.CalendarDownload));
+const PredictionExtras = dynamic(() => import("./LeagueExtras").then(m => m.PredictionExtras));
+const Provenance = dynamic(() => import("./LeagueExtras").then(m => m.Provenance));
+const PasskeyPanel = dynamic(() => import("./LeagueExtras").then(m => m.PasskeyPanel));
 import { fontFamilies, resolvedFonts, fontGroups } from "@/lib/typography";
-import CalendarSync from "./CalendarSync";
+const CalendarSync = dynamic(() => import("./CalendarSync"));
 import {
   Flag,
   LayoutDashboard,
@@ -183,7 +181,7 @@ function DriverSelect({
       <option value="">{tr("Choose a driver")}</option>
       {tr(none && <option value="none">{tr("No retirements")}</option>)}
       {tr(
-        season.drivers.map((d) => (
+        driversByConstructor(season.drivers).map((d) => (
           <option key={d.id} value={d.id}>
             {tr(d.name)}
             {tr(d.team ? ` · ${d.team}` : "")}
@@ -713,7 +711,9 @@ export function Auth({
       .catch(() => {});
   }, []);
   return (
-    <div className="auth-shell">
+    <main className="auth-shell">
+      <link rel="preload" as="image" href={data.loginMobileImage || data.loginImage || "/login-race.svg"} media="(max-width: 760px)" fetchPriority="high" />
+      <link rel="preload" as="image" href={data.loginImage || "/login-race.svg"} media="(min-width: 761px)" fetchPriority="high" />
       <div
         className="auth-story"
         style={
@@ -851,7 +851,7 @@ export function Auth({
           {tr("Forgot your password? Ask your organiser to reset your access.")}
         </p>
       </div>
-    </div>
+    </main>
   );
 }
 function Banner({
@@ -3868,7 +3868,7 @@ function ResultAdmin({
           </p>
           <div className="retirement-grid">
             {tr(
-              [{ id: "none", name: "No retirements" }, ...season.drivers].map(
+              [{ id: "none", name: "No retirements" }, ...driversByConstructor(season.drivers)].map(
                 (d) => (
                   <label className="checkbox" key={d.id}>
                     <input

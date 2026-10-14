@@ -1,9 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import {
-  startAuthentication,
-  startRegistration,
-} from "@simplewebauthn/browser";
 import { useLocale } from "@/lib/i18n";
 import { State, Season, Event, Result, Picks } from "@/lib/model";
 import {
@@ -662,40 +658,6 @@ export function Provenance({ result }: { result?: Result }) {
     </div>
   );
 }
-export function PasskeyLogin({
-  call,
-  onError,
-}: {
-  call: Call;
-  onError: (message: string) => void;
-}) {
-  const { t: tr } = useLocale();
-  const [busy, setBusy] = useState(false);
-  return (
-    <button
-      className="secondary passkey-login"
-      disabled={busy}
-      onClick={async () => {
-        setBusy(true);
-        try {
-          if (!window.PublicKeyCredential)
-            throw new Error("Passkeys are not supported by this browser.");
-          const d = await call({ action: "passkeyLoginOptions" }, true);
-          const response = await startAuthentication({
-            optionsJSON: d.options,
-          });
-          await call({ action: "passkeyLoginVerify", response }, true);
-        } catch (e) {
-          onError((e as Error).message);
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
-      {tr("Sign in with a passkey")}
-    </button>
-  );
-}
 export function PasskeyPanel({
   me,
   call,
@@ -756,6 +718,7 @@ export function PasskeyPanel({
               { action: "passkeyRegisterOptions", password },
               true,
             );
+            const { startRegistration } = await import("@simplewebauthn/browser");
             const response = await startRegistration({
               optionsJSON: d.options,
             });

@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@800&family=Barlow+Condensed:wght@400&display=swap");
 * {
   box-sizing: border-box;
 }
@@ -265,7 +263,7 @@ input[type="color"] {
   width: 38px;
   border-radius: 9px;
   flex-shrink: 0;
-  font-family: "Barlow Condensed", sans-serif;
+  font-family: var(--font-barlow, "Barlow Condensed"), sans-serif;
   font-size: calc(30px * var(--type-size, 1));
   font-weight: 800;
   font-style: italic;
@@ -1617,6 +1615,8 @@ summary::-webkit-details-marker {
   font-size: calc(12px * var(--type-size, 1));
 }
 .auth-shell {
+  --type-family: var(--body-family, var(--font-dm, system-ui));
+  font-family: var(--type-family);
   background: var(--bg);
   color: var(--text);
   display: grid;
