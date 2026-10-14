@@ -2724,3 +2724,13 @@ footer {
 .driver-select, .driver-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .driver-select { width: 100%; }
 .driver-select select { flex: 1; min-width: 0; }
+
+.progress-chart { display:block; width:100%; max-height:360px; margin:18px 0; color:var(--muted); }
+.table-scroll { max-width:100%; overflow-x:auto; }
+.receipt-timeline { margin-top:20px; }
+.receipt-record { border-top:1px solid var(--border); padding:14px 0; }
+.receipt-record summary { cursor:pointer; font-weight:600; line-height:1.6; }
+.receipt-record .tiny { overflow-wrap:anywhere; }
+.score-explanation { display:grid; gap:5px; color:var(--muted); font-size:.8rem; min-width:0; overflow-wrap:anywhere; }
+.score-list > div:has(.score-explanation) { display:grid; grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto; gap:12px; }
+@media (max-width:600px) { .score-list > div:has(.score-explanation) { grid-template-columns:minmax(0,1fr) auto; } .score-explanation { grid-column:1; grid-row:2; } .score-list > div:has(.score-explanation) > .pill { grid-column:2; grid-row:1 / span 2; } }

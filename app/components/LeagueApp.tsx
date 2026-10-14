@@ -244,6 +244,13 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
     let fresh = false;
     const version = navigationVersion.current;
     try {
+      if (body.action === "logout" && "serviceWorker" in navigator) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          const subscription = await registration?.pushManager.getSubscription();
+          if (subscription) body = {...body,pushEndpoint:subscription.endpoint};
+        } catch { /* Logout remains available when browser push APIs are unavailable. */ }
+      }
       const r = await fetch("/api/league", {
         method: "POST",
         headers: {

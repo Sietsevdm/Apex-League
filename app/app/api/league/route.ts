@@ -1,5 +1,6 @@
 import { scopedState, type ResponseContext } from "@/lib/response-scope";
 import { mutationResponse, versioned } from "@/lib/state-response";
+import { pushAction, preparePushTest, sendPushTest } from "@/lib/push";
 import { importSnapshot, validateImportSnapshot } from "@/lib/manual-imports";
 import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
@@ -132,6 +133,7 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
   const projection = scope ? scopedState(s, u, { scope: scope as ResponseContext["scope"], seasonId: selectedId || req?.headers.get("x-apex-season") || undefined }) : undefined;
   if (projection) s = projection.state;
   const safe = structuredClone(s) as any;
+  delete safe.push;
   if (projection?.summaries) safe.seasonSummaries = projection.summaries;
   if (projection && savedPhotos) Object.defineProperty(safe.settings, "savedBannerPhotos", { value: savedPhotos, enumerable: false });
   safe.seasons.forEach((season: Season) => {
@@ -195,6 +197,7 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
     role: v.role,
     active: v.active,
     seasonIds: v.seasonIds,
+    ...(v.id === u.id || u.role === "admin" ? {pushEnabled:s.push?.subscriptions.some(sub=>sub.userId===v.id)||false} : {}),
     ...(v.id === u.id || u.role === "admin"
       ? {
           email: v.email,
@@ -321,6 +324,7 @@ export async function POST(req: NextRequest) {
     const b = JSON.parse(raw);
     const preparedImport = await prepareManualImport(req, b);
     let responseSeasonId: string | undefined;
+    let pushTest: ReturnType<typeof preparePushTest> | undefined;
     let before: any;
     let passkeyChallengeCookie: string | undefined;
     let cookie: string | undefined,
@@ -414,7 +418,14 @@ export async function POST(req: NextRequest) {
             .map((x) => ({ id: x.id, name: x.name, registrationClosed: !registrationOpen(x) })),
         };
       if (!u) fail("Please sign in.", 401);
+      if(b.action === "pushTest") {
+        limit(`push-test:${u.id}`,3);
+        pushTest=preparePushTest(s,u,b.endpoint);
+        return {push:{test:true}};
+      }
+      if (["pushStatus","pushSubscribe","pushUnsubscribe"].includes(b.action)) return pushAction(s,u,b);
       if (b.action === "logout") {
+        if(s.push && b.pushEndpoint) s.push.subscriptions=s.push.subscriptions.filter(sub=>!(sub.userId===u.id&&sub.endpoint===b.pushEndpoint));
         logout = true;
         return view(s, undefined, req, responseSeasonId);
       }
@@ -506,10 +517,12 @@ export async function POST(req: NextRequest) {
         );
         if (i < 0) s.entries.push(entry);
         else s.entries[i] = entry;
-        if (entry.submitted) {
+        if (entry.submitted || s.receipts?.some(receipt => receipt.userId === u!.id && receipt.eventId === e.id && receipt.kind === kind)) {
           s.receipts ??= [];
           s.receipts.push({
             id: randomUUID(),
+            status: entry.submitted ? "submitted" : "draft",
+            driverNames: Object.fromEntries(season.drivers.map(driver => [driver.id, driver.name])),
             userId: u.id,
             eventId: e.id,
             kind,
@@ -1082,11 +1095,13 @@ export async function POST(req: NextRequest) {
           delete x.passkeys;
         });
         delete exported.passkeyChallenges;
+        delete exported.push;
         exported.settings.invite = "";
         return { export: exported };
       } else fail("Unknown action.");
       return view(s, u, req, responseSeasonId);
     });
+    if(pushTest) await sendPushTest(pushTest);
     const result = versioned(await decorateImages(data));
     const response = NextResponse.json(mutationResponse(before, result, req.headers.get("x-apex-base-version")), {
       headers: { "Cache-Control": "no-store" },

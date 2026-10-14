@@ -529,7 +529,7 @@ export function PredictionExtras({
     )[0];
   const receipts = (s.receipts || [])
     .filter(
-      (r) => r.userId === meId && r.eventId === event.id && r.kind === kind,
+      (r) => r.userId === meId && r.eventId === event.id && r.kind === kind && r.status !== "draft",
     )
     .slice()
     .reverse();

@@ -247,7 +247,7 @@ function Members({
                       .filter(
                         (u) =>
                           u.active &&
-                          u.reminders &&
+                          u.pushEnabled &&
                           u.seasonIds.includes(e.seasonId) &&
                           !s.entries.some(
                             (p) =>
@@ -266,7 +266,7 @@ function Members({
         )}
         <p className="tiny">
           {tr(
-            "Automatic email sending is not connected yet. This list can be used immediately.",
+            "Push reminders are checked every five minutes for opted-in devices. Submitted predictions are skipped.",
           )}
         </p>
       </section>

@@ -1,11 +1,13 @@
-# Version 0.8.14
+# Version 0.8.15
 
-Saves now return compact changes against a matching client revision when this is smaller than the full response. Stale revisions, account or scope changes and larger updates fall back to full data. The browser verifies the revision before merging and refetches after concurrent changes when needed.
+Prediction receipt history now has a season-wide timeline, comparisons between saved versions and draft history after submission. New receipts preserve driver names as well as the original picks and timestamps. Existing submission receipts and downloads remain available.
 
-Background refresh now sends a version check. Unchanged authenticated data returns HTTP 304 with no JSON body and no interface update. Session validation, privacy filtering and deadline visibility remain checked on every request. These changes reduce transfer and browser work; the server still builds the safe response.
+Results now offer a per-player GP/Sprint points breakdown with original predictions, confirmed outcomes and replacement treatment. My season adds championship position and leader-gap charts with accessible data tables. Practice rounds are excluded and championship bonuses appear as a separate checkpoint.
 
-A fresh live PageSpeed run before these changes scored mobile 98 and desktop 100, with accessibility, best practices and SEO at 100. These scores do not measure this release's impact.
+Browser push reminders replace the need for an email server. Players opt in through Profile → Push notifications, can send a test notification, and can disable one or all devices. The existing worker checks every five minutes for missing predictions within 24 hours and 1 hour of GP/Sprint deadlines. Submitted entries, locked sessions, archived seasons and practice rounds are skipped. Signing keys persist privately in the database; no new required environment settings or containers are needed.
 
-All 64 tests and the production build pass. No database migration is required. Existing clients remain compatible.
+On iPhone/iPad, first add the app to the Home Screen and open it there. Notifications require HTTPS, supported browser/device settings and player permission. Real-device delivery should be verified with the test button after installation. Restoring a backup requires players to opt in again.
 
-Update the existing Portainer stack to `ghcr.io/sietsevdm/apex-league:0.8.14` and re-pull/redeploy. Preserve existing environment values, volumes and image mounts. Create a backup before updating.
+All 73 tests and the production build pass. No database schema migration is required.
+
+Update both the web app and calendar-worker in the existing Portainer stack to `ghcr.io/sietsevdm/apex-league:0.8.15` and re-pull/redeploy. Preserve existing environment values, database, volumes and image mounts. Create a backup before updating.

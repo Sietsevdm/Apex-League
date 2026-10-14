@@ -141,3 +141,11 @@ Saves opt into compact changes using X-Apex-Base-Version. The server compares th
 These changes reduce transferred bytes and browser updates. They do not eliminate server state loading, projection or hashing: conditional GET still computes the safe response, and compact saves compute both before/after views. No process-local cache or database schema change is introduced. Fixture API checks cover profile and prediction saves, exact equivalence with a full fetch, stale-base fallback, account isolation, invalid sessions and deadlines. All 64 tests and the production build pass.
 
 These follow-up changes are included in release 0.8.14. The live PageSpeed result above predates this release; installation and any further production measurement are separate.
+
+## Follow-up mobile report — 14 October 2026, 21:59
+
+[User-supplied report](https://pagespeed.web.dev/analysis/https-apex-mr-gadget-xyz/8po8pthtub?form_factor=mobile): performance 97, accessibility/best practices/SEO 100. FCP 0.9 s, LCP 2.4 s, TBT 90 ms (calculator exact 93 ms), CLS 0, speed index 2.2 s. Compared with the earlier 98 run, FCP/LCP/CLS/speed index are effectively unchanged; TBT rose from 0 to 90 ms. One run cannot establish a release regression or its cause. No real-user field data is available.
+
+Remaining mobile diagnostics: render-blocking requests estimated 130 ms; unused JavaScript 53.8 KiB across two chunks; legacy JavaScript estimated 13 KiB; three long main-thread tasks; unattributed forced reflow 54 ms. The LCP element is the login auth-story container; its breakdown reports 1,060 ms element render delay versus 120 ms resource load duration and 100 ms resource load delay. The next investigation should trace login rendering/style/font/hydration work and identify the two JavaScript chunks, then compare repeated runs before changing behavior. The report alone does not attribute reflow or long tasks to a specific app function.
+
+PageSpeed measures anonymous initial loading; compact authenticated save responses and conditional refresh savings require signed-in API/browser measurements and are not demonstrated by this score. No code or deployment changes were made while reviewing this report.

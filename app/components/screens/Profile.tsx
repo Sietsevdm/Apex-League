@@ -6,6 +6,7 @@ import { LogOut, Save } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Heading } from "./Shared";
+import PushNotifications from "../PushNotifications";
 const InstallApp = dynamic(
   () => import("../LeagueImprovements").then((m) => m.InstallApp),
   { loading: () => null },
@@ -30,6 +31,7 @@ function Profile({ me, call }: { me: State["users"][0]; call: Call }) {
         description={tr("Your identity in the paddock.")}
       />
       <InstallApp />
+      <PushNotifications call={call} userId={me.id} />
       <PasskeyPanel me={me} call={call} />
       <section className="panel narrow">
         <form
@@ -57,21 +59,6 @@ function Profile({ me, call }: { me: State["users"][0]; call: Call }) {
               onChange={(e) => setForm({ ...form, timezone: e.target.value })}
             />
           </label>
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={form.reminders}
-              onChange={(e) =>
-                setForm({ ...form, reminders: e.target.checked })
-              }
-            />
-            {tr("Opt in to deadline reminders")}
-          </label>
-          <p className="tiny">
-            {tr(
-              "Email delivery will require the organiser\u2019s mail service configuration.",
-            )}
-          </p>
           <label>
             {tr("Current password")}
             <input

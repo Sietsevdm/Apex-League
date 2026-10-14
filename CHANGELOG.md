@@ -2,6 +2,13 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.15
+
+- Extend private prediction receipts with a season-wide timeline, changes between saves, draft-after-submission history and driver-name snapshots.
+- Add per-player GP/Sprint category explanations with predicted/actual drivers and replacement treatment.
+- Add championship position and leader-gap charts, accessible data tables and separate title-bonus checkpoints using existing scoring/tie rules.
+- Add opt-in browser push reminders through the existing worker, with per-device controls, test notifications, private persistent signing keys and no email server requirement.
+
 ## 0.8.14
 
 - Add private conditional refreshes: unchanged authenticated data returns empty HTTP 304 responses without updating the interface.

@@ -1,6 +1,7 @@
 "use client";
 import { useLocale } from "@/lib/i18n";
 import { Season, State, emptyPicks, score, standings } from "@/lib/model";
+import { mappedPicks } from "@/lib/enhancements";
 import { Download, Flag, Target, TrendingUp, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
@@ -26,6 +27,7 @@ function Results({
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [shareOpen, setShareOpen] = useState(false);
+  const [playerId, setPlayerId] = useState(meId);
   const events = s.events.filter((e) => e.seasonId === season.id);
   const [id, setId] = useState(
       initialId ||
@@ -78,12 +80,62 @@ function Results({
   const entry = s.entries.find(
       (x) =>
         x.eventId === e.id &&
-        x.userId === meId &&
+        x.userId === playerId &&
         x.kind === kind &&
         x.submitted,
     ),
     r = e[kind];
   const sc = score(entry?.picks || emptyPicks(kind === "gp" ? 10 : 8), r, kind);
+  const original = entry?.picks || emptyPicks(kind === "gp" ? 10 : 8);
+  const mapped = mappedPicks(
+    original,
+    r?.replacements?.filter((rule) => rule.kind === kind),
+  );
+  const pickFor = (label: string, picks = original) =>
+    label.startsWith("P") && /^P\d+$/.test(label)
+      ? [picks.order[Number(label.slice(1)) - 1]]
+      : label === "Exact podium bonus"
+        ? picks.order.slice(0, 3)
+        : [
+            picks[
+              (
+                {
+                  "Pole position": "pole",
+                  "Fastest lap": "fastest",
+                  "First retirement": "retirement",
+                  "Driver of the Day": "dotd",
+                } as const
+              )[label as "Pole position"]
+            ] || "",
+          ];
+  const outcomeFor = (label: string) =>
+    /^P\d+$/.test(label)
+      ? [r?.order[Number(label.slice(1)) - 1] || ""]
+      : label === "Exact podium bonus"
+        ? r?.order.slice(0, 3) || []
+        : label === "First retirement"
+          ? r?.retirements || []
+          : [
+              r?.[
+                (
+                  {
+                    "Pole position": "pole",
+                    "Fastest lap": "fastest",
+                    "Driver of the Day": "dotd",
+                  } as const
+                )[label as "Pole position"]
+              ] || "",
+            ];
+  const names = (ids: string[]) =>
+    ids
+      .map((id) =>
+        id === "none"
+          ? tr("No retirements")
+          : season.drivers.find((driver) => driver.id === id)?.name ||
+            id ||
+            "—",
+      )
+      .join(" · ");
   const before = structuredClone(s);
   before.events = before.events.filter(
     (x) => x.id !== e.id && Date.parse(x.race) < Date.parse(e.race),
@@ -237,12 +289,27 @@ function Results({
       <div className="two-col">
         <section className="panel">
           <div className="section-title">
-            <h2>{tr("Your points breakdown")}</h2>
+            <h2>{tr("Player points breakdown")}</h2>
             <strong className="accent score-large">
               {tr(sc.total)}
               <small>{tr("pts")}</small>
             </strong>
           </div>
+          <label>
+            {tr("Player")}
+            <select
+              value={playerId}
+              onChange={(ev) => setPlayerId(ev.target.value)}
+            >
+              {s.users
+                .filter((user) => user.seasonIds.includes(season.id))
+                .map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+            </select>
+          </label>
           {tr(
             !entry && (
               <p className="muted">
@@ -255,6 +322,23 @@ function Results({
               sc.details.map((d) => (
                 <div key={d.label}>
                   <span>{tr(d.label)}</span>
+                  <span className="score-explanation">
+                    <small>
+                      {tr("Prediction")}: {names(pickFor(d.label))}
+                    </small>
+                    {names(pickFor(d.label)) !==
+                      names(pickFor(d.label, mapped)) && (
+                      <small>
+                        {tr("Scored as")}: {names(pickFor(d.label, mapped))}
+                      </small>
+                    )}
+                    <small>
+                      {tr("Confirmed outcome")}:{" "}
+                      {r?.published
+                        ? names(outcomeFor(d.label))
+                        : tr("Pending")}
+                    </small>
+                  </span>
                   <Pill
                     fontGroup={
                       d.status === "pending" || d.status === "void"

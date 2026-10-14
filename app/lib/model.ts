@@ -76,6 +76,7 @@ export type Event = {
   calendarReview?: string;
 };
 export type User = {
+  pushEnabled?: boolean;
   passkeys?: {
     id: string;
     publicKey: string;
@@ -116,7 +117,15 @@ export type Season = {
   };
 };
 export type State = {
+  push?: {
+    publicKey: string;
+    privateKey: string;
+    subscriptions: { id: string; userId: string; endpoint: string; keys: {p256dh:string;auth:string}; language: "en"|"nl"; createdAt:string }[];
+    deliveries: Record<string, {status:"sending"|"sent";leaseUntil:number;attempts:number;updatedAt:number}>;
+  };
   receipts?: {
+    status?: "submitted" | "draft";
+    driverNames?: Record<string, string>;
     id: string;
     userId: string;
     eventId: string;

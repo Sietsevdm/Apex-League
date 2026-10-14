@@ -4,6 +4,8 @@ import { Season, State, score, standings } from "@/lib/model";
 import { Flag, Target, TrendingUp, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Heading, Metric } from "./Shared";
+import ReceiptHistory from "../ReceiptHistory";
+import SeasonProgress from "../SeasonProgress";
 const Awards = dynamic(() => import("../LeagueExtras").then((m) => m.Awards), {
   loading: () => null,
 });
@@ -27,6 +29,7 @@ function Stats({
         title={tr("Progress through the grid")}
       />
       <Awards s={s} season={season} />
+      <SeasonProgress key={season.id} s={s} season={season} meId={meId} />
       <div className="metrics">
         <Metric
           label={tr("TOTAL POINTS")}
@@ -116,6 +119,7 @@ function Stats({
           </tbody>
         </table>
       </section>
+      <ReceiptHistory key={season.id} s={s} season={season} meId={meId} />
     </>
   );
 }

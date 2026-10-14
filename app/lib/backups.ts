@@ -80,6 +80,8 @@ export function decryptBackup(contents: string): State {
   )
     throw new Error("Invalid league backup.");
   delete s.passkeyChallenges;
+  // Restores revoke device subscriptions; each player explicitly opts in again.
+  if(s.push) { s.push.subscriptions=[]; s.push.deliveries={}; }
   s.users.forEach((u) => {
     u.version = (u.version || 0) + 1;
   });

@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.14`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.15`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Admin studio → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Settings → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.14`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.15`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -24,7 +24,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.14` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.15` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -115,4 +115,10 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.14 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.14` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.15 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.15` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+
+## Browser push reminders (0.8.15)
+
+No email server or additional container is needed. Update both the web app and the existing calendar-worker image to the release containing push support. Keep `APP_URL` set to the public HTTPS address and retain `CALENDAR_SYNC_SECRET`; no new required settings are introduced. The worker keeps hourly calendar checks and also checks pending push reminders every five minutes. The web container needs outbound HTTPS access to the browser push services.
+
+Players enable notifications in **Profile → Push notifications** and can send a test notification. On iPhone/iPad they must first add the site to their Home Screen and open it there. Push signing keys are generated once and stored privately in the database; preserving the database preserves the keys. Encrypted backups retain signing keys, while a restore clears device subscriptions so each player opts in again. Disable a lost device using **Disable push on all devices**. See [README.md](README.md#push-reminders-without-email) for scheduling, privacy and delivery behavior.
