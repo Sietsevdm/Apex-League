@@ -2,6 +2,12 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.14
+
+- Add private conditional refreshes: unchanged authenticated data returns empty HTTP 304 responses without updating the interface.
+- Return compact save changes against a matching client revision, with full-response/refetch fallbacks for stale state, changed identity or scope. Preserve privacy and deadline checks.
+- Record a fresh live PageSpeed result: mobile 98, desktop 100; all other scored categories 100. Add API/delta regression coverage (64 tests total).
+
 ## 0.8.13
 
 - Send selected-season data and lightweight season metadata to the updated client. Fetch archive summaries and historical details on demand, preserving scoring/privacy checks, admin controls and reusable banner matching. Older clients retain their compatible response shape.

@@ -1,4 +1,5 @@
 import { scopedState, type ResponseContext } from "@/lib/response-scope";
+import { mutationResponse, versioned } from "@/lib/state-response";
 import { importSnapshot, validateImportSnapshot } from "@/lib/manual-imports";
 import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
@@ -264,9 +265,11 @@ export async function GET(req: NextRequest) {
       tick(s);
       return view(s, current(s, req), req);
     });
-    return NextResponse.json(await decorateImages(data), {
-      headers: { "Cache-Control": "no-store" },
-    });
+    const result = versioned(await decorateImages(data));
+    const headers = { "Cache-Control": "private, no-store", "Vary": "Cookie, X-Apex-Scope, X-Apex-Season", ...(result.revision ? { ETag: `"${result.revision}"` } : {}) };
+    if (result.revision && req.headers.get("if-none-match") === `"${result.revision}"`)
+      return new NextResponse(null, { status: 304, headers });
+    return NextResponse.json(result, { headers });
   } catch (e) {
     return error(e);
   }
@@ -318,6 +321,7 @@ export async function POST(req: NextRequest) {
     const b = JSON.parse(raw);
     const preparedImport = await prepareManualImport(req, b);
     let responseSeasonId: string | undefined;
+    let before: any;
     let passkeyChallengeCookie: string | undefined;
     let cookie: string | undefined,
       logout = false,
@@ -326,6 +330,8 @@ export async function POST(req: NextRequest) {
       await bootstrap(s);
       tick(s);
       let u = current(s, req);
+      if (u && req.headers.has("x-apex-base-version"))
+        before = versioned(await decorateImages(view(s, u, req)));
       if (
         [
           "passkeyLoginOptions",
@@ -1081,7 +1087,8 @@ export async function POST(req: NextRequest) {
       } else fail("Unknown action.");
       return view(s, u, req, responseSeasonId);
     });
-    const response = NextResponse.json(await decorateImages(data), {
+    const result = versioned(await decorateImages(data));
+    const response = NextResponse.json(mutationResponse(before, result, req.headers.get("x-apex-base-version")), {
       headers: { "Cache-Control": "no-store" },
     });
     if ("passkeyError" in data || "backupError" in data)

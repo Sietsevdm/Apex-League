@@ -2,6 +2,7 @@ import type { State, Theme } from "./model";
 import type { ResponseContext } from "./response-scope";
 
 export type ClientData = {
+  revision?: string;
   context?: ResponseContext;
   loginImage?: string;
   loginMobileImage?: string;

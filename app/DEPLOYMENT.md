@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.13`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.14`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Admin studio → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Settings → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.13`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.14`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -24,7 +24,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.13` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.14` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -115,4 +115,4 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.13 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.13` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.14 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.14` and update without re-pulling that local image. For development commands, see [README.md](README.md).

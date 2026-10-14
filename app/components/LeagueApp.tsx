@@ -5,6 +5,7 @@ import type { Call, ClientData as Data } from "@/lib/client-data";
 import { useLocale } from "@/lib/i18n";
 import { contextHeaders } from "@/lib/request-context";
 import type { ResponseContext } from "@/lib/response-scope";
+import { applyDelta } from "@/lib/state-delta";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -115,6 +116,7 @@ type LeagueProps = { initialData: Data; onSignedOut: (data: Data) => void };
 function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [data, updateData] = useState<Data>(initialData);
+  const dataRef = useRef(initialData);
   const [seasonId, setSeasonId] = useState(initialData.context?.seasonId || "");
   const contextRef = useRef<ResponseContext>(
     initialData.context || { scope: "season" },
@@ -131,6 +133,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
   );
   const setData = useCallback(
     (next: Data) => {
+      dataRef.current = next;
       if (!next.authenticated) onSignedOut(next);
       if (next.context) {
         if (next.context.seasonId !== contextRef.current.seasonId)
@@ -186,21 +189,29 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
     };
   }, [menu]);
   const refreshController = useRef<
-    ReturnType<typeof backgroundRefresh<Data>> | undefined
+    ReturnType<typeof backgroundRefresh<Data | undefined>> | undefined
   >(undefined);
   useEffect(() => {
-    const controller = backgroundRefresh<Data>({
+    const controller = backgroundRefresh<Data | undefined>({
       load: async (signal) => {
         const response = await fetch("/api/league", {
           cache: "no-store",
           signal,
-          headers: contextHeaders(contextRef.current),
+          headers: {
+            ...contextHeaders(contextRef.current),
+            ...(dataRef.current.revision
+              ? { "If-None-Match": `"${dataRef.current.revision}"` }
+              : {}),
+          },
         });
+        if (response.status === 304) return undefined;
         const data = await response.json();
         if (!response.ok) throw new Error(data.error);
         return data;
       },
-      onData: setData,
+      onData: (next) => {
+        if (next) setData(next);
+      },
       onError: (error) => setError(error.message),
       active: () => document.visibilityState === "visible" && navigator.onLine,
       subscribe: (changed) => {
@@ -237,6 +248,9 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(dataRef.current.revision
+            ? { "X-Apex-Base-Version": dataRef.current.revision }
+            : {}),
           ...contextHeaders(
             body.action === "demoUser"
               ? { scope: "season", seasonId: contextRef.current.seasonId }
@@ -245,10 +259,22 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
         },
         body: JSON.stringify(body),
       });
-      const d = await r.json();
+      let d = await r.json();
       if (!r.ok) {
         if (!quiet) setError(d.error);
         throw new Error(d.error);
+      }
+      if (d.delta && version === navigationVersion.current) {
+        const merged = applyDelta(dataRef.current, d);
+        if (merged) d = merged;
+        else {
+          const response = await fetch("/api/league", {
+            cache: "no-store",
+            headers: contextHeaders(contextRef.current),
+          });
+          d = await response.json();
+          if (!response.ok) throw new Error(d.error);
+        }
       }
       if (
         "authenticated" in d &&

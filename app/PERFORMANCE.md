@@ -117,3 +117,27 @@ The league component now owns the shell/navigation only. Player screens, archive
 All 61 regression tests and the production build pass. New checks cover scoped scoring/privacy, archive summaries, historical selection, creation from an archived lineup, reusable banner photos, import success, access checks before fetching, concurrent player reads and target/permission races. Production-preview browser checks covered archives and historical standings, current-season switching, predictions, results, admin overview/race weekends/lineup/banners/branding/members, player-role switching, mobile archive layout and absence of browser console errors.
 
 The build explicitly excludes `.data` from standalone tracing so local runtime/preview/test files are not packaged. The final standalone output contains no `.data` directory. No schema migration, published release, VPS deployment or new production PageSpeed run has been performed for these changes.
+
+## Live measurement and compact updates — 0.8.14
+
+Fresh public PageSpeed run on 14 October 2026 at 21:13 Europe/Amsterdam:
+
+| Metric | [Mobile](https://pagespeed.web.dev/analysis/https-apex-mr-gadget-xyz/9jqbp3tbbt?form_factor=mobile) | [Desktop](https://pagespeed.web.dev/analysis/https-apex-mr-gadget-xyz/9jqbp3tbbt?form_factor=desktop) |
+| --- | --- | --- |
+| Performance | 98 | 100 |
+| Accessibility / Best practices / SEO | 100 / 100 / 100 | 100 / 100 / 100 |
+| First contentful paint | 0.9 s | 0.2 s |
+| Largest contentful paint | 2.4 s | 0.5 s |
+| Total blocking time | 0 ms | 20 ms |
+| Cumulative layout shift | 0 | 0 |
+| Speed index | 2.2 s | 0.2 s |
+
+This measures the live anonymous login before the following local API changes, not their impact. One Lighthouse 13.5.0 run; no real-user field data is available. Mobile remaining opportunities: render-blocking requests (estimated 150 ms), unused JavaScript (54 KiB), legacy JavaScript (13 KiB). The public API returned quota error 429; the public PageSpeed interface successfully ran both audits.
+
+Authenticated JSON responses now include a SHA-256 revision of the exact filtered, image-decorated response. Background refresh sends If-None-Match; identical data returns HTTP 304 with no JSON body and no React state update. Authentication, role, response scope and time-dependent deadline visibility are checked every time. Private/no-store and Vary headers prevent shared caching. The one-minute visible/online scheduling remains unchanged.
+
+Saves opt into compact changes using X-Apex-Base-Version. The server compares the privacy-filtered state immediately before and after the mutation in the same transaction, returns changed paths only when the base matches and the result is smaller, and otherwise returns full current data. Context/account changes always use full data. The browser merges into a copy only against the matching revision; a concurrent local change triggers a full fetch instead. Older clients continue receiving full responses. Arrays with changed lengths are replaced to preserve ordering; same-length arrays can update individual records/fields.
+
+These changes reduce transferred bytes and browser updates. They do not eliminate server state loading, projection or hashing: conditional GET still computes the safe response, and compact saves compute both before/after views. No process-local cache or database schema change is introduced. Fixture API checks cover profile and prediction saves, exact equivalence with a full fetch, stale-base fallback, account isolation, invalid sessions and deadlines. All 64 tests and the production build pass.
+
+These follow-up changes are included in release 0.8.14. The live PageSpeed result above predates this release; installation and any further production measurement are separate.
