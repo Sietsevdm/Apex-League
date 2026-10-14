@@ -115,15 +115,13 @@ export async function decorateImages<T>(data: T): Promise<T> {
   const response = data as any;
   if (!("authenticated" in response)) return data;
   const custom = await imageCatalog();
+  response.loginImage = custom.find((a) => a.key === "login")?.url || "/login-race.svg";
+  response.loginMobileImage = custom.find((a) => a.key === "login-mobile")?.url || response.loginImage;
+  if (!response.state) return data;
   const bundled = (await imageCatalog(path.join(process.cwd(), "public", "banners")))
     .map((asset) => ({ ...asset, url: asset.url.replace("/api/images/", "/banners/") }));
   // Packaged photographs are reusable circuit assets; custom year folders remain year-specific.
   const sharedBundled = bundled.map((asset) => ({ ...asset, key: asset.key.replace(/^\d{4}\//, "") }));
-  const assets = [...custom, ...bundled];
-  response.loginImage =
-    assets.find((a) => a.key === "login")?.url || "/login-race.svg";
-  response.loginMobileImage =
-    assets.find((a) => a.key === "login-mobile")?.url || response.loginImage;
   const s = response.state as State | undefined;
   if (s) {
     const matches = s.events.map((event) => {

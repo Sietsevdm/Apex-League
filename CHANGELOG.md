@@ -2,6 +2,19 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.13
+
+- Send selected-season data and lightweight season metadata to the updated client. Fetch archive summaries and historical details on demand, preserving scoring/privacy checks, admin controls and reusable banner matching. Older clients retain their compatible response shape.
+- Fetch manual calendar, lineup and results imports outside the league write lock. Revalidate the actor and target before commit; reject concurrent schedule, lineup, archive or publication changes.
+- Split player screens and admin tabs into separate on-demand modules. Keep navigation/save response races from replacing the selected season with stale data.
+- Exclude local runtime/test data from standalone build tracing.
+
+- Pause automatic league refreshes in hidden/offline tabs, refresh stale data when returning, and prevent overlapping refreshes. Cancel and discard stale reads around saves and logout; keep manual saves running. Add deterministic scheduling/cancellation regression checks.
+
+- Render public login branding, text and responsive image hints in the initial server HTML. Load the league interface only after authentication and fetch registration choices only when requested.
+- Read public appearance settings without locking or rewriting league data; return no private league state in initial HTML. Keep API session validation and no-store page responses.
+- Preserve custom login copy after logout, avoid deferred-feature page flashes, and add public-rendering/privacy and login-flow regression checks.
+
 ## 0.8.12
 
 - Optimize public-page loading: self-host fonts, defer optional features and passkey libraries, and prioritize responsive login artwork. Add the login main landmark and configured font inheritance. See app/PERFORMANCE.md for the baseline, measurements and deployment verification.

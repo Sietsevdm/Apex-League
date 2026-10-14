@@ -1,3 +1,5 @@
+import { scopedState, type ResponseContext } from "@/lib/response-scope";
+import { importSnapshot, validateImportSnapshot } from "@/lib/manual-imports";
 import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
@@ -111,7 +113,7 @@ function current(s: State, req: NextRequest) {
       )
     : undefined;
 }
-function view(s: State, u: User | undefined) {
+function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: string) {
   if (!u)
     return {
       authenticated: false,
@@ -122,7 +124,15 @@ function view(s: State, u: User | undefined) {
       typography: s.settings.typography,
       theme: s.settings.theme,
     };
+  const savedPhotos = s.settings.savedBannerPhotos;
+  const scope = req?.headers.get("x-apex-scope");
+  if (scope && !["season", "archive", "admin"].includes(scope)) fail("Unknown response scope.");
+  if (scope === "admin") admin(u);
+  const projection = scope ? scopedState(s, u, { scope: scope as ResponseContext["scope"], seasonId: selectedId || req?.headers.get("x-apex-season") || undefined }) : undefined;
+  if (projection) s = projection.state;
   const safe = structuredClone(s) as any;
+  if (projection?.summaries) safe.seasonSummaries = projection.summaries;
+  if (projection && savedPhotos) Object.defineProperty(safe.settings, "savedBannerPhotos", { value: savedPhotos, enumerable: false });
   safe.seasons.forEach((season: Season) => {
     if (season.calendarSync) {
       delete season.calendarSync.lease;
@@ -176,7 +186,7 @@ function view(s: State, u: User | undefined) {
   safe.receipts = (s.receipts || []).filter((r) => r.userId === u.id);
   if (u.role === "admin")
     safe.launchChecks = Object.fromEntries(
-      s.seasons.map((season) => [season.id, launchChecklist(s, season)]),
+      s.seasons.filter(season => !projection || season.id === projection.context.seasonId).map((season) => [season.id, launchChecklist(s, season)]),
     );
   safe.users = s.users.map((v) => ({
     id: v.id,
@@ -226,7 +236,7 @@ function view(s: State, u: User | undefined) {
       sprint: e.sprint?.published ? e.sprint : undefined,
     }));
   }
-  return { authenticated: true, demo: demoMode, userId: u.id, state: safe };
+  return { authenticated: true, demo: demoMode, userId: u.id, state: safe, ...(projection ? { context: projection.context } : {}) };
 }
 const lineupRefreshAttempts = new Map<string, number>();
 async function refreshImportedLineups(req: NextRequest) {
@@ -252,7 +262,7 @@ export async function GET(req: NextRequest) {
     const data = await transaction(async (s) => {
       await bootstrap(s);
       tick(s);
-      return view(s, current(s, req));
+      return view(s, current(s, req), req);
     });
     return NextResponse.json(await decorateImages(data), {
       headers: { "Cache-Control": "no-store" },
@@ -273,6 +283,26 @@ function error(e: unknown) {
     { status: err.status || 500 },
   );
 }
+async function prepareManualImport(req: NextRequest, body: any) {
+  if (!["calendarImport", "previousYearLineup", "resultsImport"].includes(body.action)) return;
+  const snapshot = await transaction(async s => {
+    await bootstrap(s);
+    tick(s);
+    const user = current(s, req);
+    if (!user) fail("Please sign in.", 401);
+    admin(user);
+    return importSnapshot(s, user, body);
+  });
+  // No transaction or league write lock is held during these network requests.
+  try {
+    if (body.action === "calendarImport") return { snapshot, calendar: await importCalendar(snapshot.year) };
+    if (body.action === "previousYearLineup") return { snapshot, lineup: await fetchLineup(snapshot.year - 1) };
+    return { snapshot, results: await importResults(snapshot.year, snapshot.round!, body.kind === "sprint" ? "sprint" : "gp") };
+  } catch (error) {
+    if (body.action === "calendarImport") return { snapshot, error: error as Error };
+    throw error;
+  }
+}
 export async function POST(req: NextRequest) {
   try {
     const origin = req.headers.get("origin");
@@ -286,6 +316,8 @@ export async function POST(req: NextRequest) {
     const raw = await req.text();
     if (raw.length > 100_000_000) fail("Upload is too large.", 413);
     const b = JSON.parse(raw);
+    const preparedImport = await prepareManualImport(req, b);
+    let responseSeasonId: string | undefined;
     let passkeyChallengeCookie: string | undefined;
     let cookie: string | undefined,
       logout = false,
@@ -316,7 +348,7 @@ export async function POST(req: NextRequest) {
           }
           if (result.user) {
             cookie = session(result.user.id, result.user.version);
-            return view(s, result.user);
+            return view(s, result.user, req, responseSeasonId);
           }
         } catch (e) {
           return { error: (e as Error).message, passkeyError: true };
@@ -331,7 +363,7 @@ export async function POST(req: NextRequest) {
         if (!u || !verifyPassword(text(b.password, 1000), u.password))
           fail("Email or password is incorrect.", 401);
         cookie = session(u.id, u.version);
-        return view(s, u);
+        return view(s, u, req, responseSeasonId);
       }
       if (b.action === "register") {
         limit("register", 20);
@@ -367,7 +399,7 @@ export async function POST(req: NextRequest) {
         s.users.push(u);
         cookie = session(u.id, 0);
         audit(s, u, "Joined the league");
-        return view(s, u);
+        return view(s, u, req, responseSeasonId);
       }
       if (b.action === "publicInfo")
         return {
@@ -378,26 +410,20 @@ export async function POST(req: NextRequest) {
       if (!u) fail("Please sign in.", 401);
       if (b.action === "logout") {
         logout = true;
-        return {
-          authenticated: false,
-          demo: demoMode,
-          name: s.settings.name,
-          typography: s.settings.typography,
-          theme: s.settings.theme,
-        };
+        return view(s, undefined, req, responseSeasonId);
       }
       if (b.action === "demoUser" && demoMode) {
         const selected = s.users.find((v) => v.id === b.id && v.active);
         if (!selected) fail("Unknown demo user.");
         demoCookie = selected.id;
-        return view(s, selected);
+        return view(s, selected, req, responseSeasonId);
       }
       if (b.action === "removePasskey") {
         if (!verifyPassword(text(b.password, 1000), u.password))
           fail("Current password is incorrect.", 403);
         u.passkeys = (u.passkeys || []).filter((k) => k.id !== b.id);
         audit(s, u, "Removed a passkey");
-        return view(s, u);
+        return view(s, u, req, responseSeasonId);
       }
       if (b.action === "profile") {
         u.name = text(b.name, 60) || u.name;
@@ -421,7 +447,7 @@ export async function POST(req: NextRequest) {
           u.version++;
           if (!demoMode) cookie = session(u.id, u.version);
         }
-        return view(s, u);
+        return view(s, u, req, responseSeasonId);
       }
       if (b.action === "predict") {
         const e = s.events.find((x) => x.id === b.eventId);
@@ -486,7 +512,7 @@ export async function POST(req: NextRequest) {
             deadline: cutoff(e, kind),
           });
         }
-        return view(s, u);
+        return view(s, u, req, responseSeasonId);
       }
       if (b.action === "championPick") {
         const season = s.seasons.find((x) => x.id === b.seasonId);
@@ -511,9 +537,10 @@ export async function POST(req: NextRequest) {
           (x) => !(x.userId === u!.id && x.seasonId === season.id),
         );
         s.championPicks.push(pick);
-        return view(s, u);
+        return view(s, u, req, responseSeasonId);
       }
       admin(u);
+      if (preparedImport) validateImportSnapshot(s, u, preparedImport.snapshot);
       if (b.action === "backupCreate") {
         try {
           const result = await createBackup(s);
@@ -748,6 +775,7 @@ export async function POST(req: NextRequest) {
           calendarSync: { enabled: true },
         };
         s.seasons.push(season);
+        responseSeasonId = season.id;
         u.seasonIds.push(season.id);
         audit(s, u, `Created ${season.name}`);
       } else if (b.action === "lineup") {
@@ -784,7 +812,7 @@ export async function POST(req: NextRequest) {
       } else if (b.action === "previousYearLineup") {
         const season = s.seasons.find(x => x.id === b.seasonId && !x.archived);
         if (!season || season.drivers.length) fail("Choose an active season with an empty lineup.");
-        const imported = await fetchLineup(season.year - 1);
+        const imported = preparedImport!.lineup!;
         if (!imported.drivers.length) fail("No lineup is available for the previous year.");
         mergeImportedLineup(season, imported);
         audit(s, u, `Imported ${season.year - 1} lineup as a starting point for ${season.name}; review drivers and teams`);
@@ -792,7 +820,8 @@ export async function POST(req: NextRequest) {
         const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season) fail("Unknown season.");
         try {
-          const imported = await importCalendar(season.year);
+          if (preparedImport!.error) throw preparedImport!.error;
+          const imported = preparedImport!.calendar!;
           mergeImportedLineup(season, imported);
           recordCalendarSync(s, season, imported.events, u.name);
           if (!season.drivers.length) season.calendarSync!.message += " Driver lineup is not published by Jolpica yet. Copy a lineup from another season or enter it manually.";
@@ -888,7 +917,7 @@ export async function POST(req: NextRequest) {
             "Automatic imports require an event imported from the calendar.",
           );
         const kind: "gp" | "sprint" = b.kind === "sprint" ? "sprint" : "gp";
-        const imported = await importResults(season.year, round, kind);
+        const imported = preparedImport!.results!;
         return {
           imported: {
             ...imported,
@@ -1050,7 +1079,7 @@ export async function POST(req: NextRequest) {
         exported.settings.invite = "";
         return { export: exported };
       } else fail("Unknown action.");
-      return view(s, u);
+      return view(s, u, req, responseSeasonId);
     });
     const response = NextResponse.json(await decorateImages(data), {
       headers: { "Cache-Control": "no-store" },

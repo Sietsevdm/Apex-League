@@ -1,3 +1,4 @@
+export { themes } from "./theme";
 import type { Typography } from "./typography";
 import { mappedPicks, type Replacement } from "./enhancements";
 export type Theme = {
@@ -173,25 +174,6 @@ export const emptyResult = (): Result => ({
   voids: [],
   published: false,
 });
-export const themes: Theme[] = [
-  [
-    "Night Race",
-    "#0B1020",
-    "#151D30",
-    "#2DE2C4",
-    "#F4C76B",
-    "#F4F7FB",
-    "#A6B3C8",
-  ],
-].map(([name, background, surface, accent, highlight, text, muted]) => ({
-  name,
-  background,
-  surface,
-  accent,
-  highlight,
-  text,
-  muted,
-}));
 export function cutoff(e: Event, kind: "gp" | "sprint") {
   const saved = kind === "gp" ? e.gpDeadline : e.sprintDeadline;
   if (saved) return saved;

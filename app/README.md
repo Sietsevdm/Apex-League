@@ -32,9 +32,16 @@ See [PERFORMANCE.md](PERFORMANCE.md) for the PageSpeed baseline, local optimizat
 
 ## Source map
 
-- `components/`: player pages and admin controls.
+- `components/AppEntry.tsx` and `components/Auth.tsx`: lightweight server-rendered login and authenticated handoff.
+- `components/LeagueApp.tsx`: authenticated shell, scoped navigation and background refresh coordination.
+- `components/screens/`: player screens and admin tabs imported only when opened.
 - `lib/model.ts`: league data and scoring.
+- `lib/public-login.ts` and `lib/appearance.ts`: public settings allowlist and shared theme/font styles.
 - `lib/store.ts`: PostgreSQL transactions and isolated demo storage.
+- `lib/background-refresh.ts`: visible/online-only refresh scheduling and save cancellation guards.
+- `lib/response-scope.ts`: selected-season projections and archive summaries; final privacy filtering stays in the API.
+- `lib/manual-imports.ts`: target snapshots and concurrency validation around external fetches.
+- `lib/request-context.ts`: scoped request headers shared by client navigation and updates.
 - `lib/season-controls.ts`: manual registration, prediction driver eligibility and name confirmation.
 - `lib/provider.ts` and `lib/calendar-sync.ts`: calendar/results imports and sync.
 - `lib/backups.ts`: encrypted snapshots and restore.
@@ -45,4 +52,4 @@ See [PERFORMANCE.md](PERFORMANCE.md) for the PageSpeed baseline, local optimizat
 
 Update `package.json`, the image default in `compose.yml` and `.env.example`, [CHANGELOG.md](../CHANGELOG.md), and `RELEASE_NOTES.md`. The latter contains only the current release notes for GitHub's release page. Push to main; the repository workflow tests the app, builds AMD64/ARM64 images and creates a release after successful publication. Use a new version for every image change; published version tags are fixed.
 
-Secrets, `.data`, `.next` and `node_modules` must not be committed. Synced files under the parent `sources/` directory are read-only references.
+Secrets, `.data`, `.next` and `node_modules` must not be committed. Standalone build tracing also excludes `.data`. Synced files under the parent `sources/` directory are read-only references.
