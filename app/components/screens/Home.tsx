@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/i18n";
 import {
   Season,
@@ -37,7 +38,12 @@ function Banner({
   go: (p: string, id?: string) => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
-  const e = bannerEvent(s, season.id);
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const e = bannerEvent(s, season.id, now);
   if (!e)
     return (
       <Empty
@@ -45,20 +51,57 @@ function Banner({
         body="Add the calendar in Admin studio to begin."
       />
     );
-  const gpLocked = locked(e, "gp"),
-    spLocked = e.sprintQualifying ? locked(e, "sprint") : false;
+  const gpLocked = locked(e, "gp", now);
+  const isSprint = Boolean(e.hasSprint || e.sprintQualifying || e.sprintRace);
   const published = e.gp?.published;
-  const status = published
-    ? "Results published"
-    : !cutoff(e, "gp")
-      ? "Session times to be confirmed"
-      : Date.now() >= Date.parse(e.race)
-        ? "Race day"
-        : gpLocked
-          ? "Grand Prix picks locked"
-          : Date.now() < Date.parse(e.practice)
-            ? "Coming up"
-            : "Race weekend";
+  const deadlines = (
+    ["gp", ...(isSprint ? ["sprint"] : [])] as ("gp" | "sprint")[]
+  )
+    .filter(
+      (kind) =>
+        !season.archived &&
+        !locked(e, kind, now) &&
+        !(kind === "gp" ? e.gp : e.sprint)?.published,
+    )
+    .map((kind) => ({ kind, time: Date.parse(cutoff(e, kind)) }))
+    .sort((a, b) => a.time - b.time);
+  const nextDeadline = deadlines[0];
+  const raceTime = Date.parse(e.race);
+  const target = nextDeadline?.time ?? raceTime;
+  const seconds = Math.max(0, Math.ceil((target - now) / 1000));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const countdown = !Number.isFinite(target)
+    ? tr("To be confirmed")
+    : now >= target
+      ? tr(published ? "Results published" : "Race started")
+      : `${Math.floor(seconds / 86400)}d ${pad(Math.floor(seconds / 3600) % 24)}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`;
+  const sessions = [
+    { label: "FP1", time: e.practice, published: false },
+    ...(isSprint
+      ? [
+          {
+            label: "Sprint quali",
+            time: e.sprintQualifying || "",
+            published: Boolean(e.sprint?.published),
+          },
+          {
+            label: "Sprint",
+            time: e.sprintRace || "",
+            published: Boolean(e.sprint?.published),
+          },
+        ]
+      : []),
+    { label: "Quali", time: e.qualifying, published: Boolean(e.gp?.published) },
+    { label: "Race", time: e.race, published: Boolean(e.gp?.published) },
+  ];
+  // A session is done once the next starts, or its results are published.
+  const stages = sessions.map((session, i) => ({
+    ...session,
+    done:
+      session.published ||
+      sessions.slice(i + 1).some((next) => Date.parse(next.time) <= now),
+  }));
+  const active = stages.findIndex((session) => !session.done);
   return (
     <section
       className="hero"
@@ -68,18 +111,11 @@ function Banner({
       }}
     >
       <div className="hero-top">
-        <Pill>
+        <Pill tone={nextDeadline ? "picks-open" : "picks-closed"}>
           <span className="live-dot" />
-          {tr(status)}
+          {tr(nextDeadline ? "Predictions open" : "Predictions closed")}
         </Pill>
-        {tr(
-          (e.hasSprint || e.sprintQualifying) && (
-            <Pill>
-              {tr("Sprint weekend")}
-              {tr(spLocked ? "· Sprint locked" : "")}
-            </Pill>
-          ),
-        )}
+        {isSprint && <Pill>{tr("Sprint weekend")}</Pill>}
       </div>
       <div className="hero-copy">
         <div className="eyebrow">
@@ -105,42 +141,49 @@ function Banner({
               published
                 ? "Explore the results"
                 : gpLocked
-                  ? "View your picks"
+                  ? "View your predictions"
                   : "Make your predictions",
             )}
             <ArrowUpRight size={18} />
           </button>
-          <div>
+          <div className="banner-countdown">
             <small>
-              {tr(gpLocked ? "RACE START" : "GP PREDICTIONS CLOSE")}
+              {tr(
+                nextDeadline
+                  ? nextDeadline.kind === "sprint"
+                    ? "SPRINT PREDICTIONS CLOSE IN"
+                    : "PREDICTIONS CLOSE IN"
+                  : "RACE START",
+              )}
             </small>
-            <strong>{tr(date(gpLocked ? e.race : cutoff(e, "gp")))}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div className="banner-circuit-facts">
-        <div className="facts">
-          <div>
-            <small>{tr("CIRCUIT")}</small>
-            <strong>{e.circuit}</strong>
-          </div>
-          <div>
-            <small>{tr("LENGTH")}</small>
-            <strong>
-              {tr(e.length ? `${e.length} km` : "To be confirmed")}
+            <strong
+              role="timer"
+              aria-live="off"
+              title={date(
+                Number.isFinite(target) ? new Date(target).toISOString() : "",
+              )}
+            >
+              {countdown}
             </strong>
           </div>
-          <div>
-            <small>{tr("RACE LAPS")}</small>
-            <strong>{tr(e.laps || "To be confirmed")}</strong>
-          </div>
-          <div>
-            <small>{tr("FIRST PRACTICE")}</small>
-            <strong>{tr(date(e.practice))}</strong>
-          </div>
         </div>
       </div>
+      <ol className="weekend-progress" aria-label={tr("Weekend progress")}>
+        {stages.map((session, i) => (
+          <li
+            key={session.label}
+            className={session.done ? "done" : i === active ? "current" : ""}
+            aria-current={i === active ? "step" : undefined}
+            title={date(session.time)}
+          >
+            <span className="session-track" aria-hidden="true" />
+            <span>
+              {tr(session.label)}
+              {session.done ? ` · ${tr("done")}` : ""}
+            </span>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -304,5 +347,4 @@ function Home({
     </>
   );
 }
-
 export default Home;

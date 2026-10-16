@@ -182,6 +182,20 @@ function StandingsTable({
                       ),
                     )}
                   </span>
+                  <div
+                    className="standings-progress"
+                    role="progressbar"
+                    aria-label={`${r.name}: ${r.total} ${tr("points")}`}
+                    aria-valuemin={0}
+                    aria-valuemax={Math.max(1, ...rows.map((row) => row.total))}
+                    aria-valuenow={r.total}
+                  >
+                    <span
+                      style={{
+                        width: `${(Math.max(0, r.total) / Math.max(1, ...rows.map((row) => row.total))) * 100}%`,
+                      }}
+                    />
+                  </div>
                 </td>
                 <td className="muted">{tr(r.wins)}</td>
                 <td className="right points">{tr(r.total)}</td>
@@ -193,7 +207,6 @@ function StandingsTable({
     </div>
   );
 }
-
 export {
   DriverSelect,
   Empty,
@@ -217,5 +230,4 @@ async function imageFile(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
-
 export { imageFile };

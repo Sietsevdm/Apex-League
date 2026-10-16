@@ -2,6 +2,14 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.16
+
+- Add a live banner countdown to the next open GP/Sprint prediction deadline, then race start.
+- Show green Predictions open and red Predictions closed badges, plus a Sprint weekend badge.
+- Add scheduled weekend session progress and remove the bottom circuit-facts strip.
+- Add relative points bars to overview and full standings, highlighting the current player.
+- Retain the original head-to-head prediction comparison. Local preview test accounts and predictions are excluded.
+
 ## 0.8.15
 
 - Extend private prediction receipts with a season-wide timeline, changes between saves, draft-after-submission history and driver-name snapshots.

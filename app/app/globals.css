@@ -2734,3 +2734,19 @@ footer {
 .score-explanation { display:grid; gap:5px; color:var(--muted); font-size:.8rem; min-width:0; overflow-wrap:anywhere; }
 .score-list > div:has(.score-explanation) { display:grid; grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto; gap:12px; }
 @media (max-width:600px) { .score-list > div:has(.score-explanation) { grid-template-columns:minmax(0,1fr) auto; } .score-explanation { grid-column:1; grid-row:2; } .score-list > div:has(.score-explanation) > .pill { grid-column:2; grid-row:1 / span 2; } }
+.hero-top { flex-wrap: wrap; }
+.hero .pill.picks-open { color: #54e3a2; background: rgba(40,200,120,.14); border-color: rgba(40,200,120,.25); }
+.hero .pill.picks-open .live-dot { background: #54e3a2; }
+.hero .pill.picks-closed { color: #ff6472; background: rgba(255,75,90,.14); border-color: rgba(255,75,90,.2); }
+.hero .pill.picks-closed .live-dot { background: #ff5263; }
+.app .hero .banner-countdown strong { display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 24px; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+.weekend-progress { display: flex; gap: 6px; max-width: 620px; padding: 0; margin: 28px 0 0; list-style: none; }
+.weekend-progress li { flex: 1; min-width: 0; color: #b6c9d5; font-size: 11px; line-height: 1.5; }
+.session-track { display: block; height: 4px; margin-bottom: 7px; border-radius: 4px; background: rgba(255,255,255,.13); }
+.weekend-progress .done .session-track { background: #27dbc3; }
+.weekend-progress .current .session-track { background: #ffd166; }
+.weekend-progress .current { color: #ffd166; }
+.standings-progress { height: 4px; margin-top: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.standings-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--muted); opacity: .4; }
+.your-row .standings-progress > span { background: var(--accent); opacity: 1; }
+@media(max-width: 600px) { .weekend-progress { gap: 4px; } .weekend-progress li { font-size: 9px; } .app .hero .banner-countdown strong { font-size: 21px; } .hero-bottom { flex-wrap: wrap; gap: 16px; } }

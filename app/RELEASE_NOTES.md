@@ -1,13 +1,9 @@
-# Version 0.8.15
+# Version 0.8.16
 
-Prediction receipt history now has a season-wide timeline, comparisons between saved versions and draft history after submission. New receipts preserve driver names as well as the original picks and timestamps. Existing submission receipts and downloads remain available.
+The overview banner now counts down live to the next open GP or Sprint prediction deadline, then race start. Green Predictions open and red Predictions closed badges reflect the prediction state, with a separate badge for Sprint weekends.
 
-Results now offer a per-player GP/Sprint points breakdown with original predictions, confirmed outcomes and replacement treatment. My season adds championship position and leader-gap charts with accessible data tables. Practice rounds are excluded and championship bonuses appear as a separate checkpoint.
+A weekend progress strip shows scheduled session stages. The bottom circuit-facts strip has been removed. Overview and full standings now include relative points bars, highlighting your own row.
 
-Browser push reminders replace the need for an email server. Players opt in through Profile → Push notifications, can send a test notification, and can disable one or all devices. The existing worker checks every five minutes for missing predictions within 24 hours and 1 hour of GP/Sprint deadlines. Submitted entries, locked sessions, archived seasons and practice rounds are skipped. Signing keys persist privately in the database; no new required environment settings or containers are needed.
+The existing head-to-head prediction comparison is retained. Local preview test users, predictions, receipts and runtime data are excluded from this release. All 73 automated tests and the production build pass. No database migration is required.
 
-On iPhone/iPad, first add the app to the Home Screen and open it there. Notifications require HTTPS, supported browser/device settings and player permission. Real-device delivery should be verified with the test button after installation. Restoring a backup requires players to opt in again.
-
-All 73 tests and the production build pass. No database schema migration is required.
-
-Update both the web app and calendar-worker in the existing Portainer stack to `ghcr.io/sietsevdm/apex-league:0.8.15` and re-pull/redeploy. Preserve existing environment values, database, volumes and image mounts. Create a backup before updating.
+Update both app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.16` and re-pull/redeploy through the existing Portainer stack, preserving settings and volumes.

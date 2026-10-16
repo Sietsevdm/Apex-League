@@ -83,3 +83,10 @@ Signing keys are generated once on first use and kept in private database state,
 Source: `lib/player-history.ts`, `components/ReceiptHistory.tsx`, `components/SeasonProgress.tsx`, `lib/push.ts`, `components/PushNotifications.tsx`, `public/sw.js`, `app/api/push-reminders/route.ts` and `scripts/calendar-worker.mjs`.
 
 Validation: all 73 regression tests and the production build pass. Checks cover receipt immutability/privacy, draft/resubmission transitions, name snapshots, chart ties/partial Sprints/bonuses/corrections, endpoint and account isolation, signed/encrypted payload construction, scheduler overlap, expired subscriptions, export/restore cleanup and service-worker fallback/click behavior. Browser checks verified receipt comparisons, changing the chart metric/player, another player's category total, and the profile opt-in panel. The mobile breakdown fits a 390-pixel viewport without horizontal page overflow; browser logs contained no warnings/errors. Real device delivery remains to be verified after deployment using the opt-in/test controls.
+
+## Banner and standings (0.8.16)
+
+The overview banner updates its countdown every second to the earliest open GP/Sprint prediction deadline, then to race start. Status badges respect manual locks, published results and archived seasons. Unknown times show a confirmation placeholder. The weekend strip includes FP1, qualifying and race, plus Sprint qualifying and Sprint when applicable. Teal marks completed stages (the next session has started or results are published); gold marks the next unfinished stage. Schedule timing cannot confirm that a session actually finished. The former bottom circuit-facts strip is removed. Standings bars compare points with the table leader and highlight the current player; zero-point standings remain empty.
+
+
+The banner uses green Predictions open and red Predictions closed badges and dots. Countdown and view-button wording use Predictions.
