@@ -332,13 +332,15 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
     s?.seasons.filter((x) => !x.archived).at(-1) ||
     s?.seasons.at(-1);
   const me = s?.users.find((u) => u.id === data?.userId);
-  const go = (p: string, id?: string) => {
+  const [eventKind, setEventKind] = useState<"gp" | "sprint">("gp");
+  const go = (p: string, id?: string, kind: "gp" | "sprint" = "gp") => {
     const scope =
       p === "admin" ? "admin" : p === "archive" ? "archive" : "season";
     if (scope !== contextRef.current.scope || scopeLoading)
       void loadScope({ ...contextRef.current, scope }, p);
     else setPage(p);
     if (id) setEventId(id);
+    if (p === "predict") setEventKind(kind);
     setMenu(false);
     window.scrollTo({
       top: 0,
@@ -633,11 +635,12 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                   {tr(
                     page === "predict" && (
                       <Predictions
-                        key={`${season.id}-${eventId}-${me.id}`}
+                        key={`${season.id}-${eventId}-${me.id}-${eventKind}`}
                         s={s}
                         season={season}
                         meId={me.id}
                         initialId={eventId}
+                        initialKind={eventKind}
                         call={call}
                       />
                     ),
@@ -649,7 +652,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                   )}
                   {tr(
                     page === "calendar" && (
-                      <Calendar s={s} season={season} go={go} />
+                      <Calendar s={s} season={season} go={go} call={call} />
                     ),
                   )}
                   {tr(

@@ -12,9 +12,11 @@ function Calendar({
   s,
   season,
   go,
+  call,
 }: {
   s: State;
   season: Season;
+  call: import("@/lib/client-data").Call;
   go: (p: string, id?: string) => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
@@ -27,7 +29,7 @@ function Calendar({
           "All session times are shown in your device\u2019s local timezone.",
         )}
       />
-      <CalendarDownload s={s} season={season} />
+      <CalendarDownload s={s} season={season} call={call} />
       <div className="calendar-list">
         {tr(
           s.events

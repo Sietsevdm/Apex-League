@@ -2,6 +2,18 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.17
+
+- Show separate own GP/Sprint submission status with direct session navigation.
+- Add standings movement since the previous completed GP weekend, using existing tie-breaks.
+- Record published-result corrections with mandatory reasons, before/after outcomes and per-player session-point changes.
+- Add hashed, revocable season calendar subscriptions with stable event identifiers and schedule revisions.
+- Read league snapshots without writer locks; skip unchanged persistence and cache database initialization.
+- Pause the banner ticker while hidden and resynchronize immediately on return.
+
+- Show FP1, FP2, FP3, Quali and Race on normal weekend banners; FP1, Sprint Quali, Sprint Race, Quali and Race on Sprint banners.
+- Import/sync FP2 and FP3 session times and allow optional manual editing. Existing records remain compatible; missing times are not estimated.
+
 ## 0.8.16
 
 - Add a live banner countdown to the next open GP/Sprint prediction deadline, then race start.

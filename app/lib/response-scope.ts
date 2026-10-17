@@ -83,6 +83,7 @@ export function scopedState(s: State, user: User, context: ResponseContext) {
         context.scope === "archive"
           ? []
           : s.championPicks.filter((pick) => pick.seasonId === selected?.id),
+      resultCorrections: s.resultCorrections?.filter(correction => eventIds.has(correction.eventId)),
       receipts: s.receipts?.filter(
         (receipt) =>
           eventIds.has(receipt.eventId) && receipt.userId === user.id,

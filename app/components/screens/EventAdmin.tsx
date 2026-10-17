@@ -32,6 +32,8 @@ function EventAdmin({
     circuit: "",
     country: "",
     practice: "",
+    practice2: "",
+    practice3: "",
     qualifying: "",
     race: "",
     sprintQualifying: "",
@@ -51,6 +53,8 @@ function EventAdmin({
       ...e,
       calendarOverride: true,
       practice: localInput(e.practice),
+      practice2: localInput(e.practice2 || ""),
+      practice3: localInput(e.practice3 || ""),
       qualifying: localInput(e.qualifying),
       race: localInput(e.race),
       sprintQualifying: localInput(e.sprintQualifying || ""),
@@ -166,6 +170,8 @@ function EventAdmin({
                 (
                   [
                     "practice",
+                    "practice2",
+                    "practice3",
                     "qualifying",
                     "race",
                     "sprintQualifying",
@@ -176,6 +182,8 @@ function EventAdmin({
                     {tr(
                       {
                         practice: "First practice",
+                        practice2: "Second practice (optional)",
+                        practice3: "Third practice (optional)",
                         qualifying: "GP qualifying",
                         race: "Grand Prix race",
                         sprintQualifying: "Sprint qualifying (optional)",

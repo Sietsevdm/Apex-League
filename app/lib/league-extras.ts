@@ -11,13 +11,14 @@ const stamp = (v: string) =>
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d{3}Z$/, "Z");
-export function deadlineCalendar(s: State, season: Season, language = "en") {
+export function deadlineCalendar(s: State, season: Season, language = "en", subscription = false) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Apex League//Prediction deadlines//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
+    ...(subscription ? ["X-PUBLISHED-TTL:PT1H", "REFRESH-INTERVAL;VALUE=DURATION:PT1H"] : []),
   ];
   for (const e of s.events.filter(
     (e) => e.seasonId === season.id && !e.practiceRound,
@@ -30,11 +31,12 @@ export function deadlineCalendar(s: State, season: Season, language = "en") {
       lines.push(
         "BEGIN:VEVENT",
         `UID:${escapeICS(e.id)}-${kind}@apex-league`,
-        `DTSTAMP:${stamp(new Date().toISOString())}`,
+        `DTSTAMP:${stamp(subscription ? e.calendarModified || "1970-01-01T00:00:00Z" : new Date().toISOString())}`,
+        ...(subscription ? [`SEQUENCE:${e.calendarSequence || 0}`, `LAST-MODIFIED:${stamp(e.calendarModified || "1970-01-01T00:00:00Z")}`] : []),
         `DTSTART:${stamp(deadline)}`,
         `DTEND:${stamp(new Date(Date.parse(deadline) + 60000).toISOString())}`,
         `SUMMARY:${escapeICS(title)}`,
-        `DESCRIPTION:${escapeICS(language === "nl" ? "Dien je voorspellingen in vóór deze deadline. Importeer de kalender opnieuw na wijzigingen." : "Submit your predictions before this deadline. Re-import this calendar after schedule changes.")}`,
+        `DESCRIPTION:${escapeICS(subscription ? (language === "nl" ? "Dien je voorspellingen in vóór deze deadline. Je kalender-app bepaalt wanneer updates worden opgehaald." : "Submit your predictions before this deadline. Your calendar app controls update frequency.") : language === "nl" ? "Dien je voorspellingen in vóór deze deadline. Importeer de kalender opnieuw na wijzigingen." : "Submit your predictions before this deadline. Re-import this calendar after schedule changes.")}`,
       );
       for (const duration of ["-PT24H", "-PT1H"])
         lines.push(

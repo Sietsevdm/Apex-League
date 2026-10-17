@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { startVisibleTicker } from "@/lib/visible-timer";
+import { standingsMovement } from "@/lib/standings-movement";
+import { weekendSessions } from "@/lib/weekend-progress";
 import { useLocale } from "@/lib/i18n";
 import {
   Season,
@@ -31,18 +34,17 @@ import {
 function Banner({
   s,
   season,
+  meId,
   go,
 }: {
   s: State;
   season: Season;
-  go: (p: string, id?: string) => void;
+  meId: string;
+  go: (p: string, id?: string, kind?: "gp" | "sprint") => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+  useEffect(() => startVisibleTicker(() => setNow(Date.now())), []);
   const e = bannerEvent(s, season.id, now);
   if (!e)
     return (
@@ -75,25 +77,7 @@ function Banner({
     : now >= target
       ? tr(published ? "Results published" : "Race started")
       : `${Math.floor(seconds / 86400)}d ${pad(Math.floor(seconds / 3600) % 24)}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`;
-  const sessions = [
-    { label: "FP1", time: e.practice, published: false },
-    ...(isSprint
-      ? [
-          {
-            label: "Sprint quali",
-            time: e.sprintQualifying || "",
-            published: Boolean(e.sprint?.published),
-          },
-          {
-            label: "Sprint",
-            time: e.sprintRace || "",
-            published: Boolean(e.sprint?.published),
-          },
-        ]
-      : []),
-    { label: "Quali", time: e.qualifying, published: Boolean(e.gp?.published) },
-    { label: "Race", time: e.race, published: Boolean(e.gp?.published) },
-  ];
+  const sessions = weekendSessions(e);
   // A session is done once the next starts, or its results are published.
   const stages = sessions.map((session, i) => ({
     ...session,
@@ -135,7 +119,9 @@ function Banner({
         <div className="hero-bottom">
           <button
             className="primary"
-            onClick={() => go(published ? "results" : "predict", e.id)}
+            onClick={() =>
+              go(published ? "results" : "predict", e.id, nextDeadline?.kind)
+            }
           >
             {tr(
               published
@@ -184,6 +170,41 @@ function Banner({
           </li>
         ))}
       </ol>
+      <div
+        className="prediction-readiness"
+        aria-label={tr("Your weekend predictions")}
+      >
+        {(["gp", ...(isSprint ? ["sprint"] : [])] as ("gp" | "sprint")[]).map(
+          (kind) => {
+            const entry = s.entries.find(
+              (entry) =>
+                entry.eventId === e.id &&
+                entry.userId === meId &&
+                entry.kind === kind,
+            );
+            const state = entry?.submitted
+              ? "Submitted"
+              : entry
+                ? "Draft"
+                : "Missing";
+            const closed = season.archived || locked(e, kind, now);
+            return (
+              <button
+                key={kind}
+                className={`entry-status ${state.toLowerCase()}`}
+                onClick={() => go("predict", e.id, kind)}
+              >
+                <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
+                {tr(state)}
+                {closed ? ` · ${tr("Locked")}` : ""}
+                {!closed && !entry?.submitted && (
+                  <span> → {tr("Complete prediction")}</span>
+                )}
+              </button>
+            );
+          },
+        )}
+      </div>
     </section>
   );
 }
@@ -196,7 +217,7 @@ function Home({
   s: State;
   season: Season;
   meId: string;
-  go: (p: string, id?: string) => void;
+  go: (p: string, id?: string, kind?: "gp" | "sprint") => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const rows = standings(s, season.id),
@@ -229,7 +250,7 @@ function Home({
       >
         <Pill>{season.name}</Pill>
       </Heading>
-      <Banner s={s} season={season} go={go} />
+      <Banner s={s} season={season} meId={meId} go={go} />
       <div className="metrics">
         <Metric
           label={tr("YOUR POSITION")}
@@ -275,7 +296,11 @@ function Home({
               <ChevronRight size={16} />
             </button>
           </div>
-          <StandingsTable rows={rows.slice(0, 5)} meId={meId} />
+          <StandingsTable
+            rows={rows.slice(0, 5)}
+            meId={meId}
+            movement={standingsMovement(s, season.id)}
+          />
         </section>
         <section className="panel">
           <div className="section-title">

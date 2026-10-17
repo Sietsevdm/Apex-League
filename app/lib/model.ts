@@ -43,6 +43,8 @@ export type Entry = {
   updatedAt: string;
 };
 export type Event = {
+  calendarSequence?: number;
+  calendarModified?: string;
   replacements?: Replacement[];
   id: string;
   seasonId: string;
@@ -50,6 +52,8 @@ export type Event = {
   circuit: string;
   country: string;
   practice: string;
+  practice2?: string;
+  practice3?: string;
   qualifying: string;
   race: string;
   sprintQualifying?: string;
@@ -75,7 +79,20 @@ export type Event = {
   calendarOverride?: boolean;
   calendarReview?: string;
 };
+export type ResultCorrection = {
+  id: string;
+  eventId: string;
+  seasonId: string;
+  kind: "gp" | "sprint";
+  date: string;
+  organiser: string;
+  reason: string;
+  before: Result;
+  after: Result;
+  changes: { userId: string; name: string; before: number; after: number }[];
+};
 export type User = {
+  calendarSubscriptions?: { seasonId: string; tokenHash: string; language: "en" | "nl"; createdAt: string }[];
   pushEnabled?: boolean;
   passkeys?: {
     id: string;
@@ -117,6 +134,7 @@ export type Season = {
   };
 };
 export type State = {
+  resultCorrections?: ResultCorrection[];
   push?: {
     publicKey: string;
     privateKey: string;

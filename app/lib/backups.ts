@@ -84,6 +84,7 @@ export function decryptBackup(contents: string): State {
   if(s.push) { s.push.subscriptions=[]; s.push.deliveries={}; }
   s.users.forEach((u) => {
     u.version = (u.version || 0) + 1;
+    delete u.calendarSubscriptions;
   });
   return s;
 }

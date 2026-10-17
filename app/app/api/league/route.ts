@@ -5,7 +5,9 @@ import { importSnapshot, validateImportSnapshot } from "@/lib/manual-imports";
 import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import { transaction, demoMode } from "@/lib/store";
+import { calendarSubscriptionAction } from "@/lib/calendar-subscriptions";
+import { recordCorrection } from "@/lib/result-corrections";
+import { transaction, readState, demoMode } from "@/lib/store";
 import { hashPassword, verifyPassword, session, readSession } from "@/lib/auth";
 import {
   State,
@@ -187,6 +189,8 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
     );
   if (u.role !== "admin") delete safe.backupHealth;
   safe.receipts = (s.receipts || []).filter((r) => r.userId === u.id);
+  safe.resultCorrections = (s.resultCorrections || []).filter(correction =>
+    s.events.some(event => event.id === correction.eventId && event[correction.kind]?.published && locked(event, correction.kind)));
   if (u.role === "admin")
     safe.launchChecks = Object.fromEntries(
       s.seasons.filter(season => !projection || season.id === projection.context.seasonId).map((season) => [season.id, launchChecklist(s, season)]),
@@ -244,11 +248,12 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
 }
 const lineupRefreshAttempts = new Map<string, number>();
 async function refreshImportedLineups(req: NextRequest) {
-  const candidates = await transaction(s => {
+  const candidates = await (async () => {
+    const s = await readState();
     if (!current(s, req)) return [];
     return s.seasons.filter(season => !season.archived && season.drivers.length > 20 && season.drivers.some(d => d.replacementOnly === undefined) && Date.now() - (lineupRefreshAttempts.get(season.id) || 0) > 60 * 60 * 1000)
       .map(season => ({ id: season.id, year: season.year }));
-  });
+  })();
   for (const candidate of candidates) {
     lineupRefreshAttempts.set(candidate.id, Date.now());
     try {
@@ -263,11 +268,16 @@ async function refreshImportedLineups(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     await refreshImportedLineups(req);
-    const data = await transaction(async (s) => {
+    let snapshot = await readState();
+    const needsMaintenance = (!demoMode && !snapshot.users.length) || snapshot.seasons.some(season => season.registrationClosed === undefined) || snapshot.events.some(e =>
+      (!e.lockedGp && Date.now() >= Date.parse(cutoff(e, "gp"))) ||
+      (e.sprintQualifying && !e.lockedSprint && Date.now() >= Date.parse(cutoff(e, "sprint"))));
+    if (needsMaintenance) snapshot = await transaction(async s => {
       await bootstrap(s);
       tick(s);
-      return view(s, current(s, req), req);
+      return structuredClone(s);
     });
+    const data = view(snapshot, current(snapshot, req), req);
     const result = versioned(await decorateImages(data));
     const headers = { "Cache-Control": "private, no-store", "Vary": "Cookie, X-Apex-Scope, X-Apex-Season", ...(result.revision ? { ETag: `"${result.revision}"` } : {}) };
     if (result.revision && req.headers.get("if-none-match") === `"${result.revision}"`)
@@ -418,6 +428,8 @@ export async function POST(req: NextRequest) {
             .map((x) => ({ id: x.id, name: x.name, registrationClosed: !registrationOpen(x) })),
         };
       if (!u) fail("Please sign in.", 401);
+      if (["calendarSubscriptionStatus", "calendarSubscriptionCreate", "calendarSubscriptionRevoke"].includes(b.action))
+        return calendarSubscriptionAction(s, u, b);
       if(b.action === "pushTest") {
         limit(`push-test:${u.id}`,3);
         pushTest=preparePushTest(s,u,b.endpoint);
@@ -861,7 +873,11 @@ export async function POST(req: NextRequest) {
           name: text(b.name, 100),
           circuit: text(b.circuit, 100),
           country: text(b.country, 80),
+          calendarSequence: (old?.calendarSequence || 0) + 1,
+          calendarModified: new Date().toISOString(),
           practice: timestamp(b.practice),
+          practice2: b.practice2 === undefined ? old?.practice2 : b.practice2 ? timestamp(b.practice2) : undefined,
+          practice3: b.practice3 === undefined ? old?.practice3 : b.practice3 ? timestamp(b.practice3) : undefined,
           qualifying: timestamp(b.qualifying),
           race: timestamp(b.race),
           sprintQualifying: b.sprintQualifying
@@ -1006,7 +1022,7 @@ export async function POST(req: NextRequest) {
             )
               fail(`Confirm ${key} or mark it void.`);
         }
-        e[r.published ? kind : kind === "gp" ? "gpDraft" : "sprintDraft"] = {
+        const nextResult: Result = {
           replacements: e.replacements?.filter((rule) => rule.kind === kind),
           provenance: {
             ...(r.provenance || { source: "Organiser entry" }),
@@ -1022,6 +1038,8 @@ export async function POST(req: NextRequest) {
           voids: r.voids,
           published: Boolean(r.published),
         };
+        recordCorrection(s, e, kind, nextResult, u.name, text(b.reason || "", 300));
+        e[r.published ? kind : kind === "gp" ? "gpDraft" : "sprintDraft"] = nextResult;
         if (r.published) delete e[kind === "gp" ? "gpDraft" : "sprintDraft"];
         audit(
           s,
@@ -1093,6 +1111,7 @@ export async function POST(req: NextRequest) {
           delete x.password;
           delete x.version;
           delete x.passkeys;
+          delete x.calendarSubscriptions;
         });
         delete exported.passkeyChallenges;
         delete exported.push;

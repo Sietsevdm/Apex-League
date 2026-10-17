@@ -1,9 +1,15 @@
-# Version 0.8.16
+# Version 0.8.17
 
-The overview banner now counts down live to the next open GP or Sprint prediction deadline, then race start. Green Predictions open and red Predictions closed badges reflect the prediction state, with a separate badge for Sprint weekends.
+Overview now shows separate GP/Sprint submitted, draft or missing entry status with links to the correct session. Standings include position changes since the previous completed GP weekend, using the existing tie-breaks.
 
-A weekend progress strip shows scheduled session stages. The bottom circuit-facts strip has been removed. Overview and full standings now include relative points bars, highlighting your own row.
+New corrections to published results require a reason and record the organiser, timestamp, previous/new outcomes and per-player point changes. Players can inspect this history in Results & recap. Older corrections cannot be reconstructed.
 
-The existing head-to-head prediction comparison is retained. Local preview test users, predictions, receipts and runtime data are excluded from this release. All 73 automated tests and the production build pass. No database migration is required.
+Race calendar now offers personal, revocable subscription links for automatically updated prediction deadlines. Calendar apps determine refresh and reminder timing. Links expose deadlines only; disabled accounts, removed membership and backup restoration revoke access.
 
-Update both app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.16` and re-pull/redeploy through the existing Portainer stack, preserving settings and volumes.
+Normal weekend banners show FP1, FP2, FP3, Quali and Race; Sprint weekends show FP1, Sprint Quali, Sprint Race, Quali and Race. FP2/FP3 times import on calendar sync or can be edited manually; missing times are not guessed.
+
+Ordinary league reads no longer take writer locks or rewrite state. Writes retain transactional validation, unchanged transactions skip persistence, and the banner timer pauses in hidden tabs.
+
+All 83 tests and the production build pass. Live PostgreSQL load and external calendar-client refresh still require deployed verification. No database schema migration is required. Local demo accounts, predictions and runtime data are excluded.
+
+Update app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.17`, re-pull and redeploy through the existing Portainer stack, preserving environment values and volumes.

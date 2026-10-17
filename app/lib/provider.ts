@@ -36,6 +36,8 @@ export function calendarEvents(races: Json[], year: number) {
     circuit: r.Circuit.circuitName,
     country: r.Circuit.Location.locality,
     practice: stamp(r.FirstPractice),
+    practice2: stamp(r.SecondPractice),
+    practice3: stamp(r.ThirdPractice),
     qualifying: stamp(r.Qualifying),
     race: stamp(r),
     raceDate: r.date,

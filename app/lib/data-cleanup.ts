@@ -21,6 +21,8 @@ function removeSeasons(s: State, ids: Set<string>) {
   s.events = s.events.filter((e) => !ids.has(e.seasonId));
   s.entries = s.entries.filter((e) => !events.has(e.eventId));
   s.receipts = (s.receipts || []).filter((r) => !events.has(r.eventId));
+  s.resultCorrections = (s.resultCorrections || []).filter(c => !events.has(c.eventId));
+  s.users.forEach(user => { user.calendarSubscriptions = user.calendarSubscriptions?.filter(sub => !ids.has(sub.seasonId)); });
   s.championPicks = s.championPicks.filter((p) => !ids.has(p.seasonId));
   s.users.forEach((u) => { u.seasonIds = u.seasonIds.filter((id) => !ids.has(id)); });
   if (events.has(s.settings.bannerOverride)) s.settings.bannerOverride = "";
@@ -31,6 +33,8 @@ export function purgeSeasonData(s: State) {
   s.events = [];
   s.entries = [];
   s.receipts = [];
+  s.resultCorrections = [];
+  s.users.forEach(user => { delete user.calendarSubscriptions; });
   s.championPicks = [];
   s.users.forEach((u) => { u.seasonIds = []; });
   s.settings.bannerOverride = "";

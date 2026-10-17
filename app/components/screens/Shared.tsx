@@ -145,9 +145,11 @@ function Metric({
 function StandingsTable({
   rows,
   meId,
+  movement = {},
 }: {
   rows: ReturnType<typeof standings>;
   meId: string;
+  movement?: Record<string, number>;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   return (
@@ -159,6 +161,7 @@ function StandingsTable({
             <th>{tr("PLAYER")}</th>
             <th>{tr("WINS")}</th>
             <th className="right">{tr("POINTS")}</th>
+            <th className="right">{tr("CHANGE")}</th>
           </tr>
         </thead>
         <tbody>
@@ -199,6 +202,22 @@ function StandingsTable({
                 </td>
                 <td className="muted">{tr(r.wins)}</td>
                 <td className="right points">{tr(r.total)}</td>
+                <td
+                  className={`right rank-movement ${(movement[r.id] || 0) > 0 ? "up" : (movement[r.id] || 0) < 0 ? "down" : ""}`}
+                  title={tr("Change since the previous completed weekend")}
+                >
+                  <span
+                    aria-label={
+                      movement[r.id] === undefined
+                        ? tr("No previous weekend")
+                        : `${tr("Position change")}: ${movement[r.id] > 0 ? "+" : ""}${movement[r.id]}`
+                    }
+                  >
+                    {movement[r.id]
+                      ? `${movement[r.id] > 0 ? "▲" : "▼"}${Math.abs(movement[r.id])}`
+                      : "—"}
+                  </span>
+                </td>
               </tr>
             )),
           )}

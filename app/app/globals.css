@@ -2750,3 +2750,17 @@ footer {
 .standings-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--muted); opacity: .4; }
 .your-row .standings-progress > span { background: var(--accent); opacity: 1; }
 @media(max-width: 600px) { .weekend-progress { gap: 4px; } .weekend-progress li { font-size: 9px; } .app .hero .banner-countdown strong { font-size: 21px; } .hero-bottom { flex-wrap: wrap; gap: 16px; } }
+.prediction-readiness { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+.entry-status { padding: 8px 12px; border: 1px solid rgba(255,255,255,.2); border-radius: 7px; background: rgba(7,13,25,.7); color: #e1e8ee; font-size: 12px; text-align: left; }
+.entry-status.submitted { border-color: rgba(84,227,162,.4); color: #54e3a2; }
+.entry-status.draft { color: #ffd166; }
+.entry-status.missing { color: #ff8691; }
+.rank-movement { font-size: 12px; white-space: nowrap; }
+.rank-movement.up { color: #27dbc3; }
+.rank-movement.down { color: #ff6472; }
+.correction-history details { padding: 12px 0; border-top: 1px solid var(--border); }
+.correction-history dd { margin: 5px 0 14px; overflow-wrap: anywhere; font-size: 12px; }
+.correction-history dt { font-weight: 600; }
+.calendar-subscription { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 20px; }
+.calendar-subscription input { font-size: 12px; }
+.calendar-subscription label { margin: 15px 0; display: block; }

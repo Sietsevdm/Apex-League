@@ -1,4 +1,5 @@
 "use client";
+import CalendarSubscription from "./CalendarSubscription";
 import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/i18n";
 import { State, Season, Event, Result, Picks } from "@/lib/model";
@@ -464,7 +465,7 @@ export function Awards({ s, season }: { s: State; season: Season }) {
     </section>
   );
 }
-export function CalendarDownload({ s, season }: { s: State; season: Season }) {
+export function CalendarDownload({ s, season, call }: { s: State; season: Season; call: import("@/lib/client-data").Call }) {
   const { t: tr, language } = useLocale();
   return (
     <section className="panel">
@@ -486,6 +487,7 @@ export function CalendarDownload({ s, season }: { s: State; season: Season }) {
       >
         {tr("Download reminder calendar")}
       </button>
+      <CalendarSubscription key={season.id} seasonId={season.id} call={call} />
     </section>
   );
 }

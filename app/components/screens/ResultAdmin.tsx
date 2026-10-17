@@ -269,10 +269,12 @@ function ResultAdmin({
             {tr("Publication / correction note")}
             <textarea
               value={reason}
+              maxLength={300}
               onChange={(e) => setReason(e.target.value)}
               placeholder={tr("Explain a correction or confirm the source.")}
             />
           </label>
+          {e[kind]?.published && <p className="tiny muted">{tr("A reason is required when correcting published results. Players can see the correction history.")}</p>}
           <div className="button-row">
             <button
               className="secondary"
@@ -290,7 +292,7 @@ function ResultAdmin({
             </button>
             <button
               className="primary"
-              disabled={!locked(e, kind)}
+              disabled={!locked(e, kind) || Boolean(e[kind]?.published && !reason.trim())}
               onClick={() =>
                 call({
                   action: "results",

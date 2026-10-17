@@ -1,4 +1,5 @@
 "use client";
+import { standingsMovement } from "@/lib/standings-movement";
 import { useLocale } from "@/lib/i18n";
 import { Season, State, standings } from "@/lib/model";
 import { Trophy } from "lucide-react";
@@ -46,7 +47,7 @@ function Leaderboard({
         )}
       </div>
       <section className="panel">
-        <StandingsTable rows={rows} meId={meId} />
+        <StandingsTable rows={rows} meId={meId} movement={standingsMovement(s, season.id)} />
       </section>
       <section className="panel">
         <h2>{tr("Where the points come from")}</h2>

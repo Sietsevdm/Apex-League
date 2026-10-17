@@ -41,7 +41,7 @@ export function mergeCalendar(
       const id = s.events.some((e) => e.id === source.id)
         ? randomUUID()
         : source.id;
-      old = { ...source, id, seasonId: season.id };
+      old = { ...source, id, seasonId: season.id, calendarSequence: 0, calendarModified: new Date(now).toISOString() };
       s.events.push(old);
       seen.add(id);
       changes.push(
@@ -77,6 +77,8 @@ export function mergeCalendar(
       "circuit",
       "country",
       "practice",
+      "practice2",
+      "practice3",
       "qualifying",
       "race",
       "sprintQualifying",
@@ -108,6 +110,10 @@ export function mergeCalendar(
     ) {
       old.sprintDeadline = cutoff(old, "sprint");
       old.lockedSprint = true;
+    }
+    if (updated.length) {
+      old.calendarSequence = (old.calendarSequence || 0) + 1;
+      old.calendarModified = new Date(now).toISOString();
     }
     if (updated.length)
       changes.push(

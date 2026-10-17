@@ -40,12 +40,14 @@ function Predictions({
   season,
   meId,
   initialId,
+  initialKind = "gp",
   call,
 }: {
   s: State;
   season: Season;
   meId: string;
   initialId: string;
+  initialKind?: "gp" | "sprint";
   call: Call;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
@@ -55,7 +57,11 @@ function Predictions({
     events.find((e) => !locked(e, "gp") && !e.practiceRound) ||
     events.at(-1);
   const [id, setId] = useState(start?.id || ""),
-    [kind, setKind] = useState<"gp" | "sprint">("gp");
+    [kind, setKind] = useState<"gp" | "sprint">(
+      initialKind === "sprint" && (start?.hasSprint || start?.sprintQualifying)
+        ? "sprint"
+        : "gp",
+    );
   const e = events.find((x) => x.id === id);
   const entry = s.entries.find(
     (x) => x.eventId === id && x.kind === kind && x.userId === meId,

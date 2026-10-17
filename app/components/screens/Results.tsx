@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import DriverLabel from "../DriverLabel";
 import { Empty, Heading, Metric, Pill, driverName } from "./Shared";
+const ResultCorrections = dynamic(() => import("../ResultCorrections"), {loading: () => null});
 const ShareCard = dynamic(() => import("../ShareCard"), {
   loading: () => null,
 });
@@ -430,6 +431,7 @@ function Results({
           </tbody>
         </table>
       </section>
+      <ResultCorrections s={s} season={season} eventId={e.id} kind={kind} />
     </>
   );
 }
