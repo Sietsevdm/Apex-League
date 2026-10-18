@@ -2,6 +2,19 @@
 
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
+## 0.8.18 — 19 October 2026
+
+- Reduce excess vertical space between banner season statistics and the bottom weekend tracker.
+
+- Apply the approved banner layout locally: group prediction/submission badges at the top right, use a turquoise action with its countdown below and anchor the tracker at the bottom.
+- Remove the dedicated overview summary cards; show position/season points beneath the banner timer and expand the championship table to full width.
+- Move paddock announcements to a dedicated page below Season archive, retaining the existing organiser editor and showing all messages newest first.
+
+- Add sunny, cloudy, rainy and night image variants for all 24 included circuits, selected using current circuit weather and daylight.
+- Add cached, authenticated weather retrieval outside league loading/saving, accurate weather labels and provider attribution, automatic fallback and organiser-only image previews.
+- Retain circuit coordinates during calendar imports and resolve older calendars by circuit ID. Preserve manual photos, custom image precedence and archived/practice artwork.
+- Add 8 automated checks covering the 96-image set, classification, provider cache/recovery, calendar locations, refresh scheduling, matching, access control and manual image preservation. All 91 tests and TypeScript checks pass locally.
+
 ## 0.8.17
 
 - Show separate own GP/Sprint submission status with direct session navigation.

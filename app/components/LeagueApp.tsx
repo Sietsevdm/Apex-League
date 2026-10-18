@@ -9,6 +9,7 @@ import { applyDelta } from "@/lib/state-delta";
 import {
   ArrowUpRight,
   CalendarDays,
+  Bell,
   CheckCircle2,
   ChevronRight,
   Eye,
@@ -90,6 +91,9 @@ const Rules = dynamic(() => import("./screens/Rules"), {
       …
     </section>
   ),
+});
+const Announcements = dynamic(() => import("./screens/LeagueAnnouncements"), {
+  loading: () => <section className="panel" role="status">…</section>,
 });
 const Archive = dynamic(() => import("./screens/Archive"), {
   loading: () => (
@@ -381,6 +385,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
     ["stats", "My season", TrendingUp],
     ["league", "League & rules", Info],
     ["archive", "Season archive", CalendarDays],
+    ["announcements", "Announcements", Bell],
   ] as const;
   return (
     <div className="app" style={style}>
@@ -583,7 +588,8 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
             !season &&
               page !== "admin" &&
               page !== "profile" &&
-              page !== "archive" ? (
+              page !== "archive" &&
+              page !== "announcements" ? (
               <>
                 <Heading
                   title={tr("Welcome to your league")}
@@ -622,6 +628,8 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                   );
                 }}
               />
+            ) : page === "announcements" ? (
+              <Announcements s={s} />
             ) : page === "profile" ? (
               <Profile me={me} call={call} />
             ) : (

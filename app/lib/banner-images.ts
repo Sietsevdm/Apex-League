@@ -68,7 +68,7 @@ export function matchedBanner(event: Event, year: number, assets: Asset[]) {
     bahrain: "bahrain", jeddah: "saudi-arabian", albert_park: "australian",
     shanghai: "chinese", suzuka: "japanese", miami: "miami", villeneuve: "canadian",
     monaco: "monaco", madring: "spanish", silverstone: "british", spa: "belgian",
-    hungaroring: "hungarian", monza: "italian", marina_bay: "singapore",
+    hungaroring: "hungarian", monza: "italian", marina_bay: "singapore", red_bull_ring: "austrian",
     baku: "azerbaijan", americas: "united-states", rodriguez: "mexican",
     interlagos: "sao-paulo", vegas: "las-vegas", las_vegas: "las-vegas",
     losail: "qatar", yas_marina: "abu-dhabi", istanbul: "turkish", portimao: "portuguese",
@@ -79,7 +79,7 @@ export function matchedBanner(event: Event, year: number, assets: Asset[]) {
     "shanghai-international-circuit": "chinese", "suzuka-circuit": "japanese",
     "suzuka-international-racing-course": "japanese", "silverstone-circuit": "british",
     "circuit-gilles-villeneuve": "canadian", "circuit-de-monaco": "monaco",
-    "circuit-de-spa-francorchamps": "belgian", "hungaroring": "hungarian",
+    "circuit-de-spa-francorchamps": "belgian", "hungaroring": "hungarian", "red-bull-ring": "austrian",
     "autodromo-nazionale-di-monza": "italian", "marina-bay-street-circuit": "singapore",
     "baku-city-circuit": "azerbaijan", "circuit-of-the-americas": "united-states",
     "autodromo-hermanos-rodriguez": "mexican", "autodromo-jose-carlos-pace": "sao-paulo",
@@ -110,6 +110,25 @@ export function matchedBanner(event: Event, year: number, assets: Asset[]) {
       });
       if (asset) return asset;
     }
+}
+export function matchedWeatherBanner(event: Event, year: number, condition: "sunny" | "cloudy" | "rainy" | "night", assets: Asset[]) {
+  const suffix = `-${condition}`;
+  return matchedBanner(event, year, assets.filter(asset => asset.key.endsWith(suffix))
+    .map(asset => ({ ...asset, key: asset.key.slice(0, -suffix.length) })));
+}
+export function hasManualBanner(event: Event) {
+  return Boolean(event.photo && !["/circuit-night.svg", "/circuit-day.svg"].includes(event.photo) && !event.photo.startsWith("/api/images/") && !event.photo.startsWith("/banners/"));
+}
+export async function weatherBannerPhoto(event: Event, year: number, condition: "sunny" | "cloudy" | "rainy" | "night") {
+  if (hasManualBanner(event)) return null;
+  const custom = await imageCatalog();
+  const override = matchedWeatherBanner(event, year, condition, custom);
+  // An organiser's custom base image must not switch to unrelated packaged scenery.
+  if (override || matchedBanner(event, year, custom)) return override?.url || null;
+  const bundled = (await imageCatalog(path.join(process.cwd(), "public", "banners")))
+    .map(asset => ({ ...asset, url: asset.url.replace("/api/images/", "/banners/") }));
+  return (matchedWeatherBanner(event, year, condition, bundled) || matchedWeatherBanner(event, year, condition,
+    bundled.map(asset => ({ ...asset, key: asset.key.replace(/^\d{4}\//, "") }))))?.url || null;
 }
 export async function decorateImages<T>(data: T): Promise<T> {
   const response = data as any;

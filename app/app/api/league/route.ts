@@ -873,6 +873,7 @@ export async function POST(req: NextRequest) {
           name: text(b.name, 100),
           circuit: text(b.circuit, 100),
           country: text(b.country, 80),
+          location: old?.location,
           calendarSequence: (old?.calendarSequence || 0) + 1,
           calendarModified: new Date().toISOString(),
           practice: timestamp(b.practice),

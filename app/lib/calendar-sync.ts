@@ -51,6 +51,7 @@ export function mergeCalendar(
     }
     seen.add(old.id);
     old.providerCircuitId = source.providerCircuitId;
+    if (source.location) old.location = source.location;
     const review = old.calendarReview;
     delete old.calendarReview;
     if (old.calendarOverride) {

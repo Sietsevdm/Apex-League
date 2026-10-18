@@ -1,5 +1,7 @@
 # Apex League development
 
+Version 0.8.18 feature: [Circuit weather banners](WEATHER_BANNERS.md) — four image variants for all 24 included circuits, automatic weather/daylight selection and organiser previews.
+
 The application source is in this directory. For setup, updates and recovery, use [DEPLOYMENT.md](DEPLOYMENT.md). For version history, use [CHANGELOG.md](../CHANGELOG.md).
 
 ## Run locally

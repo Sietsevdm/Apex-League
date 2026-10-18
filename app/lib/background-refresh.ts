@@ -6,6 +6,7 @@ type Options<T> = {
   subscribe: (changed: () => void) => () => void;
   now?: () => number;
   interval?: number;
+  initiallyStale?: boolean;
   setTimer?: (callback: () => void, delay: number) => unknown;
   clearTimer?: (timer: unknown) => void;
 };
@@ -19,7 +20,7 @@ export function backgroundRefresh<T>(options: Options<T>) {
   const clearTimer =
     options.clearTimer ||
     ((timer) => clearTimeout(timer as ReturnType<typeof setTimeout>));
-  let lastCheck = now(); // The authenticated entry already supplied fresh state.
+  let lastCheck = now() - (options.initiallyStale ? interval : 0);
   let timer: unknown;
   let request: AbortController | undefined;
   let generation = 0;

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { startVisibleTicker } from "@/lib/visible-timer";
+import { useBannerWeather } from "../BannerWeather";
 import { standingsMovement } from "@/lib/standings-movement";
 import { weekendSessions } from "@/lib/weekend-progress";
 import { useLocale } from "@/lib/i18n";
@@ -14,38 +15,35 @@ import {
 } from "@/lib/model";
 import {
   ArrowUpRight,
-  Bell,
-  CheckCircle2,
   ChevronRight,
-  Clock,
-  Flag,
   MapPin,
-  TrendingUp,
-  Trophy,
 } from "lucide-react";
 import {
   Empty,
   Heading,
-  Metric,
   Pill,
   StandingsTable,
-  remaining,
 } from "./Shared";
 function Banner({
   s,
   season,
   meId,
   go,
+  rows,
 }: {
   s: State;
   season: Season;
   meId: string;
+  rows: ReturnType<typeof standings>;
   go: (p: string, id?: string, kind?: "gp" | "sprint") => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [now, setNow] = useState(Date.now);
   useEffect(() => startVisibleTicker(() => setNow(Date.now())), []);
   const e = bannerEvent(s, season.id, now);
+  const weatherData = useBannerWeather(e?.id, !season.archived && !e?.practiceRound, e?.photo, meId);
+  const weather = weatherData?.weather;
+  const me = rows.find(row => row.id === meId);
   if (!e)
     return (
       <Empty
@@ -88,10 +86,10 @@ function Banner({
   const active = stages.findIndex((session) => !session.done);
   return (
     <section
-      className="hero"
+      className="hero hero-weekend"
       style={{
-        backgroundImage: `linear-gradient(90deg,rgba(7,13,25,.96) 0%,rgba(7,13,25,.76) 40%,rgba(7,13,25,.12) 100%),url("${e.photo || "/circuit-night.svg"}")`,
-        backgroundPosition: `0 0,center ${e.focal}%`,
+        backgroundImage: `linear-gradient(90deg,rgba(7,13,25,.84) 0%,rgba(7,13,25,.5) 45%,rgba(7,13,25,.15) 100%),url("${weatherData?.photo || e.photo || "/circuit-night.svg"}"),url("${e.photo || "/circuit-night.svg"}")`,
+        backgroundPosition: `0 0,center ${e.focal}%,center ${e.focal}%`,
       }}
     >
       <div className="hero-top">
@@ -100,16 +98,51 @@ function Banner({
           {tr(nextDeadline ? "Predictions open" : "Predictions closed")}
         </Pill>
         {isSprint && <Pill>{tr("Sprint weekend")}</Pill>}
+      <div
+        className="prediction-readiness"
+        aria-label={tr("Your weekend predictions")}
+      >
+        {(["gp", ...(isSprint ? ["sprint"] : [])] as ("gp" | "sprint")[]).map(
+          (kind) => {
+            const entry = s.entries.find(
+              (entry) =>
+                entry.eventId === e.id &&
+                entry.userId === meId &&
+                entry.kind === kind,
+            );
+            const state = entry?.submitted
+              ? "Submitted"
+              : entry
+                ? "Draft"
+                : "Missing";
+            const closed = season.archived || locked(e, kind, now);
+            return (
+              <button
+                key={kind}
+                className={`entry-status ${state.toLowerCase()}`}
+                onClick={() => go("predict", e.id, kind)}
+              >
+                <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
+                {tr(state)}
+                {closed ? ` · ${tr("Locked")}` : ""}
+
+              </button>
+            );
+          },
+        )}
+      </div>
+        {weather && <a className="banner-weather" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer"
+          title={`${tr("Current weather at the circuit")} · ${date(weather.observedAt)} · Open-Meteo`}
+          aria-label={`${tr("Current weather at the circuit")}: ${weather.temperature}°C, ${tr(weather.label)}. Open-Meteo`}>
+          {weather.temperature}°C · {tr(weather.label)}{weather.condition === "night" ? ` · ${tr("Night")}` : ""}
+          <span>Open-Meteo</span>
+        </a>}
       </div>
       <div className="hero-copy">
         <div className="eyebrow">
           {tr(season.year)} {tr("WORLD CHAMPIONSHIP \u00B7 YOUR LEAGUE")}
         </div>
-        <h2>
-          {tr(e.name.replace(" Grand Prix", ""))}
-          <br />
-          <span>{tr("Grand Prix")}</span>
-        </h2>
+        <h2>{tr(e.name)}</h2>
         <p>
           <MapPin size={15} />
           {e.circuit}
@@ -154,6 +187,10 @@ function Banner({
           </div>
         </div>
       </div>
+      <dl className="banner-season-summary" aria-label={tr("Season summary")}>
+        <div><dt>{tr("YOUR POSITION")}</dt><dd>{me ? `P${me.rank}` : "—"}</dd><small>{tr(`${rows.length} players on the grid`)}</small></div>
+        <div><dt>{tr("SEASON POINTS")}</dt><dd>{me?.total || 0}</dd><small>{tr(`${(rows[0]?.total || 0) - (me?.total || 0)} points to the leader`)}</small></div>
+      </dl>
       <ol className="weekend-progress" aria-label={tr("Weekend progress")}>
         {stages.map((session, i) => (
           <li
@@ -170,41 +207,7 @@ function Banner({
           </li>
         ))}
       </ol>
-      <div
-        className="prediction-readiness"
-        aria-label={tr("Your weekend predictions")}
-      >
-        {(["gp", ...(isSprint ? ["sprint"] : [])] as ("gp" | "sprint")[]).map(
-          (kind) => {
-            const entry = s.entries.find(
-              (entry) =>
-                entry.eventId === e.id &&
-                entry.userId === meId &&
-                entry.kind === kind,
-            );
-            const state = entry?.submitted
-              ? "Submitted"
-              : entry
-                ? "Draft"
-                : "Missing";
-            const closed = season.archived || locked(e, kind, now);
-            return (
-              <button
-                key={kind}
-                className={`entry-status ${state.toLowerCase()}`}
-                onClick={() => go("predict", e.id, kind)}
-              >
-                <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
-                {tr(state)}
-                {closed ? ` · ${tr("Locked")}` : ""}
-                {!closed && !entry?.submitted && (
-                  <span> → {tr("Complete prediction")}</span>
-                )}
-              </button>
-            );
-          },
-        )}
-      </div>
+
     </section>
   );
 }
@@ -220,27 +223,7 @@ function Home({
   go: (p: string, id?: string, kind?: "gp" | "sprint") => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
-  const rows = standings(s, season.id),
-    me = rows.find((r) => r.id === meId),
-    banner = bannerEvent(s, season.id);
-  const next = s.events
-    .filter(
-      (e) =>
-        e.seasonId === season.id &&
-        !e.practiceRound &&
-        Date.now() < Date.parse(cutoff(e, "gp")),
-    )
-    .sort((a, b) => Date.parse(a.qualifying) - Date.parse(b.qualifying))[0];
-  const recent = s.events
-    .filter(
-      (e) => e.seasonId === season.id && !e.practiceRound && e.gp?.published,
-    )
-    .sort((a, b) => Date.parse(b.race) - Date.parse(a.race))[0];
-  const submission = banner
-    ? s.entries.find(
-        (x) => x.eventId === banner.id && x.userId === meId && x.kind === "gp",
-      )
-    : undefined;
+  const rows = standings(s, season.id);
   return (
     <>
       <Heading
@@ -250,44 +233,8 @@ function Home({
       >
         <Pill>{season.name}</Pill>
       </Heading>
-      <Banner s={s} season={season} meId={meId} go={go} />
-      <div className="metrics">
-        <Metric
-          label={tr("YOUR POSITION")}
-          value={me ? `P${me.rank}` : "—"}
-          detail={`${rows.length} players on the grid`}
-          icon={<Trophy />}
-        />
-        <Metric
-          label={tr("SEASON POINTS")}
-          value={String(me?.total || 0)}
-          detail={`${rows[0]?.total - (me?.total || 0) || 0} points to the leader`}
-          icon={<TrendingUp />}
-        />
-        <Metric
-          label={tr("WEEKEND ENTRY")}
-          value={
-            submission?.submitted
-              ? "Submitted"
-              : submission
-                ? "Draft"
-                : "Not entered"
-          }
-          detail={
-            banner
-              ? `${banner.name.replace(" Grand Prix", "")} · Grand Prix`
-              : "No event scheduled"
-          }
-          icon={<CheckCircle2 />}
-        />
-        <Metric
-          label={tr("NEXT DEADLINE")}
-          value={next ? remaining(cutoff(next, "gp")) : "—"}
-          detail={next ? next.name : "All entries locked"}
-          icon={<Clock />}
-        />
-      </div>
-      <div className="two-col">
+      <Banner s={s} season={season} meId={meId} go={go} rows={rows} />
+      <div className="overview-championship">
         <section className="panel">
           <div className="section-title">
             <h2>{tr("The championship fight")}</h2>
@@ -301,48 +248,6 @@ function Home({
             meId={meId}
             movement={standingsMovement(s, season.id)}
           />
-        </section>
-        <section className="panel">
-          <div className="section-title">
-            <h2>{tr("From the paddock")}</h2>
-            <Bell size={18} />
-          </div>
-          {tr(
-            s.settings.announcements.slice(0, 3).map((a) => (
-              <article className="announcement" key={a.id}>
-                <small>
-                  {tr(date(a.date, { day: "numeric", month: "short" }))}
-                </small>
-                <h3>{a.title}</h3>
-                <p>{a.body}</p>
-              </article>
-            )),
-          )}
-          {tr(
-            !s.settings.announcements.length && (
-              <p className="muted">
-                {tr("Your organiser\u2019s updates will appear here.")}
-              </p>
-            ),
-          )}
-          {tr(
-            recent && (
-              <button
-                className="recap-link"
-                onClick={() => go("results", recent.id)}
-              >
-                <Flag size={20} />
-                <span>
-                  <strong>
-                    {tr(recent.name.replace(" Grand Prix", ""))}
-                    {tr(" recap")}
-                  </strong>
-                  <small>{tr("Your latest race story is ready.")}</small>
-                </span>
-                <ArrowUpRight size={20} />
-              </button>
-            ),
-          )}
         </section>
       </div>
       <section className="practice-callout">

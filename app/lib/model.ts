@@ -43,6 +43,7 @@ export type Entry = {
   updatedAt: string;
 };
 export type Event = {
+  location?: { latitude: number; longitude: number };
   calendarSequence?: number;
   calendarModified?: string;
   replacements?: Replacement[];

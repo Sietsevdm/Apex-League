@@ -35,6 +35,8 @@ export function calendarEvents(races: Json[], year: number) {
     name: r.raceName,
     circuit: r.Circuit.circuitName,
     country: r.Circuit.Location.locality,
+    ...(r.Circuit.Location.lat != null && r.Circuit.Location.long != null && r.Circuit.Location.lat !== "" && r.Circuit.Location.long !== "" && Number.isFinite(Number(r.Circuit.Location.lat)) && Math.abs(Number(r.Circuit.Location.lat)) <= 90 && Number.isFinite(Number(r.Circuit.Location.long)) && Math.abs(Number(r.Circuit.Location.long)) <= 180
+      ? { location: { latitude: Number(r.Circuit.Location.lat), longitude: Number(r.Circuit.Location.long) } } : {}),
     practice: stamp(r.FirstPractice),
     practice2: stamp(r.SecondPractice),
     practice3: stamp(r.ThirdPractice),

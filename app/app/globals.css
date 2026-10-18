@@ -2735,6 +2735,41 @@ footer {
 .score-list > div:has(.score-explanation) { display:grid; grid-template-columns:minmax(80px,1fr) minmax(0,2fr) auto; gap:12px; }
 @media (max-width:600px) { .score-list > div:has(.score-explanation) { grid-template-columns:minmax(0,1fr) auto; } .score-explanation { grid-column:1; grid-row:2; } .score-list > div:has(.score-explanation) > .pill { grid-column:2; grid-row:1 / span 2; } }
 .hero-top { flex-wrap: wrap; }
+.app .overview-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.app .banner-season-summary { display: flex; flex-wrap: wrap; gap: 12px 32px; margin: 16px 0 18px; color: #f1f6fc; }
+.app .banner-season-summary > div { min-width: 115px; }
+.app .banner-season-summary dt { font-size: 10px; letter-spacing: .08em; color: #b6c9d5; }
+.app .banner-season-summary dd { font-size: 25px; font-weight: 600; margin: 2px 0; line-height: 1.2; }
+.app .banner-season-summary small { font-size: 11px; color: #c6d7e8; }
+.overview-championship { width: 100%; margin-bottom: 22px; }
+.announcements-page .announcement p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.announcements-page .announcement time { font-size: 12px; color: var(--muted); }
+.app .hero.hero-weekend { position: relative; padding: 28px; border-radius: 18px; min-height: 485px; display: flex; flex-direction: column; }
+.app .hero-weekend .hero-top { justify-content: flex-end; min-height: 26px; max-width: 55%; margin-left: auto; }
+.app .hero-weekend .hero-copy { margin-top: 18px; }
+.app .hero-weekend .hero-copy .eyebrow { position: absolute; top: 32px; left: 28px; max-width: calc(45% - 28px); font-size: calc(10px * var(--type-size,1)); }
+.app .hero-weekend h2 { font-size: calc(44px * var(--type-size,1)); line-height: 1.14; text-transform: none; letter-spacing: -.035em; margin: 0 0 8px; }
+.app .hero-weekend .hero-bottom { flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 22px; }
+.app .hero-weekend .hero-bottom .primary { background: #22dcc5; border-color: #22dcc5; color: #06252c; }
+.app .hero-weekend .hero-bottom .primary:hover { background: #4ce5d2; }
+.app .hero-weekend .banner-countdown small { font-size: calc(10px * var(--type-size,1)); margin-bottom: 2px; }
+.app .hero-weekend .banner-weather { position: absolute; right: 28px; bottom: 28px; max-width: 210px; }
+.app .hero-weekend .hero-top { align-items: center; }
+.app .hero-weekend .hero-top .prediction-readiness { display: contents; }
+.app .hero-weekend .hero-top .entry-status { font-size: 11px; padding: 6px 9px; white-space: nowrap; }
+.app .hero-weekend .weekend-progress { margin-top: auto; margin-bottom: 0; padding-top: 28px; width: calc(100% - 230px); }
+@media(max-width:600px) {
+  .app .hero.hero-weekend { padding: 22px; min-height: 550px; }
+  .app .hero-weekend .hero-copy .eyebrow { top: 26px; left: 22px; max-width: calc(45% - 22px); font-size: calc(9px * var(--type-size,1)); }
+  .app .hero-weekend h2 { font-size: calc(31px * var(--type-size,1)); }
+  .app .hero-weekend .prediction-readiness { max-width: 100%; }
+  .app .hero-weekend .banner-weather { position: static; margin-top: 16px; margin-left: auto; width: fit-content; }
+  .app .hero-weekend .hero-top { position: static; }
+  .app .hero-weekend .weekend-progress { width: 100%; max-width: none; padding-top: 72px; }
+  .app .hero-weekend .banner-weather { position: absolute; bottom: 90px; right: 22px; margin: 0; }
+}
+.hero .banner-weather { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px 9px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 18px; background: rgba(7,13,25,.8); color: #e4eef6; font-size: 11px; text-decoration: none; }
+.hero .banner-weather span { color: #c3d0db; font-size: 10px; }
 .hero .pill.picks-open { color: #54e3a2; background: rgba(40,200,120,.14); border-color: rgba(40,200,120,.25); }
 .hero .pill.picks-open .live-dot { background: #54e3a2; }
 .hero .pill.picks-closed { color: #ff6472; background: rgba(255,75,90,.14); border-color: rgba(255,75,90,.2); }

@@ -18,6 +18,8 @@ function Banners({
   const events = s.events.filter((e) => e.seasonId === season?.id);
   const [id, setId] = useState(events[0]?.id || "");
   const e = events.find((x) => x.id === id);
+  const [previewCondition, setPreviewCondition] = useState("original");
+  const [variant, setVariant] = useState<{ id: string; condition: string; base: string; photo: string | null } | null>(null);
   const [photo, setPhoto] = useState(e?.photo || ""),
     [focal, setFocal] = useState(e?.focal || 50),
     [credit, setCredit] = useState(e?.credit || ""),
@@ -29,6 +31,16 @@ function Banners({
     setFocal(x?.focal ?? 50);
     setCredit(x?.credit || "");
   }, [id]);
+  useEffect(() => {
+    if (!id || previewCondition === "original" || photo.startsWith("data:")) return;
+    const controller = new AbortController();
+    fetch(`/api/banner-weather?eventId=${encodeURIComponent(id)}&preview=${previewCondition}`, { signal: controller.signal, cache: "no-store" })
+      .then(response => response.ok ? response.json() : { photo: null })
+      .then(data => { if (!controller.signal.aborted) setVariant({ id, condition: previewCondition, base: photo, photo: data.photo }); })
+      .catch(() => { if (!controller.signal.aborted) setVariant({ id, condition: previewCondition, base: photo, photo: null }); });
+    return () => controller.abort();
+  }, [id, previewCondition, photo]);
+  const selectedVariant = variant?.id === id && variant.condition === previewCondition && variant.base === photo ? variant : null;
   if (!e)
     return (
       <Empty
@@ -94,7 +106,7 @@ function Banners({
         <div
           className="banner-upload-preview"
           style={{
-            backgroundImage: `linear-gradient(90deg,rgba(7,13,25,.9),rgba(7,13,25,.1)),url("${photo || "/circuit-night.svg"}")`,
+            backgroundImage: `linear-gradient(90deg,rgba(7,13,25,.9),rgba(7,13,25,.1)),url("${(previewCondition !== "original" && !photo.startsWith("data:") && selectedVariant?.photo) || photo || "/circuit-night.svg"}")`,
             backgroundPosition: `center ${focal}%`,
           }}
         >
@@ -102,6 +114,15 @@ function Banners({
           <h2>{e.name}</h2>
           <p>{e.circuit}</p>
         </div>
+        <label>
+          {tr("Weather image preview")}
+          <select value={previewCondition} onChange={ev => setPreviewCondition(ev.target.value)} disabled={photo.startsWith("data:")}>
+            <option value="original">{tr("Original image")}</option>
+            {["Sunny", "Cloudy", "Rainy", "Night"].map(condition => <option key={condition} value={condition.toLowerCase()}>{tr(condition)}</option>)}
+          </select>
+          <small>{tr("Preview only. The overview selects an image automatically using current circuit weather and daylight.")}</small>
+        </label>
+        {previewCondition !== "original" && selectedVariant && !selectedVariant.photo && <p className="muted">{tr("No matching weather image; showing the original banner.")}</p>}
         <div className="form-grid">
           <label>
             {tr("Circuit photograph")}

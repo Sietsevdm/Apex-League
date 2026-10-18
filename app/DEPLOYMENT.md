@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.17`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.18`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Admin studio → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Settings → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.17`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.18`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -24,7 +24,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.17` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.18` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -105,6 +105,8 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Troubleshooting
 
+Circuit weather banners are included in version 0.8.18; see [WEATHER_BANNERS.md](WEATHER_BANNERS.md). Weather uses outbound HTTPS to Open-Meteo and, for older calendars, Jolpi. Optional settings are `BANNER_WEATHER_ENABLED` (default true) and `OPEN_METEO_API_KEY` (customer endpoint); no new setting is required for the default non-commercial service.
+
 - **No registration button:** open Players → Members. The registration panel lists every season; reopen an archived season before opening its registration.
 - **Deletion stays disabled:** use Copy season name, then type or paste the complete name. Leading/trailing/repeated spaces, non-breaking spaces and case differences are accepted.
 - **Deletion reports backup failure:** verify `BACKUP_SECRET` has at least 32 characters and the backups volume is writable. Nothing is deleted when the backup fails.
@@ -115,7 +117,7 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.17 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.17` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.18 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.18` and update without re-pulling that local image. For development commands, see [README.md](README.md).
 
 ## Browser push reminders (0.8.17)
 
