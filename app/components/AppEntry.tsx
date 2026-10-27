@@ -22,9 +22,16 @@ type Props = {
   initialData: ClientData;
   hasSession: boolean;
   initialError?: string;
+  invitation?: string;
 };
-function Entry({ initialData, hasSession, initialError = "" }: Props) {
+function Entry({
+  initialData,
+  hasSession,
+  initialError = "",
+  invitation = "",
+}: Props) {
   const [data, setData] = useState(initialData);
+  const [initialPage, setInitialPage] = useState("home");
   const [checking, setChecking] = useState(hasSession);
   const [error, setError] = useState(initialError);
 
@@ -66,7 +73,10 @@ function Entry({ initialData, hasSession, initialError = "" }: Props) {
     });
     const next = await response.json();
     if (!response.ok) throw new Error(next.error);
-    if ("authenticated" in next) setData(next);
+    if ("authenticated" in next) {
+      if (body.action === "registerLeague") setInitialPage("admin");
+      setData(next);
+    }
     return next;
   };
   return (
@@ -74,9 +84,19 @@ function Entry({ initialData, hasSession, initialError = "" }: Props) {
       {checking ? (
         <Loading />
       ) : data.authenticated && data.state ? (
-        <LeagueApp initialData={data} onSignedOut={signedOut} />
+        <LeagueApp
+          initialData={data}
+          initialPage={initialPage}
+          onSignedOut={signedOut}
+        />
       ) : (
-        <Auth data={data} call={call} error={error} setError={setError} />
+        <Auth
+          data={data}
+          call={call}
+          error={error}
+          setError={setError}
+          invitation={invitation}
+        />
       )}
     </div>
   );

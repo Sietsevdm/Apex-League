@@ -12,6 +12,7 @@ import {
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Admin from "../components/screens/Admin";
+import Auth from "../components/Auth";
 
 process.env.DEMO_MODE = "true";
 process.env.DEMO_DATA_FILE = `leagues-${process.pid}.json`;
@@ -292,8 +293,56 @@ test("API isolates leagues, enforces all three roles, supports owner creation/in
       ).status,
       400,
     );
+    for (const missingOrInvalid of [undefined, "", "invented-invite"]) {
+      const info = await (
+        await post({ action: "publicInfo", invite: missingOrInvalid })
+      ).json();
+      assert.deepEqual(
+        info.seasons,
+        [],
+        "no season discovery without a valid league invite",
+      );
+    }
+    const newPlayer = {
+      action: "register",
+      name: "Invited player",
+      email: "invited@example.invalid",
+      password: "test-password-at-least-12",
+      invite,
+    };
     assert.equal(
-      (await post({ action: "joinLeague", invite }, "demo-3")).status,
+      (await post({ ...newPlayer, seasonId: sb, leagueId: b })).status,
+      400,
+    );
+    assert.equal(
+      (await post({ ...newPlayer, invite: "invented", seasonId: sa })).status,
+      400,
+    );
+    const invitedResponse = await post(
+      { ...newPlayer, seasonId: sa, leagueId: b },
+      "unknown",
+      b,
+    );
+    assert.equal(invitedResponse.status, 200);
+    const invitedData = await invitedResponse.json();
+    assert.equal(invitedData.state.selectedLeagueId, a);
+    assert.deepEqual(
+      invitedData.state.leagues.map((l: any) => l.id),
+      [a],
+    );
+    const invitedUser = await transaction((s) =>
+      s.users.find((u) => u.email === newPlayer.email)!,
+    );
+    assert.deepEqual(invitedUser.seasonIds, [sa]);
+    assert.equal(invitedUser.role, "player");
+    assert.equal((await get(invitedUser.id, b)).status, 403);
+    assert.equal(
+      (
+        await post(
+          { action: "joinLeague", invite, leagueId: b, seasonId: sb },
+          "demo-3",
+        )
+      ).status,
       200,
     );
     const player = (await (await get("demo-3", a)).json()).state;
@@ -371,7 +420,92 @@ test("API isolates leagues, enforces all three roles, supports owner creation/in
         .find((u) => u.id === "demo-3")!
         .seasonIds.includes("sample-season"),
     );
+    // Public creation must grant ownership only to a new Organiser account.
+    const signup = {
+      action: "registerLeague",
+      name: "New organiser",
+      email: "owner@example.invalid",
+      password: "test-password-at-least-12",
+      leagueName: "My racing friends",
+      role: "admin",
+      seasonId: "sample-season",
+      invite: "ignored",
+    };
+    const beforeSignup = await transaction((s) => ({
+      users: s.users.length,
+      leagues: s.leagues!.length,
+    }));
+    assert.equal((await post({ ...signup, leagueName: " " })).status, 400);
+    assert.equal((await post({ ...signup, password: "short" })).status, 400);
+    assert.equal((await post({ ...signup, email: "invalid" })).status, 400);
+    const unchanged = await transaction((s) => ({
+      users: s.users.length,
+      leagues: s.leagues!.length,
+    }));
+    assert.deepEqual(unchanged, beforeSignup, "invalid signup must be atomic");
+    const createdResponse = await post(signup);
+    assert.equal(createdResponse.status, 200);
+    assert.match(
+      createdResponse.headers.get("set-cookie") || "",
+      /apex_session=/,
+    );
+    const created = (await createdResponse.json()).state;
+    const saved = await transaction((s) => structuredClone(s));
+    const owner = saved.users.find((u) => u.email === signup.email)!;
+    assert.equal(owner.role, "organiser");
+    assert.deepEqual(owner.seasonIds, []);
+    const owned = saved.leagues!.find(
+      (l) => l.id === created.selectedLeagueId,
+    )!;
+    assert.equal(owned.name, signup.leagueName);
+    assert.equal(owned.ownerId, owner.id);
+    assert.notEqual(owned.settings!.invite, saved.settings.invite);
+    assert.deepEqual(created.seasons, []);
+    assert.deepEqual(
+      created.leagues.map((l: any) => l.id),
+      [owned.id],
+    );
+    assert.equal((await get(owner.id, "default", "admin")).status, 403);
+    assert.equal(
+      (await post({ action: "backupList" }, owner.id, owned.id)).status,
+      403,
+    );
+    assert.equal(
+      (await post(signup)).status,
+      400,
+      "duplicate accounts cannot claim leagues",
+    );
+    assert.equal(
+      (
+        await post(
+          {
+            action: "createSeason",
+            name: "First season",
+            year: 2027,
+            cutoff: "2099-01-01T00:00:00Z",
+          },
+          owner.id,
+          owned.id,
+          "admin",
+        )
+      ).status,
+      200,
+    );
   } finally {
     await fs.unlink(`.data/${process.env.DEMO_DATA_FILE}`).catch(() => {});
   }
+});
+
+test("login offers both invitation joining and creating a league", () => {
+  const html = renderToStaticMarkup(
+    createElement(Auth, {
+      data: { authenticated: false, demo: false },
+      call: async () => ({}),
+      error: "",
+      setError: () => {},
+    }),
+  );
+  assert.match(html, /Create your own league/);
+  assert.match(html, /Have an invitation\? Join the league/);
+  assert.match(html, /Sign in/);
 });

@@ -56,11 +56,15 @@ test("login, logout and registration retain branding while enforcing API authent
     assert.match(login.response.headers.get("set-cookie")!, /apex_session=/);
     const logout = await post({ action: "logout" }, "demo-admin");
     assert.equal(logout.data.authenticated, false);
+    assert.match(logout.response.headers.get("set-cookie")!, /apex_demo=signed-out/);
     assert.equal(logout.data.loginText.headline, "Custom headline");
     assert.equal(logout.data.name, "Custom paddock");
     assert.ok(!("state" in logout.data));
     assert.ok(!JSON.stringify(logout.data).includes("private-test-invite"));
-    const info = await post({ action: "publicInfo" });
+    const info = await post({
+      action: "publicInfo",
+      invite: "private-test-invite",
+    });
     assert.equal(info.response.status, 200);
     assert.ok(info.data.seasons.length > 0);
     assert.ok(!("state" in info.data));

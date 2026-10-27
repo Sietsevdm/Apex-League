@@ -4,9 +4,19 @@ Version 0.8.18 feature: [Circuit weather banners](WEATHER_BANNERS.md) — four i
 
 The application source is in this directory. For setup, updates and recovery, use [DEPLOYMENT.md](DEPLOYMENT.md). For version history, use [CHANGELOG.md](../CHANGELOG.md).
 
+## Login league creation (0.8.20)
+
+Invitation URLs with `?invite=...` open the account-creation join form immediately, with the invitation prefilled and seasons loaded for that code. This is rendered from the URL on the server, so visitors do not have to click Join first. Existing members can choose Sign in. The server resolves each invitation to exactly one league. Only its seasons are returned, and signup rejects a season from any other league, even if the request changes its league or season identifiers. Missing/invalid invitations expose no season list. Joining an additional league requires its own valid invitation. Invitation validity and season registration are checked when submitting.
+
+The login screen offers **Create your own league** beside invitation-based joining. New users enter a display name, email, password (at least 12 characters) and league name. Account and league are created atomically, they sign in as an **Organiser**, and League management opens for first-season setup. No invitation is needed to create a league. Invited signups remain Players; new Organisers cannot manage other leagues or site accounts. Existing email addresses must sign in rather than create duplicate accounts.
+
+## Weekend forecast design preview (0.8.20, demo only)
+
+The demo overview weather badge opens a keyboard-accessible Weekend forecast dialog. It shows sample qualifying/race forecasts (and Sprint sessions when present), a practice strip, temperature, rain chance and wind. Session dates follow the selected banner event and use the viewer's timezone. Forecast numbers and the outlook are illustrative and labelled; no forecast provider is connected. Current banner weather continues to use the existing service. The prototype is enabled only for demo data; production keeps its existing weather link. Escape, the close button or the backdrop dismiss the dialog.
+
 ## Run locally
 
-Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. Update both the app **and calendar worker** to image 0.8.19.
+Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.20; update both the app **and calendar worker**.
 
 The overview now includes a sourced **Did you know?** card between the banner and championship standings, with **324 facts across 27 circuits**. It follows the GP displayed in the banner and chooses a different fact on each full browser refresh, while keeping the current fact steady during timer/background updates. See [GP_FACTS.md](GP_FACTS.md) for coverage, primary sources, matching and refresh behaviour.
 

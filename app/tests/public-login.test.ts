@@ -102,3 +102,19 @@ test("anonymous login image decoration retains custom artwork without returning 
     await fs.rm(directory, { recursive: true, force: true });
   }
 });
+
+test("invitation URLs render the join form immediately with the supplied code", () => {
+  const html = renderToStaticMarkup(
+    createElement(AppEntry, {
+      initialData: publicLoginData(),
+      hasSession: false,
+      invitation: "league-invite-123",
+    }),
+  );
+  assert.match(html, /Join your friends/);
+  assert.match(html, /value="league-invite-123"/);
+  assert.match(html, /Join the grid/);
+  assert.match(html, /Already a member\? Sign in/);
+  assert.ok(!html.includes("Have an invitation? Join the league"));
+  assert.ok(!html.includes("Welcome back"));
+});

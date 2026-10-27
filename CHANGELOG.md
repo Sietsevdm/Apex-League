@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.20 — 27 October 2026
+
+- Add a demo-only Weekend forecast design preview opened from the weather badge, with sample session temperatures, rain chances, wind and practice summaries. No live forecast integration is enabled.
+
+- Bind invitation lookup, signup and existing-account joining to one originating league. Hide season discovery without a valid invitation and reject cross-league season substitutions.
+
+- Open invitation URLs directly on the join-account form with the invite filled in and its seasons loaded; retain Sign in for existing members. Show signup errors and open league setup after public league creation.
+
+- Add Create your own league to login alongside invitation joining, with English/Dutch copy, account and league creation in one transaction, Organiser ownership and direct management onboarding.
+- Keep invited signups as Players and enforce existing league/site permission boundaries. Validate duplicate emails, passwords and league names without leaving partial accounts.
+
 ## 0.8.19 — 27 October 2026
 
 - Add a sourced Did you know? card between the weekend banner and championship fight: 324 researched facts across 27 circuit venues, including distinct Madrid/Barcelona and Monza/Imola banks.

@@ -122,8 +122,16 @@ const Admin = dynamic(() => import("./screens/Admin"), {
     </section>
   ),
 });
-type LeagueProps = { initialData: Data; onSignedOut: (data: Data) => void };
-function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
+type LeagueProps = {
+  initialData: Data;
+  initialPage?: string;
+  onSignedOut: (data: Data) => void;
+};
+function LeagueContent({
+  initialData,
+  initialPage = "home",
+  onSignedOut,
+}: LeagueProps) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [data, updateData] = useState<Data>(initialData);
   const dataRef = useRef(initialData);
@@ -155,7 +163,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
     },
     [onSignedOut],
   );
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(initialPage);
   const [eventId, setEventId] = useState("");
   const [menu, setMenu] = useState(false);
   const [notice, setNotice] = useState("");
@@ -303,6 +311,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
       ) {
         setData(d);
         if (body.action === "demoUser") setPage("home");
+        if (body.action === "registerLeague") setPage("admin");
         fresh = true;
       }
       if (!quiet) setNotice("Changes saved");
@@ -672,7 +681,13 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                 <>
                   {tr(
                     page === "home" && (
-                      <Home s={s} season={season} meId={me.id} go={go} />
+                      <Home
+                        s={s}
+                        season={season}
+                        meId={me.id}
+                        go={go}
+                        previewForecast={data.demo}
+                      />
                     ),
                   )}
                   {tr(

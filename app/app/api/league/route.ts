@@ -455,6 +455,35 @@ async function prepareManualImport(req: NextRequest, body: any) {
     throw error;
   }
 }
+function invitedLeague(s: State, rawInvite: unknown) {
+  if (typeof rawInvite !== "string" || rawInvite.length > 200) return undefined;
+  const invite = text(rawInvite, 200);
+  if (!invite) return undefined;
+  const matches =
+    s.leagues?.filter((l) => leagueSettings(s, l.id).invite === invite) || [];
+  return matches.length === 1 ? matches[0] : undefined;
+}
+function createOwnedLeague(s: State, u: User, leagueName: unknown) {
+  const id = randomUUID();
+  const name = text(leagueName, 80);
+  if (!name) fail("Enter a league name.");
+  s.leagues!.push({
+    id,
+    name,
+    ownerId: u.id,
+    createdAt: new Date().toISOString(),
+    settings: {
+      ...structuredClone(s.settings),
+      name,
+      invite: randomUUID(),
+      bannerOverride: "",
+      announcements: [],
+      savedBannerPhotos: [],
+    },
+  });
+  audit(s, u, `Created league: ${name}`, id);
+  return id;
+}
 export async function POST(req: NextRequest) {
   try {
     const origin = req.headers.get("origin");
@@ -521,14 +550,19 @@ export async function POST(req: NextRequest) {
         cookie = session(u.id, u.version);
         return view(s, u, req, responseSeasonId);
       }
-      if (b.action === "register") {
+      if (b.action === "register" || b.action === "registerLeague") {
+        const creating = b.action === "registerLeague";
         limit("register", 20);
+        const invitationLeague = creating
+          ? undefined
+          : invitedLeague(s, b.invite);
+        if (!creating && !invitationLeague) fail("The invitation is invalid.");
         const season = s.seasons.find(
           (v) => v.id === b.seasonId && !v.archived,
         );
-        if (!season || !registrationOpen(season))
+        if (!creating && (!season || !registrationOpen(season)))
           fail("Registration for this season is closed.");
-        if (text(b.invite) !== leagueSettings(s, season.leagueId).invite)
+        if (!creating && season!.leagueId !== invitationLeague!.id)
           fail("The invitation is invalid.");
         const email = text(b.email).toLowerCase();
         if (
@@ -544,9 +578,9 @@ export async function POST(req: NextRequest) {
           email,
           name: text(b.name, 60),
           password: hashPassword(password),
-          role: "player",
+          role: creating ? "organiser" : "player",
           active: true,
-          seasonIds: [season.id],
+          seasonIds: creating ? [] : [season!.id],
           reminders: false,
           timezone: "Europe/Amsterdam",
           version: 0,
@@ -554,18 +588,21 @@ export async function POST(req: NextRequest) {
         if (!u.name) fail("Enter a display name.");
         s.users.push(u);
         cookie = session(u.id, 0);
-        audit(s, u, "Joined the league", season.leagueId);
-        return view(s, u, req, responseSeasonId);
+        if (demoMode) demoCookie = u.id;
+        if (creating) {
+          const id = createOwnedLeague(s, u, b.leagueName);
+          return view(s, u, undefined, undefined, id);
+        }
+        audit(s, u, "Joined the league", season!.leagueId);
+        return view(s, u, undefined, season!.id, invitationLeague!.id);
       }
-      if (b.action === "publicInfo")
+      if (b.action === "publicInfo") {
+        const league = invitedLeague(s, b.invite);
         return {
           seasons: s.seasons
             .filter(
               (x) =>
-                !x.archived &&
-                (!b.invite
-                  ? x.leagueId === s.leagues?.[0]?.id
-                  : leagueSettings(s, x.leagueId).invite === b.invite),
+                !x.archived && Boolean(league) && x.leagueId === league!.id,
             )
             .map((x) => ({
               id: x.id,
@@ -573,6 +610,7 @@ export async function POST(req: NextRequest) {
               registrationClosed: !registrationOpen(x),
             })),
         };
+      }
       if (!u) fail("Please sign in.", 401);
       if (
         [
@@ -595,6 +633,7 @@ export async function POST(req: NextRequest) {
             (sub) => !(sub.userId === u.id && sub.endpoint === b.pushEndpoint),
           );
         logout = true;
+        if (demoMode) demoCookie = "signed-out";
         return view(s, undefined, req, responseSeasonId);
       }
       if (b.action === "demoUser" && demoMode) {
@@ -738,31 +777,11 @@ export async function POST(req: NextRequest) {
       }
       if (b.action === "leagueCreate") {
         admin(u);
-        const id = randomUUID();
-        const name = text(b.name, 80);
-        if (!name) fail("Enter a league name.");
-        s.leagues!.push({
-          id,
-          name,
-          ownerId: u.id,
-          createdAt: new Date().toISOString(),
-          settings: {
-            ...structuredClone(s.settings),
-            name,
-            invite: randomUUID(),
-            bannerOverride: "",
-            announcements: [],
-            savedBannerPhotos: [],
-          },
-        });
-        audit(s, u, `Created league: ${name}`, id);
+        const id = createOwnedLeague(s, u, b.name);
         return view(s, u, undefined, undefined, id);
       }
       if (b.action === "joinLeague") {
-        const invite = text(b.invite, 200);
-        const league = s.leagues?.find(
-          (l) => leagueSettings(s, l.id).invite === invite,
-        );
+        const league = invitedLeague(s, b.invite);
         if (!league) fail("The invitation is invalid.");
         const season = s.seasons
           .filter(

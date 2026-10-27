@@ -1,4 +1,7 @@
 export const dutch: Record<string, string> = {
+  "Create your own league": "Maak je eigen competitie",
+  "Start a league, invite your friends and run the championship.": "Start een competitie, nodig je vrienden uit en organiseer het kampioenschap.",
+  "Create account & league": "Account en competitie maken",
   "Did you know?": "Wist je dat?",
   "Source": "Bron",
   "Loading this week's GP fact…": "Het GP-weetje van deze week wordt geladen…",

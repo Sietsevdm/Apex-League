@@ -9,25 +9,36 @@ export default function Auth({
   call,
   error,
   setError,
+  invitation = "",
 }: {
   data: Data;
   call: Call;
   error: string;
   setError: (v: string) => void;
+  invitation?: string;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
-  const [register, setRegister] = useState(false),
+  const [mode, setMode] = useState<"login" | "join" | "create">(
+      invitation ? "join" : "login",
+    ),
     [busy, setBusy] = useState(false),
     [available, setAvailable] = useState<any[]>([]);
+  const register = mode !== "login";
+  const creating = mode === "create";
+  const changeMode = (next: typeof mode) => {
+    setMode(next);
+    setError("");
+  };
   const [form, setForm] = useState({
     name: "",
+    leagueName: "",
     email: "",
     password: "",
-    invite: "",
+    invite: invitation,
     seasonId: "",
   });
   useEffect(() => {
-    if (!register) return;
+    if (mode !== "join") return;
     let active = true;
     const invite =
       form.invite || new URLSearchParams(location.search).get("invite") || "";
@@ -47,7 +58,7 @@ export default function Auth({
     return () => {
       active = false;
     };
-  }, [register, form.invite]);
+  }, [mode, form.invite]);
   return (
     <main className="auth-shell">
       <link
@@ -104,14 +115,18 @@ export default function Auth({
         <h2>
           {tr(
             register
-              ? "Join your friends"
+              ? creating
+                ? "Create your own league"
+                : "Join your friends"
               : data.loginText?.welcome || "Welcome back",
           )}
         </h2>
         <p>
           {tr(
             register
-              ? "You need an invitation and an open season."
+              ? creating
+                ? "Start a league, invite your friends and run the championship."
+                : "You need an invitation and an open season."
               : data.loginText?.subtitle || "Your next prediction is waiting.",
           )}
         </p>
@@ -122,8 +137,16 @@ export default function Auth({
             setBusy(true);
             setError("");
             try {
-              await call({ action: register ? "register" : "login", ...form });
-            } catch {
+              await call({
+                action: creating
+                  ? "registerLeague"
+                  : register
+                    ? "register"
+                    : "login",
+                ...form,
+              });
+            } catch (reason) {
+              setError((reason as Error).message);
             } finally {
               setBusy(false);
             }
@@ -162,8 +185,21 @@ export default function Auth({
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
           </label>
+          {creating && (
+            <label>
+              {tr("League name")}
+              <input
+                required
+                maxLength={80}
+                value={form.leagueName}
+                onChange={(e) =>
+                  setForm({ ...form, leagueName: e.target.value })
+                }
+              />
+            </label>
+          )}
           {tr(
-            register && (
+            mode === "join" && (
               <>
                 <label>
                   {tr("Invitation code")}
@@ -201,18 +237,36 @@ export default function Auth({
             ),
           )}
           <button className="primary" disabled={busy}>
-            {tr(busy ? "Please wait…" : register ? "Join the grid" : "Sign in")}
+            {tr(
+              busy
+                ? "Please wait…"
+                : creating
+                  ? "Create account & league"
+                  : register
+                    ? "Join the grid"
+                    : "Sign in",
+            )}
             <ArrowUpRight size={18} />
           </button>
         </form>
         {tr(error && <p className="form-error">{tr(error)}</p>)}
-        <button className="text-button" onClick={() => setRegister(!register)}>
-          {tr(
-            register
-              ? "Already a member? Sign in"
-              : "Have an invitation? Join the league",
-          )}
-        </button>
+        {register ? (
+          <button className="text-button" onClick={() => changeMode("login")}>
+            {tr("Already a member? Sign in")}
+          </button>
+        ) : (
+          <div className="auth-options">
+            <button className="text-button" onClick={() => changeMode("join")}>
+              {tr("Have an invitation? Join the league")}
+            </button>
+            <button
+              className="text-button"
+              onClick={() => changeMode("create")}
+            >
+              {tr("Create your own league")}
+            </button>
+          </div>
+        )}
         <p className="tiny">
           {tr("Forgot your password? Ask your organiser to reset your access.")}
         </p>
