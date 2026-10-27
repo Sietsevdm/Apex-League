@@ -1,4 +1,5 @@
 import type { State, User } from "./model";
+import { canManageSeason } from "./leagues";
 
 export type ImportAction =
   "calendarImport" | "previousYearLineup" | "resultsImport";
@@ -61,7 +62,7 @@ export function validateImportSnapshot(
   if (
     user.id !== snapshot.actorId ||
     user.version !== snapshot.actorVersion ||
-    user.role !== "admin"
+    !canManageSeason(s, user, snapshot.seasonId)
   )
     reject("Your access changed while importing. Please sign in again.", 403);
   let current: ReturnType<typeof target>;

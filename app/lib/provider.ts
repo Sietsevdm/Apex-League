@@ -1,6 +1,6 @@
 type Json = Record<string, any>;
 const providerClock = globalThis as unknown as { apexProviderNextRequest?: number };
-async function waitForProviderSlot() {
+export async function waitForProviderSlot() {
   const now = Date.now();
   const start = Math.max(now, providerClock.apexProviderNextRequest || now);
   providerClock.apexProviderNextRequest = start + 300;

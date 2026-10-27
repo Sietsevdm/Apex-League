@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.19 — 27 October 2026
+
+- Add a sourced Did you know? card between the weekend banner and championship fight: 324 researched facts across 27 circuit venues, including distinct Madrid/Barcelona and Monza/Imola banks.
+- Show one fact for the banner's GP, retain it during ticking/polling and select a different one after a full browser refresh using per-tab previous-fact memory. Unknown circuits and practice rounds do not get guessed trivia.
+- Add six fact-catalogue, matching, rotation and rendering checks (106 total tests passing), primary-source links and maintenance documentation in app/GP_FACTS.md. Local browser refresh, card ordering, console and width checks pass.
+
+- Add Admin, Organiser and Player roles, owned leagues, a league selector, league creation and invitation-based joining for existing accounts. Admin can manage every league; Organiser can manage only their own leagues; Player can play and submit their own predictions.
+- Enforce ownership on the server for reads, mutations and provider imports. Isolate league settings, invitations, seasons, events, results and announcements; preserve existing Admin access, predictions and season history in the default league.
+- Replace two-tier management tabs with one grouped menu. Separate league membership controls from Admin-only site account/role management, backups, recovery and cleanup.
+- Add migration, menu rendering and multi-league permission regressions. All 106 tests, TypeScript and production build pass; the existing Next.js dependency security advisory remains outstanding. The in-app browser verified the overview card and refresh rotation without console errors or width overflow.
+
+- Fill session bars continuously from scheduled start, using estimated durations (60 minutes for practice/qualifying, 30 for Sprint, 120 for GP), with hidden-tab catch-up and reduced-motion support.
+- Subdue the green prediction-open badge and replace the text countdown with separate Days/Hrs/Min/Sec tiles.
+- Automatically confirm and publish complete GP/Sprint outcomes through the existing hourly worker, including qualifying pole, fastest lap, first retirement and official GP Driver of the Day. Catch up on unpublished past weekends in active seasons. Record provenance, audit and publication announcements; preserve published outcomes and organiser drafts.
+- Retry missing data; show organiser diagnostics for unavailable sources, unmatched drivers or ambiguous retirement order. Missing data is never automatically voided.
+
+
 Newest versions appear first. Versions before 0.8.0 were distributed as local release packages; 0.8.0 onward also publish GitHub releases and Docker images. Historical entries describe behavior at release time; use the deployment guide for current instructions.
 
 ## 0.8.18 — 19 October 2026

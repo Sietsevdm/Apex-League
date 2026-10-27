@@ -2,8 +2,9 @@
 import { useEffect, useState } from "react";
 import { startVisibleTicker } from "@/lib/visible-timer";
 import { useBannerWeather } from "../BannerWeather";
+import GrandPrixFact from "../GrandPrixFact";
 import { standingsMovement } from "@/lib/standings-movement";
-import { weekendSessions } from "@/lib/weekend-progress";
+import { weekendProgress } from "@/lib/weekend-progress";
 import { useLocale } from "@/lib/i18n";
 import {
   Season,
@@ -13,17 +14,8 @@ import {
   locked,
   standings,
 } from "@/lib/model";
-import {
-  ArrowUpRight,
-  ChevronRight,
-  MapPin,
-} from "lucide-react";
-import {
-  Empty,
-  Heading,
-  Pill,
-  StandingsTable,
-} from "./Shared";
+import { ArrowUpRight, ChevronRight, MapPin } from "lucide-react";
+import { Empty, Heading, Pill, StandingsTable } from "./Shared";
 function Banner({
   s,
   season,
@@ -41,9 +33,14 @@ function Banner({
   const [now, setNow] = useState(Date.now);
   useEffect(() => startVisibleTicker(() => setNow(Date.now())), []);
   const e = bannerEvent(s, season.id, now);
-  const weatherData = useBannerWeather(e?.id, !season.archived && !e?.practiceRound, e?.photo, meId);
+  const weatherData = useBannerWeather(
+    e?.id,
+    !season.archived && !e?.practiceRound,
+    e?.photo,
+    meId,
+  );
   const weather = weatherData?.weather;
-  const me = rows.find(row => row.id === meId);
+  const me = rows.find((row) => row.id === meId);
   if (!e)
     return (
       <Empty
@@ -75,140 +72,178 @@ function Banner({
     : now >= target
       ? tr(published ? "Results published" : "Race started")
       : `${Math.floor(seconds / 86400)}d ${pad(Math.floor(seconds / 3600) % 24)}:${pad(Math.floor(seconds / 60) % 60)}:${pad(seconds % 60)}`;
-  const sessions = weekendSessions(e);
-  // A session is done once the next starts, or its results are published.
-  const stages = sessions.map((session, i) => ({
-    ...session,
-    done:
-      session.published ||
-      sessions.slice(i + 1).some((next) => Date.parse(next.time) <= now),
-  }));
-  const active = stages.findIndex((session) => !session.done);
+  const stages = weekendProgress(e, now);
+  const active = stages.findIndex((session) => session.running);
+  const units = [
+    { value: Math.floor(seconds / 86400), label: "DAYS" },
+    { value: Math.floor(seconds / 3600) % 24, label: "HRS" },
+    { value: Math.floor(seconds / 60) % 60, label: "MIN" },
+    { value: seconds % 60, label: "SEC" },
+  ];
   return (
-    <section
-      className="hero hero-weekend"
-      style={{
-        backgroundImage: `linear-gradient(90deg,rgba(7,13,25,.84) 0%,rgba(7,13,25,.5) 45%,rgba(7,13,25,.15) 100%),url("${weatherData?.photo || e.photo || "/circuit-night.svg"}"),url("${e.photo || "/circuit-night.svg"}")`,
-        backgroundPosition: `0 0,center ${e.focal}%,center ${e.focal}%`,
-      }}
-    >
-      <div className="hero-top">
-        <Pill tone={nextDeadline ? "picks-open" : "picks-closed"}>
-          <span className="live-dot" />
-          {tr(nextDeadline ? "Predictions open" : "Predictions closed")}
-        </Pill>
-        {isSprint && <Pill>{tr("Sprint weekend")}</Pill>}
-      <div
-        className="prediction-readiness"
-        aria-label={tr("Your weekend predictions")}
+    <>
+      <section
+        className="hero hero-weekend"
+        style={{
+          backgroundImage: `linear-gradient(90deg,rgba(7,13,25,.84) 0%,rgba(7,13,25,.5) 45%,rgba(7,13,25,.15) 100%),url("${weatherData?.photo || e.photo || "/circuit-night.svg"}"),url("${e.photo || "/circuit-night.svg"}")`,
+          backgroundPosition: `0 0,center ${e.focal}%,center ${e.focal}%`,
+        }}
       >
-        {(["gp", ...(isSprint ? ["sprint"] : [])] as ("gp" | "sprint")[]).map(
-          (kind) => {
-            const entry = s.entries.find(
-              (entry) =>
-                entry.eventId === e.id &&
-                entry.userId === meId &&
-                entry.kind === kind,
-            );
-            const state = entry?.submitted
-              ? "Submitted"
-              : entry
-                ? "Draft"
-                : "Missing";
-            const closed = season.archived || locked(e, kind, now);
-            return (
-              <button
-                key={kind}
-                className={`entry-status ${state.toLowerCase()}`}
-                onClick={() => go("predict", e.id, kind)}
-              >
-                <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
-                {tr(state)}
-                {closed ? ` · ${tr("Locked")}` : ""}
-
-              </button>
-            );
-          },
-        )}
-      </div>
-        {weather && <a className="banner-weather" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer"
-          title={`${tr("Current weather at the circuit")} · ${date(weather.observedAt)} · Open-Meteo`}
-          aria-label={`${tr("Current weather at the circuit")}: ${weather.temperature}°C, ${tr(weather.label)}. Open-Meteo`}>
-          {weather.temperature}°C · {tr(weather.label)}{weather.condition === "night" ? ` · ${tr("Night")}` : ""}
-          <span>Open-Meteo</span>
-        </a>}
-      </div>
-      <div className="hero-copy">
-        <div className="eyebrow">
-          {tr(season.year)} {tr("WORLD CHAMPIONSHIP \u00B7 YOUR LEAGUE")}
-        </div>
-        <h2>{tr(e.name)}</h2>
-        <p>
-          <MapPin size={15} />
-          {e.circuit}
-          {" · "}
-          {e.country}
-        </p>
-        <div className="hero-bottom">
-          <button
-            className="primary"
-            onClick={() =>
-              go(published ? "results" : "predict", e.id, nextDeadline?.kind)
-            }
+        <div className="hero-top">
+          <Pill tone={nextDeadline ? "picks-open" : "picks-closed"}>
+            <span className="live-dot" />
+            {tr(nextDeadline ? "Predictions open" : "Predictions closed")}
+          </Pill>
+          {isSprint && <Pill>{tr("Sprint weekend")}</Pill>}
+          <div
+            className="prediction-readiness"
+            aria-label={tr("Your weekend predictions")}
           >
-            {tr(
-              published
-                ? "Explore the results"
-                : gpLocked
-                  ? "View your predictions"
-                  : "Make your predictions",
-            )}
-            <ArrowUpRight size={18} />
-          </button>
-          <div className="banner-countdown">
-            <small>
-              {tr(
-                nextDeadline
-                  ? nextDeadline.kind === "sprint"
-                    ? "SPRINT PREDICTIONS CLOSE IN"
-                    : "PREDICTIONS CLOSE IN"
-                  : "RACE START",
-              )}
-            </small>
-            <strong
-              role="timer"
-              aria-live="off"
-              title={date(
-                Number.isFinite(target) ? new Date(target).toISOString() : "",
-              )}
+            {(
+              ["gp", ...(isSprint ? ["sprint"] : [])] as ("gp" | "sprint")[]
+            ).map((kind) => {
+              const entry = s.entries.find(
+                (entry) =>
+                  entry.eventId === e.id &&
+                  entry.userId === meId &&
+                  entry.kind === kind,
+              );
+              const state = entry?.submitted
+                ? "Submitted"
+                : entry
+                  ? "Draft"
+                  : "Missing";
+              const closed = season.archived || locked(e, kind, now);
+              return (
+                <button
+                  key={kind}
+                  className={`entry-status ${state.toLowerCase()}`}
+                  onClick={() => go("predict", e.id, kind)}
+                >
+                  <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
+                  {tr(state)}
+                  {closed ? ` · ${tr("Locked")}` : ""}
+                </button>
+              );
+            })}
+          </div>
+          {weather && (
+            <a
+              className="banner-weather"
+              href="https://open-meteo.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`${tr("Current weather at the circuit")} · ${date(weather.observedAt)} · Open-Meteo`}
+              aria-label={`${tr("Current weather at the circuit")}: ${weather.temperature}°C, ${tr(weather.label)}. Open-Meteo`}
             >
-              {countdown}
-            </strong>
+              {weather.temperature}°C · {tr(weather.label)}
+              {weather.condition === "night" ? ` · ${tr("Night")}` : ""}
+              <span>Open-Meteo</span>
+            </a>
+          )}
+        </div>
+        <div className="hero-copy">
+          <div className="eyebrow">
+            {tr(season.year)} {tr("WORLD CHAMPIONSHIP \u00B7 YOUR LEAGUE")}
+          </div>
+          <h2>{tr(e.name)}</h2>
+          <p>
+            <MapPin size={15} />
+            {e.circuit}
+            {" · "}
+            {e.country}
+          </p>
+          <div className="hero-bottom">
+            <button
+              className="primary"
+              onClick={() =>
+                go(published ? "results" : "predict", e.id, nextDeadline?.kind)
+              }
+            >
+              {tr(
+                published
+                  ? "Explore the results"
+                  : gpLocked
+                    ? "View your predictions"
+                    : "Make your predictions",
+              )}
+              <ArrowUpRight size={18} />
+            </button>
+            <div className="banner-countdown">
+              <small>
+                {tr(
+                  nextDeadline
+                    ? nextDeadline.kind === "sprint"
+                      ? "SPRINT PREDICTIONS CLOSE IN"
+                      : "PREDICTIONS CLOSE IN"
+                    : "RACE START",
+                )}
+              </small>
+              <div
+                className="countdown-display"
+                role="timer"
+                aria-live="off"
+                title={date(
+                  Number.isFinite(target) ? new Date(target).toISOString() : "",
+                )}
+                aria-label={countdown}
+              >
+                {Number.isFinite(target) && now < target ? (
+                  <div className="countdown-units" aria-hidden="true">
+                    {units.map(({ value, label }, i) => (
+                      <div className="countdown-unit" key={label}>
+                        <strong>{i === 0 ? value : pad(value)}</strong>
+                        <span>{tr(label)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <strong>{countdown}</strong>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <dl className="banner-season-summary" aria-label={tr("Season summary")}>
-        <div><dt>{tr("YOUR POSITION")}</dt><dd>{me ? `P${me.rank}` : "—"}</dd><small>{tr(`${rows.length} players on the grid`)}</small></div>
-        <div><dt>{tr("SEASON POINTS")}</dt><dd>{me?.total || 0}</dd><small>{tr(`${(rows[0]?.total || 0) - (me?.total || 0)} points to the leader`)}</small></div>
-      </dl>
-      <ol className="weekend-progress" aria-label={tr("Weekend progress")}>
-        {stages.map((session, i) => (
-          <li
-            key={session.label}
-            className={session.done ? "done" : i === active ? "current" : ""}
-            aria-current={i === active ? "step" : undefined}
-            title={date(session.time)}
-          >
-            <span className="session-track" aria-hidden="true" />
-            <span>
-              {tr(session.label)}
-              {session.done ? ` · ${tr("done")}` : ""}
-            </span>
-          </li>
-        ))}
-      </ol>
-
-    </section>
+        <dl className="banner-season-summary" aria-label={tr("Season summary")}>
+          <div>
+            <dt>{tr("YOUR POSITION")}</dt>
+            <dd>{me ? `P${me.rank}` : "—"}</dd>
+            <small>{tr(`${rows.length} players on the grid`)}</small>
+          </div>
+          <div>
+            <dt>{tr("SEASON POINTS")}</dt>
+            <dd>{me?.total || 0}</dd>
+            <small>
+              {tr(
+                `${(rows[0]?.total || 0) - (me?.total || 0)} points to the leader`,
+              )}
+            </small>
+          </div>
+        </dl>
+        <ol className="weekend-progress" aria-label={tr("Weekend progress")}>
+          {stages.map((session, i) => (
+            <li
+              key={session.label}
+              className={session.done ? "done" : i === active ? "current" : ""}
+              aria-current={i === active ? "step" : undefined}
+              title={`${date(session.time)} · ${tr("Estimated session progress")}`}
+            >
+              <span className="session-track" aria-hidden="true">
+                <span
+                  className="session-fill"
+                  style={{ transform: `scaleX(${session.progress})` }}
+                />
+              </span>
+              <span>
+                {tr(session.label)}
+                {session.done ? ` · ${tr("done")}` : ""}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <GrandPrixFact key={`${season.id}:${e.id}`} event={e} />
+    </>
   );
 }
 function Home({

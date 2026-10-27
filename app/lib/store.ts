@@ -1,4 +1,5 @@
 import { migrateRegistration } from "./season-controls";
+import { migrateLeagues } from "./leagues";
 import { Pool } from "pg";
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -29,15 +30,25 @@ function pool() {
 async function ensureDatabase() {
   if (!globalStore.apexSchemaReady) {
     globalStore.apexSchemaReady = (async () => {
-      await pool().query("CREATE TABLE IF NOT EXISTS league_state (id INTEGER PRIMARY KEY, payload JSONB NOT NULL)");
-      await pool().query("INSERT INTO league_state(id,payload) VALUES(1,$1) ON CONFLICT DO NOTHING", [JSON.stringify(seed(false))]);
-    })().catch(error => { globalStore.apexSchemaReady = undefined; throw error; });
+      await pool().query(
+        "CREATE TABLE IF NOT EXISTS league_state (id INTEGER PRIMARY KEY, payload JSONB NOT NULL)",
+      );
+      await pool().query(
+        "INSERT INTO league_state(id,payload) VALUES(1,$1) ON CONFLICT DO NOTHING",
+        [JSON.stringify(seed(false))],
+      );
+    })().catch((error) => {
+      globalStore.apexSchemaReady = undefined;
+      throw error;
+    });
   }
   await globalStore.apexSchemaReady;
 }
 
 /** Read public presentation only, without locking or rewriting the league document. */
-export async function readPublicSettings(): Promise<ReturnType<typeof publicLoginData>> {
+export async function readPublicSettings(): Promise<
+  ReturnType<typeof publicLoginData>
+> {
   if (demoMode) {
     let settings: PublicSettings;
     try {
@@ -74,7 +85,9 @@ export async function readState(): Promise<State> {
     }
   }
   try {
-    const row = await pool().query("SELECT payload FROM league_state WHERE id=1");
+    const row = await pool().query(
+      "SELECT payload FROM league_state WHERE id=1",
+    );
     if (row.rows.length) {
       return row.rows[0].payload as State;
     }
@@ -103,6 +116,7 @@ export async function transaction<T>(
         }
         const before = JSON.stringify(s);
         migrateRegistration(s);
+        migrateLeagues(s);
         const result = await work(s);
         const after = JSON.stringify(s);
         if (before !== after || !(await fs.stat(file).catch(() => null))) {
@@ -124,9 +138,13 @@ export async function transaction<T>(
     const s: State = row.rows[0].payload;
     const before = JSON.stringify(s);
     migrateRegistration(s);
+    migrateLeagues(s);
     const result = await work(s);
     const after = JSON.stringify(s);
-    if (before !== after) await client.query("UPDATE league_state SET payload=$1 WHERE id=1", [after]);
+    if (before !== after)
+      await client.query("UPDATE league_state SET payload=$1 WHERE id=1", [
+        after,
+      ]);
     await client.query("COMMIT");
     return result;
   } catch (e) {

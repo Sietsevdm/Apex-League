@@ -13,6 +13,7 @@ async function run() {
     if (!response.ok)
       throw new Error(`Calendar scheduler returned ${response.status}`);
     const result = await response.json();
+    if (result.results?.length) console.log("Results check:", JSON.stringify(result.results));
     if (result.outcomes?.length)
       console.log("Calendar check:", JSON.stringify(result.outcomes));
     if (result.backup === "created" || result.backup === "failed")

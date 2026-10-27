@@ -162,7 +162,7 @@ export async function decorateImages<T>(data: T): Promise<T> {
             : "Default illustration",
       };
     });
-    if (s.users.find((u) => u.id === response.userId)?.role === "admin")
+    if (s.users.find((u) => u.id === response.userId)?.role !== "player")
       (s as any).imageMatches = matches;
   }
   return data;

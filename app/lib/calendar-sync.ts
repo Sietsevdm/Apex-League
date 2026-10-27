@@ -1,4 +1,5 @@
 import { mergeImportedLineup } from "./season-controls";
+import { leagueSettings } from "./leagues";
 import { randomUUID } from "node:crypto";
 import { State, Season, Event, cutoff, locked } from "./model";
 import { fetchCalendar, fetchLineup } from "./provider";
@@ -41,7 +42,13 @@ export function mergeCalendar(
       const id = s.events.some((e) => e.id === source.id)
         ? randomUUID()
         : source.id;
-      old = { ...source, id, seasonId: season.id, calendarSequence: 0, calendarModified: new Date(now).toISOString() };
+      old = {
+        ...source,
+        id,
+        seasonId: season.id,
+        calendarSequence: 0,
+        calendarModified: new Date(now).toISOString(),
+      };
       s.events.push(old);
       seen.add(id);
       changes.push(
@@ -181,16 +188,18 @@ export function recordCalendarSync(
       id: randomUUID(),
       date: at,
       actor,
+      leagueId: season.leagueId,
       action: `Calendar sync: ${changes.join("; ")}`,
     });
     s.audit = s.audit.slice(0, 1000);
-    s.settings.announcements.unshift({
+    leagueSettings(s, season.leagueId).announcements.unshift({
       id: randomUUID(),
       title: `${season.name} calendar updated`,
       body: changes.join("\n"),
       date: at,
     });
-    s.settings.announcements = s.settings.announcements.slice(0, 100);
+    const settings = leagueSettings(s, season.leagueId);
+    settings.announcements = settings.announcements.slice(0, 100);
   }
   return changes;
 }
@@ -221,7 +230,9 @@ export async function syncDueCalendars(
     try {
       const [incoming, lineup] = await Promise.all([
         fetcher(job.year),
-        fetcher === fetchCalendar ? fetchLineup(job.year).catch(() => undefined) : Promise.resolve(undefined),
+        fetcher === fetchCalendar
+          ? fetchLineup(job.year).catch(() => undefined)
+          : Promise.resolve(undefined),
       ]);
       const result = await transaction((s) => {
         const season = s.seasons.find((x) => x.id === job.id);
@@ -230,7 +241,9 @@ export async function syncDueCalendars(
         if (season.calendarSync.enabled && !season.archived) {
           if (lineup) mergeImportedLineup(season, lineup);
           recordCalendarSync(s, season, incoming, "Calendar scheduler", now);
-          if (!season.drivers.length) season.calendarSync.message += " Driver lineup unavailable; retrying on the next check.";
+          if (!season.drivers.length)
+            season.calendarSync.message +=
+              " Driver lineup unavailable; retrying on the next check.";
         }
         delete season.calendarSync.lease;
         delete season.calendarSync.leaseUntil;

@@ -5,5 +5,6 @@ export function contextHeaders(
   return {
     "X-Apex-Scope": context.scope,
     ...(context.seasonId ? { "X-Apex-Season": context.seasonId } : {}),
+    ...(context.leagueId ? { "X-Apex-League": context.leagueId } : {}),
   };
 }

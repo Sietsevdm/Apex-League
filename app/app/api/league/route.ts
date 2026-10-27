@@ -1,8 +1,23 @@
 import { scopedState, type ResponseContext } from "@/lib/response-scope";
+import {
+  authorizeManagement,
+  canManageLeague,
+  canManageSeason,
+  leagueSettings,
+  leagueView,
+  migrateLeagues,
+  selectLeague,
+} from "@/lib/leagues";
 import { mutationResponse, versioned } from "@/lib/state-response";
 import { pushAction, preparePushTest, sendPushTest } from "@/lib/push";
 import { importSnapshot, validateImportSnapshot } from "@/lib/manual-imports";
-import { registrationOpen, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "@/lib/season-controls";
+import {
+  registrationOpen,
+  predictionDrivers,
+  classifyImportedDrivers,
+  seasonNameMatches,
+  mergeImportedLineup,
+} from "@/lib/season-controls";
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { calendarSubscriptionAction } from "@/lib/calendar-subscriptions";
@@ -21,7 +36,12 @@ import {
   complete,
   emptyResult,
 } from "@/lib/model";
-import { importCalendar, importResults, openingDriverIds, fetchLineup } from "@/lib/provider";
+import {
+  importCalendar,
+  importResults,
+  openingDriverIds,
+  fetchLineup,
+} from "@/lib/provider";
 import { recordCalendarSync } from "@/lib/calendar-sync";
 import { validFonts } from "@/lib/typography";
 import {
@@ -34,7 +54,11 @@ import { passkeyAction } from "@/lib/passkeys";
 import { launchChecklist } from "@/lib/league-extras";
 import { submissionOverview } from "@/lib/enhancements";
 import { decorateImages } from "@/lib/banner-images";
-import { deleteArchivedSeasons, purgeSeasonData, purgeSeason } from "@/lib/data-cleanup";
+import {
+  deleteArchivedSeasons,
+  purgeSeasonData,
+  purgeSeason,
+} from "@/lib/data-cleanup";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const globalLimits = globalThis as unknown as {
@@ -63,14 +87,16 @@ function timestamp(x: unknown) {
   return new Date(v).toISOString();
 }
 function admin(u: User) {
-  if (u.role !== "admin") fail("Organiser access required.", 403);
+  if (u.role !== "admin" && u.role !== "organiser")
+    fail("Management access required.", 403);
 }
-function audit(s: State, u: User, action: string) {
+function audit(s: State, u: User, action: string, leagueId?: string) {
   s.audit.unshift({
     id: randomUUID(),
     date: new Date().toISOString(),
     actor: u.name,
     action,
+    leagueId: leagueId || "_site",
   });
   s.audit = s.audit.slice(0, 1000);
 }
@@ -117,7 +143,13 @@ function current(s: State, req: NextRequest) {
       )
     : undefined;
 }
-function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: string) {
+function view(
+  s: State,
+  u: User | undefined,
+  req?: NextRequest,
+  selectedId?: string,
+  leagueId?: string,
+) {
   if (!u)
     return {
       authenticated: false,
@@ -128,16 +160,38 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
       typography: s.settings.typography,
       theme: s.settings.theme,
     };
+  s = leagueView(
+    s,
+    u,
+    leagueId || req?.headers.get("x-apex-league") || undefined,
+    selectedId || req?.headers.get("x-apex-season") || undefined,
+  );
+  const manager = Boolean(
+    s.selectedLeagueId && canManageLeague(s, u, s.selectedLeagueId),
+  );
   const savedPhotos = s.settings.savedBannerPhotos;
   const scope = req?.headers.get("x-apex-scope");
-  if (scope && !["season", "archive", "admin"].includes(scope)) fail("Unknown response scope.");
+  if (scope && !["season", "archive", "admin"].includes(scope))
+    fail("Unknown response scope.");
   if (scope === "admin") admin(u);
-  const projection = scope ? scopedState(s, u, { scope: scope as ResponseContext["scope"], seasonId: selectedId || req?.headers.get("x-apex-season") || undefined }) : undefined;
+  if (scope === "admin" && !manager)
+    fail("You can only manage leagues you created.", 403);
+  const projection = scope
+    ? scopedState(s, u, {
+        scope: scope as ResponseContext["scope"],
+        seasonId: selectedId || req?.headers.get("x-apex-season") || undefined,
+        leagueId: s.selectedLeagueId,
+      })
+    : undefined;
   if (projection) s = projection.state;
   const safe = structuredClone(s) as any;
   delete safe.push;
   if (projection?.summaries) safe.seasonSummaries = projection.summaries;
-  if (projection && savedPhotos) Object.defineProperty(safe.settings, "savedBannerPhotos", { value: savedPhotos, enumerable: false });
+  if (projection && savedPhotos)
+    Object.defineProperty(safe.settings, "savedBannerPhotos", {
+      value: savedPhotos,
+      enumerable: false,
+    });
   safe.seasons.forEach((season: Season) => {
     if (season.calendarSync) {
       delete season.calendarSync.lease;
@@ -145,6 +199,12 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
     }
   });
   delete safe.passkeyChallenges;
+  safe.events.forEach((event: Event) => {
+    for (const sync of Object.values(event.resultSync || {})) {
+      delete sync.lease;
+      delete sync.leaseUntil;
+    }
+  });
   safe.submissionOverview = Object.fromEntries(
     s.events.map((e) => [
       e.id,
@@ -154,7 +214,7 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
       },
     ]),
   );
-  if (u.role === "admin")
+  if (manager)
     safe.replacementCounts = Object.fromEntries(
       s.events.map((e) => [
         e.id,
@@ -189,11 +249,21 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
     );
   if (u.role !== "admin") delete safe.backupHealth;
   safe.receipts = (s.receipts || []).filter((r) => r.userId === u.id);
-  safe.resultCorrections = (s.resultCorrections || []).filter(correction =>
-    s.events.some(event => event.id === correction.eventId && event[correction.kind]?.published && locked(event, correction.kind)));
-  if (u.role === "admin")
+  safe.resultCorrections = (s.resultCorrections || []).filter((correction) =>
+    s.events.some(
+      (event) =>
+        event.id === correction.eventId &&
+        event[correction.kind]?.published &&
+        locked(event, correction.kind),
+    ),
+  );
+  if (manager)
     safe.launchChecks = Object.fromEntries(
-      s.seasons.filter(season => !projection || season.id === projection.context.seasonId).map((season) => [season.id, launchChecklist(s, season)]),
+      s.seasons
+        .filter(
+          (season) => !projection || season.id === projection.context.seasonId,
+        )
+        .map((season) => [season.id, launchChecklist(s, season)]),
     );
   safe.users = s.users.map((v) => ({
     id: v.id,
@@ -201,7 +271,12 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
     role: v.role,
     active: v.active,
     seasonIds: v.seasonIds,
-    ...(v.id === u.id || u.role === "admin" ? {pushEnabled:s.push?.subscriptions.some(sub=>sub.userId===v.id)||false} : {}),
+    ...(v.id === u.id || u.role === "admin"
+      ? {
+          pushEnabled:
+            s.push?.subscriptions.some((sub) => sub.userId === v.id) || false,
+        }
+      : {}),
     ...(v.id === u.id || u.role === "admin"
       ? {
           email: v.email,
@@ -233,54 +308,94 @@ function view(s: State, u: User | undefined, req?: NextRequest, selectedId?: str
       Date.now() >=
         Date.parse(s.seasons.find((x) => x.id === p.seasonId)!.cutoff),
   );
-  if (u.role !== "admin") {
+  if (!manager) {
     safe.settings.invite = "";
     safe.audit = [];
     safe.events = safe.events.map((e: Event) => ({
       ...e,
       gpDraft: undefined,
       sprintDraft: undefined,
+      resultSync: undefined,
       gp: e.gp?.published ? e.gp : undefined,
       sprint: e.sprint?.published ? e.sprint : undefined,
     }));
   }
-  return { authenticated: true, demo: demoMode, userId: u.id, state: safe, ...(projection ? { context: projection.context } : {}) };
+  return {
+    authenticated: true,
+    demo: demoMode,
+    userId: u.id,
+    state: safe,
+    context: projection?.context || {
+      scope: "season",
+      leagueId: s.selectedLeagueId,
+    },
+  };
 }
 const lineupRefreshAttempts = new Map<string, number>();
 async function refreshImportedLineups(req: NextRequest) {
   const candidates = await (async () => {
     const s = await readState();
     if (!current(s, req)) return [];
-    return s.seasons.filter(season => !season.archived && season.drivers.length > 20 && season.drivers.some(d => d.replacementOnly === undefined) && Date.now() - (lineupRefreshAttempts.get(season.id) || 0) > 60 * 60 * 1000)
-      .map(season => ({ id: season.id, year: season.year }));
+    return s.seasons
+      .filter(
+        (season) =>
+          !season.archived &&
+          season.drivers.length > 20 &&
+          season.drivers.some((d) => d.replacementOnly === undefined) &&
+          Date.now() - (lineupRefreshAttempts.get(season.id) || 0) >
+            60 * 60 * 1000,
+      )
+      .map((season) => ({ id: season.id, year: season.year }));
   })();
   for (const candidate of candidates) {
     lineupRefreshAttempts.set(candidate.id, Date.now());
     try {
       const starters = await openingDriverIds(candidate.year);
-      await transaction(s => {
-        const season = s.seasons.find(season => season.id === candidate.id && season.year === candidate.year);
+      await transaction((s) => {
+        const season = s.seasons.find(
+          (season) =>
+            season.id === candidate.id && season.year === candidate.year,
+        );
         if (season) classifyImportedDrivers(season, starters);
       });
-    } catch { /* Keep the saved lineup when the calendar provider is unavailable; retry later. */ }
+    } catch {
+      /* Keep the saved lineup when the calendar provider is unavailable; retry later. */
+    }
   }
 }
 export async function GET(req: NextRequest) {
   try {
     await refreshImportedLineups(req);
     let snapshot = await readState();
-    const needsMaintenance = (!demoMode && !snapshot.users.length) || snapshot.seasons.some(season => season.registrationClosed === undefined) || snapshot.events.some(e =>
-      (!e.lockedGp && Date.now() >= Date.parse(cutoff(e, "gp"))) ||
-      (e.sprintQualifying && !e.lockedSprint && Date.now() >= Date.parse(cutoff(e, "sprint"))));
-    if (needsMaintenance) snapshot = await transaction(async s => {
-      await bootstrap(s);
-      tick(s);
-      return structuredClone(s);
-    });
+    const needsMaintenance =
+      (!demoMode && !snapshot.users.length) ||
+      snapshot.seasons.some(
+        (season) => season.registrationClosed === undefined,
+      ) ||
+      snapshot.events.some(
+        (e) =>
+          (!e.lockedGp && Date.now() >= Date.parse(cutoff(e, "gp"))) ||
+          (e.sprintQualifying &&
+            !e.lockedSprint &&
+            Date.now() >= Date.parse(cutoff(e, "sprint"))),
+      );
+    if (needsMaintenance)
+      snapshot = await transaction(async (s) => {
+        await bootstrap(s);
+        tick(s);
+        return structuredClone(s);
+      });
     const data = view(snapshot, current(snapshot, req), req);
     const result = versioned(await decorateImages(data));
-    const headers = { "Cache-Control": "private, no-store", "Vary": "Cookie, X-Apex-Scope, X-Apex-Season", ...(result.revision ? { ETag: `"${result.revision}"` } : {}) };
-    if (result.revision && req.headers.get("if-none-match") === `"${result.revision}"`)
+    const headers = {
+      "Cache-Control": "private, no-store",
+      Vary: "Cookie, X-Apex-Scope, X-Apex-Season, X-Apex-League",
+      ...(result.revision ? { ETag: `"${result.revision}"` } : {}),
+    };
+    if (
+      result.revision &&
+      req.headers.get("if-none-match") === `"${result.revision}"`
+    )
       return new NextResponse(null, { status: 304, headers });
     return NextResponse.json(result, { headers });
   } catch (e) {
@@ -300,22 +415,43 @@ function error(e: unknown) {
   );
 }
 async function prepareManualImport(req: NextRequest, body: any) {
-  if (!["calendarImport", "previousYearLineup", "resultsImport"].includes(body.action)) return;
-  const snapshot = await transaction(async s => {
+  if (
+    !["calendarImport", "previousYearLineup", "resultsImport"].includes(
+      body.action,
+    )
+  )
+    return;
+  const snapshot = await transaction(async (s) => {
     await bootstrap(s);
     tick(s);
     const user = current(s, req);
     if (!user) fail("Please sign in.", 401);
     admin(user);
+    authorizeManagement(
+      s,
+      user,
+      body,
+      req.headers.get("x-apex-league") || undefined,
+    );
     return importSnapshot(s, user, body);
   });
   // No transaction or league write lock is held during these network requests.
   try {
-    if (body.action === "calendarImport") return { snapshot, calendar: await importCalendar(snapshot.year) };
-    if (body.action === "previousYearLineup") return { snapshot, lineup: await fetchLineup(snapshot.year - 1) };
-    return { snapshot, results: await importResults(snapshot.year, snapshot.round!, body.kind === "sprint" ? "sprint" : "gp") };
+    if (body.action === "calendarImport")
+      return { snapshot, calendar: await importCalendar(snapshot.year) };
+    if (body.action === "previousYearLineup")
+      return { snapshot, lineup: await fetchLineup(snapshot.year - 1) };
+    return {
+      snapshot,
+      results: await importResults(
+        snapshot.year,
+        snapshot.round!,
+        body.kind === "sprint" ? "sprint" : "gp",
+      ),
+    };
   } catch (error) {
-    if (body.action === "calendarImport") return { snapshot, error: error as Error };
+    if (body.action === "calendarImport")
+      return { snapshot, error: error as Error };
     throw error;
   }
 }
@@ -392,7 +528,7 @@ export async function POST(req: NextRequest) {
         );
         if (!season || !registrationOpen(season))
           fail("Registration for this season is closed.");
-        if (text(b.invite) !== s.settings.invite)
+        if (text(b.invite) !== leagueSettings(s, season.leagueId).invite)
           fail("The invitation is invalid.");
         const email = text(b.email).toLowerCase();
         if (
@@ -418,26 +554,46 @@ export async function POST(req: NextRequest) {
         if (!u.name) fail("Enter a display name.");
         s.users.push(u);
         cookie = session(u.id, 0);
-        audit(s, u, "Joined the league");
+        audit(s, u, "Joined the league", season.leagueId);
         return view(s, u, req, responseSeasonId);
       }
       if (b.action === "publicInfo")
         return {
           seasons: s.seasons
-            .filter((x) => !x.archived)
-            .map((x) => ({ id: x.id, name: x.name, registrationClosed: !registrationOpen(x) })),
+            .filter(
+              (x) =>
+                !x.archived &&
+                (!b.invite
+                  ? x.leagueId === s.leagues?.[0]?.id
+                  : leagueSettings(s, x.leagueId).invite === b.invite),
+            )
+            .map((x) => ({
+              id: x.id,
+              name: x.name,
+              registrationClosed: !registrationOpen(x),
+            })),
         };
       if (!u) fail("Please sign in.", 401);
-      if (["calendarSubscriptionStatus", "calendarSubscriptionCreate", "calendarSubscriptionRevoke"].includes(b.action))
+      if (
+        [
+          "calendarSubscriptionStatus",
+          "calendarSubscriptionCreate",
+          "calendarSubscriptionRevoke",
+        ].includes(b.action)
+      )
         return calendarSubscriptionAction(s, u, b);
-      if(b.action === "pushTest") {
-        limit(`push-test:${u.id}`,3);
-        pushTest=preparePushTest(s,u,b.endpoint);
-        return {push:{test:true}};
+      if (b.action === "pushTest") {
+        limit(`push-test:${u.id}`, 3);
+        pushTest = preparePushTest(s, u, b.endpoint);
+        return { push: { test: true } };
       }
-      if (["pushStatus","pushSubscribe","pushUnsubscribe"].includes(b.action)) return pushAction(s,u,b);
+      if (["pushStatus", "pushSubscribe", "pushUnsubscribe"].includes(b.action))
+        return pushAction(s, u, b);
       if (b.action === "logout") {
-        if(s.push && b.pushEndpoint) s.push.subscriptions=s.push.subscriptions.filter(sub=>!(sub.userId===u.id&&sub.endpoint===b.pushEndpoint));
+        if (s.push && b.pushEndpoint)
+          s.push.subscriptions = s.push.subscriptions.filter(
+            (sub) => !(sub.userId === u.id && sub.endpoint === b.pushEndpoint),
+          );
         logout = true;
         return view(s, undefined, req, responseSeasonId);
       }
@@ -529,12 +685,22 @@ export async function POST(req: NextRequest) {
         );
         if (i < 0) s.entries.push(entry);
         else s.entries[i] = entry;
-        if (entry.submitted || s.receipts?.some(receipt => receipt.userId === u!.id && receipt.eventId === e.id && receipt.kind === kind)) {
+        if (
+          entry.submitted ||
+          s.receipts?.some(
+            (receipt) =>
+              receipt.userId === u!.id &&
+              receipt.eventId === e.id &&
+              receipt.kind === kind,
+          )
+        ) {
           s.receipts ??= [];
           s.receipts.push({
             id: randomUUID(),
             status: entry.submitted ? "submitted" : "draft",
-            driverNames: Object.fromEntries(season.drivers.map(driver => [driver.id, driver.name])),
+            driverNames: Object.fromEntries(
+              season.drivers.map((driver) => [driver.id, driver.name]),
+            ),
             userId: u.id,
             eventId: e.id,
             kind,
@@ -570,12 +736,60 @@ export async function POST(req: NextRequest) {
         s.championPicks.push(pick);
         return view(s, u, req, responseSeasonId);
       }
+      if (b.action === "leagueCreate") {
+        admin(u);
+        const id = randomUUID();
+        const name = text(b.name, 80);
+        if (!name) fail("Enter a league name.");
+        s.leagues!.push({
+          id,
+          name,
+          ownerId: u.id,
+          createdAt: new Date().toISOString(),
+          settings: {
+            ...structuredClone(s.settings),
+            name,
+            invite: randomUUID(),
+            bannerOverride: "",
+            announcements: [],
+            savedBannerPhotos: [],
+          },
+        });
+        audit(s, u, `Created league: ${name}`, id);
+        return view(s, u, undefined, undefined, id);
+      }
+      if (b.action === "joinLeague") {
+        const invite = text(b.invite, 200);
+        const league = s.leagues?.find(
+          (l) => leagueSettings(s, l.id).invite === invite,
+        );
+        if (!league) fail("The invitation is invalid.");
+        const season = s.seasons
+          .filter(
+            (x) =>
+              x.leagueId === league.id && registrationOpen(x) && !x.archived,
+          )
+          .at(-1);
+        if (!season) fail("Registration for this season is closed.");
+        if (!u.seasonIds.includes(season.id)) u.seasonIds.push(season.id);
+        audit(s, u, "Joined the league", league.id);
+        return view(s, u, undefined, season.id, league.id);
+      }
       admin(u);
+      const managedLeague = authorizeManagement(
+        s,
+        u,
+        b,
+        req.headers.get("x-apex-league") || undefined,
+      );
+      const settings = leagueSettings(s, managedLeague.id);
+      const auditLeague = (state: State, user: User, action: string) =>
+        audit(state, user, action, managedLeague.id);
       if (preparedImport) validateImportSnapshot(s, u, preparedImport.snapshot);
       if (b.action === "backupCreate") {
         try {
           const result = await createBackup(s);
-          audit(s, u, "Created encrypted league backup");
+          auditLeague(s, u, "Created encrypted league backup");
           return { backup: result };
         } catch (e) {
           return { error: (e as Error).message, backupError: true };
@@ -609,7 +823,7 @@ export async function POST(req: NextRequest) {
         await createBackup(s);
         Object.keys(s).forEach((k) => delete (s as any)[k]);
         Object.assign(s, restored);
-        audit(
+        auditLeague(
           s,
           u,
           "Restored league backup; previous state saved before restore",
@@ -649,7 +863,13 @@ export async function POST(req: NextRequest) {
             team = text(b.team, 80);
           if (!name || season.drivers.length >= 40)
             fail("Enter a driver name.");
-          season.drivers.push({ id: to, name, team, color: "#8BA7BD", replacementOnly: true });
+          season.drivers.push({
+            id: to,
+            name,
+            team,
+            color: "#8BA7BD",
+            replacementOnly: true,
+          });
         }
         const rule = {
           from,
@@ -670,13 +890,13 @@ export async function POST(req: NextRequest) {
             event[key]!.replacements = (event.replacements || []).filter(
               (r) => r.kind === (key === "gpDraft" ? "gp" : "sprint"),
             );
-        s.settings.announcements.unshift({
+        settings.announcements.unshift({
           id: randomUUID(),
           title: `Driver replacement · ${event.name}`,
           body: `${from} → ${to} (${kind}): ${b.policy === "carry" ? "picks follow the replacement driver" : "original driver picks remain"}. ${rule.note}`,
           date: new Date().toISOString(),
         });
-        audit(
+        auditLeague(
           s,
           u,
           `Replacement ${event.name} ${kind}: ${from} → ${to}, ${b.policy}. ${rule.note}`,
@@ -695,30 +915,41 @@ export async function POST(req: NextRequest) {
           fail("Font sizes must be between 85% and 140%.");
         if (sizes.groups && !validFonts(sizes.groups))
           fail("Invalid font controls.");
-        s.settings.typography = {
+        settings.typography = {
           text: sizes.text,
           headings: sizes.headings,
           banner: sizes.banner,
           ...(sizes.groups ? { groups: structuredClone(sizes.groups) } : {}),
         };
-        audit(s, u, "Updated font sizes");
+        auditLeague(s, u, "Updated font sizes");
       } else if (b.action === "loginText") {
-        const fields = ["eyebrow", "headline", "accent", "description", "footer", "welcome", "subtitle"] as const;
-        if (!b.loginText || typeof b.loginText !== "object") fail("Invalid login text.");
-        s.settings.loginText = Object.fromEntries(fields.map(key => [key, text(b.loginText[key] ?? "", 500)]));
-        audit(s, u, "Updated login screen text");
+        const fields = [
+          "eyebrow",
+          "headline",
+          "accent",
+          "description",
+          "footer",
+          "welcome",
+          "subtitle",
+        ] as const;
+        if (!b.loginText || typeof b.loginText !== "object")
+          fail("Invalid login text.");
+        s.settings.loginText = Object.fromEntries(
+          fields.map((key) => [key, text(b.loginText[key] ?? "", 500)]),
+        );
+        auditLeague(s, u, "Updated login screen text");
       } else if (b.action === "branding") {
-        s.settings.name = text(b.name, 80) || s.settings.name;
-        s.settings.welcome = text(b.welcome, 500);
+        settings.name = text(b.name, 80) || settings.name;
+        settings.welcome = text(b.welcome, 500);
         if (b.logo !== undefined) {
           if (
             b.logo &&
             !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(b.logo)
           )
             fail("Upload a PNG, JPEG or WebP image.");
-          s.settings.logo = text(b.logo, 1_500_000);
+          settings.logo = text(b.logo, 1_500_000);
         }
-        audit(s, u, "Updated league branding");
+        auditLeague(s, u, "Updated league branding");
       } else if (b.action === "banner") {
         const e = s.events.find((v) => v.id === b.eventId);
         if (!e) fail("Unknown event.");
@@ -731,37 +962,49 @@ export async function POST(req: NextRequest) {
           )
             fail("Upload a PNG, JPEG or WebP image.");
           e.photo = text(b.photo, 3_000_000);
-          const year = s.seasons.find((season) => season.id === e.seasonId)!.year;
-          if (s.settings.savedBannerPhotos)
-            s.settings.savedBannerPhotos = s.settings.savedBannerPhotos.filter((photo) => !(photo.year === year && photo.name === e.name && photo.circuit === e.circuit));
+          const year = s.seasons.find(
+            (season) => season.id === e.seasonId,
+          )!.year;
+          if (settings.savedBannerPhotos)
+            settings.savedBannerPhotos = settings.savedBannerPhotos.filter(
+              (photo) =>
+                !(
+                  photo.year === year &&
+                  photo.name === e.name &&
+                  photo.circuit === e.circuit
+                ),
+            );
         }
         e.credit = text(b.credit, 200);
         e.focal = Math.max(0, Math.min(100, Number(b.focal) || 0));
-        s.settings.bannerOverride = b.override ? e.id : "";
-        audit(s, u, `Updated banner for ${e.name}`);
+        settings.bannerOverride = b.override ? e.id : "";
+        auditLeague(s, u, `Updated banner for ${e.name}`);
       } else if (b.action === "announcement") {
-        s.settings.announcements.unshift({
+        settings.announcements.unshift({
           id: randomUUID(),
           title: text(b.title, 100),
           body: text(b.body, 2000),
           date: new Date().toISOString(),
         });
-        audit(s, u, "Published announcement");
+        auditLeague(s, u, "Published announcement");
       } else if (b.action === "deleteAnnouncement") {
-        s.settings.announcements = s.settings.announcements.filter(
+        settings.announcements = settings.announcements.filter(
           (x) => x.id !== b.id,
         );
-        audit(s, u, "Removed announcement");
+        auditLeague(s, u, "Removed announcement");
       } else if (b.action === "rotateInvite") {
-        s.settings.invite = randomUUID();
-        audit(s, u, "Revoked old invitation link");
+        settings.invite = randomUUID();
+        auditLeague(s, u, "Revoked old invitation link");
       } else if (b.action === "member") {
         const member = s.users.find((v) => v.id === b.id);
         if (!member || member.id === u.id)
           fail("Cannot change your own access here.");
-        if (b.role && !["admin", "player"].includes(b.role))
+        if (b.role && !["admin", "organiser", "player"].includes(b.role))
           fail("Invalid role.");
-        if (b.role) member.role = b.role;
+        if (b.role) {
+          member.role = b.role;
+          member.version++;
+        }
         if (typeof b.active === "boolean") {
           member.active = b.active;
           member.version++;
@@ -773,7 +1016,25 @@ export async function POST(req: NextRequest) {
           if (!member.seasonIds.includes(season.id))
             member.seasonIds.push(season.id);
         }
-        audit(s, u, `Updated access for ${member.name}`);
+        auditLeague(s, u, `Updated access for ${member.name}`);
+      } else if (b.action === "removeLeagueMember") {
+        const member = s.users.find((x) => x.id === b.id);
+        if (
+          !member ||
+          member.id === u.id ||
+          member.id === managedLeague.ownerId
+        )
+          fail("Cannot remove the league owner or your own membership here.");
+        const ids = new Set(
+          s.seasons
+            .filter((x) => x.leagueId === managedLeague.id)
+            .map((x) => x.id),
+        );
+        member.seasonIds = member.seasonIds.filter((id) => !ids.has(id));
+        member.calendarSubscriptions = member.calendarSubscriptions?.filter(
+          (sub) => !ids.has(sub.seasonId),
+        );
+        auditLeague(s, u, `Removed ${member.name} from this league`);
       } else if (b.action === "resetPassword") {
         const member = s.users.find((v) => v.id === b.id);
         if (!member || member.id === u.id)
@@ -782,13 +1043,17 @@ export async function POST(req: NextRequest) {
         if (password.length < 12) fail("Use at least 12 characters.");
         member.password = hashPassword(password);
         member.version++;
-        audit(s, u, `Reset account access for ${member.name}`);
+        auditLeague(s, u, `Reset account access for ${member.name}`);
       } else if (b.action === "registration") {
-        const season = s.seasons.find(x => x.id === b.seasonId);
+        const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season || season.archived) fail("Choose an active season.");
         if (typeof b.closed !== "boolean") fail("Choose registration status.");
         season.registrationClosed = b.closed;
-        audit(s, u, `${b.closed ? "Closed" : "Opened"} registration for ${season.name}`);
+        auditLeague(
+          s,
+          u,
+          `${b.closed ? "Closed" : "Opened"} registration for ${season.name}`,
+        );
       } else if (b.action === "createSeason") {
         const year = Number(b.year);
         if (!Number.isInteger(year) || year < 1950 || year > 2100)
@@ -798,8 +1063,9 @@ export async function POST(req: NextRequest) {
           id: randomUUID(),
           year,
           name: text(b.name, 100) || `${year} season`,
-          drivers: previous?.drivers || [],
-          constructors: previous?.constructors || [],
+          leagueId: managedLeague.id,
+          drivers: structuredClone(previous?.drivers || []),
+          constructors: structuredClone(previous?.constructors || []),
           registrationClosed: false,
           cutoff: timestamp(b.cutoff),
           archived: false,
@@ -808,7 +1074,7 @@ export async function POST(req: NextRequest) {
         s.seasons.push(season);
         responseSeasonId = season.id;
         u.seasonIds.push(season.id);
-        audit(s, u, `Created ${season.name}`);
+        auditLeague(s, u, `Created ${season.name}`);
       } else if (b.action === "lineup") {
         const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season || Date.now() >= Date.parse(season.cutoff))
@@ -829,24 +1095,32 @@ export async function POST(req: NextRequest) {
           color: /^#[\da-f]{6}$/i.test(d.color) ? d.color : "#8BA7BD",
         }));
         season.constructors = b.constructors.map((x: any) => text(x, 80));
-        audit(s, u, "Updated season lineup");
+        auditLeague(s, u, "Updated season lineup");
       } else if (b.action === "calendarSyncSettings") {
         const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season) fail("Unknown season.");
         season.calendarSync ??= { enabled: false };
         season.calendarSync.enabled = Boolean(b.enabled);
-        audit(
+        auditLeague(
           s,
           u,
           `${season.calendarSync.enabled ? "Enabled" : "Disabled"} daily calendar sync for ${season.name}`,
         );
       } else if (b.action === "previousYearLineup") {
-        const season = s.seasons.find(x => x.id === b.seasonId && !x.archived);
-        if (!season || season.drivers.length) fail("Choose an active season with an empty lineup.");
+        const season = s.seasons.find(
+          (x) => x.id === b.seasonId && !x.archived,
+        );
+        if (!season || season.drivers.length)
+          fail("Choose an active season with an empty lineup.");
         const imported = preparedImport!.lineup!;
-        if (!imported.drivers.length) fail("No lineup is available for the previous year.");
+        if (!imported.drivers.length)
+          fail("No lineup is available for the previous year.");
         mergeImportedLineup(season, imported);
-        audit(s, u, `Imported ${season.year - 1} lineup as a starting point for ${season.name}; review drivers and teams`);
+        auditLeague(
+          s,
+          u,
+          `Imported ${season.year - 1} lineup as a starting point for ${season.name}; review drivers and teams`,
+        );
       } else if (b.action === "calendarImport") {
         const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season) fail("Unknown season.");
@@ -855,8 +1129,9 @@ export async function POST(req: NextRequest) {
           const imported = preparedImport!.calendar!;
           mergeImportedLineup(season, imported);
           recordCalendarSync(s, season, imported.events, u.name);
-          if (!season.drivers.length) season.calendarSync!.message += " Driver lineup is not published by Jolpica yet. Copy a lineup from another season or enter it manually.";
-
+          if (!season.drivers.length)
+            season.calendarSync!.message +=
+              " Driver lineup is not published by Jolpica yet. Copy a lineup from another season or enter it manually.";
         } catch (error) {
           season.calendarSync ??= { enabled: false };
           season.calendarSync.lastAttempt = new Date().toISOString();
@@ -877,8 +1152,18 @@ export async function POST(req: NextRequest) {
           calendarSequence: (old?.calendarSequence || 0) + 1,
           calendarModified: new Date().toISOString(),
           practice: timestamp(b.practice),
-          practice2: b.practice2 === undefined ? old?.practice2 : b.practice2 ? timestamp(b.practice2) : undefined,
-          practice3: b.practice3 === undefined ? old?.practice3 : b.practice3 ? timestamp(b.practice3) : undefined,
+          practice2:
+            b.practice2 === undefined
+              ? old?.practice2
+              : b.practice2
+                ? timestamp(b.practice2)
+                : undefined,
+          practice3:
+            b.practice3 === undefined
+              ? old?.practice3
+              : b.practice3
+                ? timestamp(b.practice3)
+                : undefined,
           qualifying: timestamp(b.qualifying),
           race: timestamp(b.race),
           sprintQualifying: b.sprintQualifying
@@ -942,7 +1227,7 @@ export async function POST(req: NextRequest) {
               first.sprintQualifying ? "sprint" : "gp",
             );
         }
-        audit(s, u, `Updated schedule: ${e.name}`);
+        auditLeague(s, u, `Updated schedule: ${e.name}`);
       } else if (b.action === "resultsImport") {
         const e = s.events.find((x) => x.id === b.eventId),
           season = s.seasons.find((x) => x.id === e?.seasonId);
@@ -1039,10 +1324,18 @@ export async function POST(req: NextRequest) {
           voids: r.voids,
           published: Boolean(r.published),
         };
-        recordCorrection(s, e, kind, nextResult, u.name, text(b.reason || "", 300));
-        e[r.published ? kind : kind === "gp" ? "gpDraft" : "sprintDraft"] = nextResult;
+        recordCorrection(
+          s,
+          e,
+          kind,
+          nextResult,
+          u.name,
+          text(b.reason || "", 300),
+        );
+        e[r.published ? kind : kind === "gp" ? "gpDraft" : "sprintDraft"] =
+          nextResult;
         if (r.published) delete e[kind === "gp" ? "gpDraft" : "sprintDraft"];
-        audit(
+        auditLeague(
           s,
           u,
           `${r.published ? "Published" : "Saved draft"} ${kind} results: ${e.name}. ${text(b.reason || "", 300)}`,
@@ -1061,52 +1354,88 @@ export async function POST(req: NextRequest) {
         if (!final || Date.now() < Date.parse(final.race))
           fail("Award championship points only after the final race.");
         season.champions = { driver: b.driver, constructor: b.constructor };
-        audit(s, u, `Confirmed champions for ${season.name}`);
+        auditLeague(s, u, `Confirmed champions for ${season.name}`);
       } else if (b.action === "archive") {
         const season = s.seasons.find((x) => x.id === b.seasonId);
         if (!season) fail("Unknown season.");
         season.archived = Boolean(b.archived);
-        audit(
+        auditLeague(
           s,
           u,
           `${season.archived ? "Archived" : "Reopened"} ${season.name}`,
         );
       } else if (b.action === "deleteArchivedSeason") {
-        const season = s.seasons.find(season => season.id === b.seasonId && season.archived);
+        const season = s.seasons.find(
+          (season) => season.id === b.seasonId && season.archived,
+        );
         if (!season) fail("Select an archived season.");
-        if (typeof b.confirmation !== "string" || !seasonNameMatches(b.confirmation, season.name)) fail("Type the season name to confirm.");
-        try { await createBackup(s); }
-        catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
+        if (
+          typeof b.confirmation !== "string" ||
+          !seasonNameMatches(b.confirmation, season.name)
+        )
+          fail("Type the season name to confirm.");
+        try {
+          await createBackup(s);
+        } catch (error) {
+          fail(`Deletion cancelled: ${(error as Error).message}`);
+        }
         deleteArchivedSeasons(s, [season.id]);
-        audit(s, u, `Deleted archived season: ${season.name}`);
+        auditLeague(s, u, `Deleted archived season: ${season.name}`);
       } else if (b.action === "purgeSeason") {
         const season = s.seasons.find((season) => season.id === b.seasonId);
         if (!season) fail("Unknown season.");
-        if (typeof b.confirmation !== "string" || !seasonNameMatches(b.confirmation, season.name)) fail("Type the season name to confirm.");
-        try { await createBackup(s); }
-        catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
+        if (
+          typeof b.confirmation !== "string" ||
+          !seasonNameMatches(b.confirmation, season.name)
+        )
+          fail("Type the season name to confirm.");
+        try {
+          await createBackup(s);
+        } catch (error) {
+          fail(`Deletion cancelled: ${(error as Error).message}`);
+        }
         purgeSeason(s, season.id);
-        audit(s, u, `Purged season: ${season.name}`);
-      } else if (b.action === "deleteSeasons" || b.action === "purgeSeasonData") {
-        const phrase = b.action === "deleteSeasons" ? "DELETE ARCHIVED SEASONS" : "PURGE SEASON DATA";
+        auditLeague(s, u, `Purged season: ${season.name}`);
+      } else if (
+        b.action === "deleteSeasons" ||
+        b.action === "purgeSeasonData"
+      ) {
+        const phrase =
+          b.action === "deleteSeasons"
+            ? "DELETE ARCHIVED SEASONS"
+            : "PURGE SEASON DATA";
         if (b.confirmation !== phrase) fail(`Type ${phrase} to confirm.`);
         const ids: string[] = b.seasonIds;
         if (b.action === "deleteSeasons") {
-          if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) fail("Select archived seasons only.");
-          try { deleteArchivedSeasons(structuredClone(s), ids); } catch (error) { fail((error as Error).message); }
+          if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string"))
+            fail("Select archived seasons only.");
+          try {
+            deleteArchivedSeasons(structuredClone(s), ids);
+          } catch (error) {
+            fail((error as Error).message);
+          }
         }
-        try { await createBackup(s); }
-        catch (error) { fail(`Deletion cancelled: ${(error as Error).message}`); }
+        try {
+          await createBackup(s);
+        } catch (error) {
+          fail(`Deletion cancelled: ${(error as Error).message}`);
+        }
         if (b.action === "deleteSeasons") {
-          const names = s.seasons.filter((season) => ids.includes(season.id)).map((season) => season.name);
+          const names = s.seasons
+            .filter((season) => ids.includes(season.id))
+            .map((season) => season.name);
           deleteArchivedSeasons(s, ids);
-          audit(s, u, `Deleted archived seasons: ${names.join(", ")}`);
+          auditLeague(s, u, `Deleted archived seasons: ${names.join(", ")}`);
         } else {
           purgeSeasonData(s);
-          audit(s, u, "Purged all season and prediction data; accounts, settings and banner files retained");
+          auditLeague(
+            s,
+            u,
+            "Purged all season and prediction data; accounts, settings and banner files retained",
+          );
         }
       } else if (b.action === "export") {
-        audit(s, u, "Exported league data");
+        auditLeague(s, u, "Exported league data");
         const exported = structuredClone(s) as any;
         exported.users.forEach((x: any) => {
           delete x.password;
@@ -1117,15 +1446,21 @@ export async function POST(req: NextRequest) {
         delete exported.passkeyChallenges;
         delete exported.push;
         exported.settings.invite = "";
+        exported.leagues?.forEach((league: any) => {
+          if (league.settings) league.settings.invite = "";
+        });
         return { export: exported };
       } else fail("Unknown action.");
       return view(s, u, req, responseSeasonId);
     });
-    if(pushTest) await sendPushTest(pushTest);
+    if (pushTest) await sendPushTest(pushTest);
     const result = versioned(await decorateImages(data));
-    const response = NextResponse.json(mutationResponse(before, result, req.headers.get("x-apex-base-version")), {
-      headers: { "Cache-Control": "no-store" },
-    });
+    const response = NextResponse.json(
+      mutationResponse(before, result, req.headers.get("x-apex-base-version")),
+      {
+        headers: { "Cache-Control": "no-store" },
+      },
+    );
     if ("passkeyError" in data || "backupError" in data)
       return NextResponse.json(data, { status: 400 });
     if (passkeyChallengeCookie)

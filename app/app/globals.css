@@ -2702,6 +2702,36 @@ footer {
 .season-purge { border-top: 1px solid var(--border); padding-top: 16px; }
 
 .admin-navigation { margin-bottom: 24px; }
+.gp-fact { display: flex; align-items: flex-start; gap: 18px; margin: 22px 0; padding: 24px 28px; border-left: 3px solid var(--accent); }
+.gp-fact-icon { display: grid; place-items: center; flex: 0 0 44px; height: 44px; border-radius: 12px; color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.gp-fact-copy { min-width: 0; }
+.gp-fact-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+.gp-fact-heading h2 { margin: 0; color: var(--accent); font-size: calc(14px * var(--type-size,1)); }
+.gp-fact-heading > span { color: var(--muted); font-size: calc(11px * var(--type-size,1)); }
+.gp-fact-copy > p { max-width: 82ch; margin: 10px 0 12px; color: var(--text); line-height: 1.65; font-size: calc(15px * var(--type-size,1)); overflow-wrap: anywhere; }
+.gp-fact-source { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: calc(10px * var(--type-size,1)); text-decoration: none; }
+.gp-fact-source:hover { color: var(--accent); text-decoration: underline; }
+@media(max-width: 600px) { .gp-fact { gap: 12px; padding: 20px 16px; } .gp-fact-icon { flex-basis: 34px; height: 36px; } }
+.management-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; align-items: start; }
+.management-menu { position: sticky; top: 24px; padding: 8px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.management-menu section + section { margin-top: 18px; }
+.management-menu h2 { padding: 8px 10px 4px; margin: 0; color: var(--muted); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+.management-menu button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 11px 10px; border: 0; border-radius: 8px; color: var(--muted); background: transparent; text-align: left; font-size: 12px; }
+.management-menu button:hover { color: var(--text); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.management-menu button.selected { color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); }
+.management-content { min-width: 0; }
+.management-content .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.league-controls { margin: 10px 0 18px; padding-bottom: 16px; border-bottom: 1px solid var(--border); min-width: 0; }
+.league-controls label { font-size: 11px; color: var(--muted); }
+.league-controls select, .league-controls input { width: 100%; min-width: 0; margin-top: 6px; font-size: 12px; }
+.league-controls summary { cursor: pointer; color: var(--muted); font-size: 11px; margin-top: 10px; }
+.league-controls form { margin-top: 14px; }
+.league-controls form button { margin-top: 8px; padding: 8px 10px; font-size: 11px; }
+@media (max-width: 900px) {
+  .management-layout { grid-template-columns: minmax(0,1fr); gap: 20px; }
+  .management-menu { position: static; display: grid; grid-template-columns: repeat(auto-fit,minmax(135px,1fr)); gap: 8px; }
+  .management-menu section + section { margin-top: 0; }
+}
 .admin-subtabs { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border); }
 
 .auth-story h1, .auth-story h1 em, .auth-card h2 {
@@ -2770,17 +2800,24 @@ footer {
 }
 .hero .banner-weather { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px 9px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 18px; background: rgba(7,13,25,.8); color: #e4eef6; font-size: 11px; text-decoration: none; }
 .hero .banner-weather span { color: #c3d0db; font-size: 10px; }
-.hero .pill.picks-open { color: #54e3a2; background: rgba(40,200,120,.14); border-color: rgba(40,200,120,.25); }
-.hero .pill.picks-open .live-dot { background: #54e3a2; }
+.hero .pill.picks-open { color: #91b9a5; background: rgba(9,24,20,.82); border-color: rgba(125,166,145,.24); }
+.hero .pill.picks-open .live-dot { background: #7da991; box-shadow: none; animation: none; }
 .hero .pill.picks-closed { color: #ff6472; background: rgba(255,75,90,.14); border-color: rgba(255,75,90,.2); }
 .hero .pill.picks-closed .live-dot { background: #ff5263; }
 .app .hero .banner-countdown strong { display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 24px; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
 .weekend-progress { display: flex; gap: 6px; max-width: 620px; padding: 0; margin: 28px 0 0; list-style: none; }
 .weekend-progress li { flex: 1; min-width: 0; color: #b6c9d5; font-size: 11px; line-height: 1.5; }
 .session-track { display: block; height: 4px; margin-bottom: 7px; border-radius: 4px; background: rgba(255,255,255,.13); }
-.weekend-progress .done .session-track { background: #27dbc3; }
-.weekend-progress .current .session-track { background: #ffd166; }
+.session-track { overflow: hidden; }
+.session-fill { display: block; height: 100%; border-radius: inherit; background: #ffd166; transform-origin: left; transition: transform 1s linear; }
+.weekend-progress .done .session-fill { background: #27dbc3; }
 .weekend-progress .current { color: #ffd166; }
+.countdown-units { display: flex; gap: 10px; margin-top: 8px; }
+.countdown-unit { box-sizing: border-box; min-width: 60px; padding: 10px 12px 9px; text-align: center; background: rgba(9,15,23,.91); border: 1px solid rgba(255,255,255,.09); border-radius: 13px; }
+.app .hero .countdown-unit strong { color: #e6e9ef; font-size: calc(27px * var(--type-size,1)); line-height: 1.2; letter-spacing: -1px; }
+.countdown-unit > span { display: block; margin-top: 7px; color: #9ca8b9; font-size: 9px; letter-spacing: 1.2px; }
+@media(max-width: 600px) { .countdown-units { gap: 8px; } .countdown-unit { min-width: 54px; padding: 9px 10px 8px; } }
+@media(prefers-reduced-motion: reduce) { .session-fill { transition: none; } }
 .standings-progress { height: 4px; margin-top: 8px; border-radius: 4px; background: var(--border); overflow: hidden; }
 .standings-progress > span { display: block; height: 100%; border-radius: inherit; background: var(--muted); opacity: .4; }
 .your-row .standings-progress > span { background: var(--accent); opacity: 1; }

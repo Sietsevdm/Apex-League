@@ -129,11 +129,15 @@ function BrandingForm({ s, call }: { s: State; call: Call }) {
   );
 }
 
-export default function Branding(props: { s: State; call: Call }) {
+export default function Branding(props: {
+  s: State;
+  call: Call;
+  siteOwner?: boolean;
+}) {
   return (
     <>
       <BrandingForm {...props} />
-      <LoginTextEditor {...props} />
+      {props.siteOwner && <LoginTextEditor {...props} />}
     </>
   );
 }

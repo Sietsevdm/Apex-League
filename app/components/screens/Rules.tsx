@@ -55,7 +55,11 @@ function Rules({ s, season }: { s: State; season: Season }) {
                     {tr(u.name.slice(0, 2).toUpperCase())}
                   </span>
                   <strong>{u.name}</strong>
-                  {tr(u.role === "admin" && <Pill>{tr("Organiser")}</Pill>)}
+                  {u.role !== "player" && (
+                    <Pill>
+                      {tr(u.role === "admin" ? "Admin" : "Organiser")}
+                    </Pill>
+                  )}
                 </div>
               )),
           )}

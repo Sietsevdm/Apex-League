@@ -29,14 +29,16 @@ export default function Auth({
   useEffect(() => {
     if (!register) return;
     let active = true;
-    call({ action: "publicInfo" }, true)
+    const invite =
+      form.invite || new URLSearchParams(location.search).get("invite") || "";
+    call({ action: "publicInfo", invite }, true)
       .then((d) => {
         if (!active) return;
         setAvailable(d.seasons);
         setForm((f) => ({
           ...f,
           seasonId: d.seasons.at(-1)?.id || "",
-          invite: new URLSearchParams(location.search).get("invite") || "",
+          invite: f.invite || invite,
         }));
       })
       .catch((error: Error) => {
@@ -45,7 +47,7 @@ export default function Auth({
     return () => {
       active = false;
     };
-  }, [register]);
+  }, [register, form.invite]);
   return (
     <main className="auth-shell">
       <link

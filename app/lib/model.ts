@@ -10,7 +10,13 @@ export type Theme = {
   text: string;
   muted: string;
 };
-export type Driver = { replacementOnly?: boolean; id: string; name: string; team: string; color: string };
+export type Driver = {
+  replacementOnly?: boolean;
+  id: string;
+  name: string;
+  team: string;
+  color: string;
+};
 export type Picks = {
   order: string[];
   pole: string;
@@ -43,6 +49,18 @@ export type Entry = {
   updatedAt: string;
 };
 export type Event = {
+  resultSync?: Partial<
+    Record<
+      "gp" | "sprint",
+      {
+        lastAttempt?: string;
+        status?: "waiting" | "published";
+        message?: string;
+        lease?: string;
+        leaseUntil?: number;
+      }
+    >
+  >;
   location?: { latitude: number; longitude: number };
   calendarSequence?: number;
   calendarModified?: string;
@@ -93,7 +111,12 @@ export type ResultCorrection = {
   changes: { userId: string; name: string; before: number; after: number }[];
 };
 export type User = {
-  calendarSubscriptions?: { seasonId: string; tokenHash: string; language: "en" | "nl"; createdAt: string }[];
+  calendarSubscriptions?: {
+    seasonId: string;
+    tokenHash: string;
+    language: "en" | "nl";
+    createdAt: string;
+  }[];
   pushEnabled?: boolean;
   passkeys?: {
     id: string;
@@ -106,7 +129,7 @@ export type User = {
   email: string;
   name: string;
   password: string;
-  role: "admin" | "player";
+  role: "admin" | "organiser" | "player";
   active: boolean;
   seasonIds: string[];
   reminders: boolean;
@@ -114,6 +137,7 @@ export type User = {
   version: number;
 };
 export type Season = {
+  leagueId?: string;
   registrationClosed?: boolean;
   id: string;
   year: number;
@@ -135,12 +159,29 @@ export type Season = {
   };
 };
 export type State = {
+  leagues?: League[];
+  selectedLeagueId?: string;
   resultCorrections?: ResultCorrection[];
   push?: {
     publicKey: string;
     privateKey: string;
-    subscriptions: { id: string; userId: string; endpoint: string; keys: {p256dh:string;auth:string}; language: "en"|"nl"; createdAt:string }[];
-    deliveries: Record<string, {status:"sending"|"sent";leaseUntil:number;attempts:number;updatedAt:number}>;
+    subscriptions: {
+      id: string;
+      userId: string;
+      endpoint: string;
+      keys: { p256dh: string; auth: string };
+      language: "en" | "nl";
+      createdAt: string;
+    }[];
+    deliveries: Record<
+      string,
+      {
+        status: "sending" | "sent";
+        leaseUntil: number;
+        attempts: number;
+        updatedAt: number;
+      }
+    >;
   };
   receipts?: {
     status?: "submitted" | "draft";
@@ -163,7 +204,18 @@ export type State = {
   backupHealth?: { lastSuccess?: string; lastAttempt?: string; error?: string };
   schema: number;
   settings: {
-    loginText?: Partial<Record<"eyebrow" | "headline" | "accent" | "description" | "footer" | "welcome" | "subtitle", string>>;
+    loginText?: Partial<
+      Record<
+        | "eyebrow"
+        | "headline"
+        | "accent"
+        | "description"
+        | "footer"
+        | "welcome"
+        | "subtitle",
+        string
+      >
+    >;
     name: string;
     welcome: string;
     theme: Theme;
@@ -171,7 +223,14 @@ export type State = {
     logo: string;
     invite: string;
     bannerOverride: string;
-    savedBannerPhotos?: { year: number; name: string; circuit: string; photo: string; focal: number; credit: string }[];
+    savedBannerPhotos?: {
+      year: number;
+      name: string;
+      circuit: string;
+      photo: string;
+      focal: number;
+      credit: string;
+    }[];
     announcements: { id: string; title: string; body: string; date: string }[];
   };
   users: User[];
@@ -184,7 +243,20 @@ export type State = {
     driver: string;
     constructor: string;
   }[];
-  audit: { id: string; date: string; actor: string; action: string }[];
+  audit: {
+    id: string;
+    date: string;
+    actor: string;
+    action: string;
+    leagueId?: string;
+  }[];
+};
+export type League = {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt?: string;
+  settings?: State["settings"];
 };
 export const emptyPicks = (n = 10): Picks => ({
   order: Array(n).fill(""),
@@ -361,28 +433,44 @@ function bannerRaceDay(event: Event) {
   }
   const instant = Date.parse(event.race || event.practice);
   if (!Number.isFinite(instant)) return Infinity;
-  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Amsterdam", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(instant);
-  const value = (type: string) => Number(parts.find(part => part.type === type)!.value);
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Amsterdam",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(instant);
+  const value = (type: string) =>
+    Number(parts.find((part) => part.type === type)!.value);
   return Date.UTC(value("year"), value("month") - 1, value("day"));
 }
 function bannerMonday(event: Event) {
   const day = bannerRaceDay(event);
   if (!Number.isFinite(day)) return Infinity;
   const weekday = new Date(day).getUTCDay();
-  const monday = day + (((8 - weekday) % 7) || 7) * 86400000;
+  const monday = day + ((8 - weekday) % 7 || 7) * 86400000;
   // Amsterdam's offset at Monday midnight includes the applicable summer/winter time.
-  const zone = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Amsterdam", timeZoneName: "shortOffset" }).formatToParts(monday).find(part => part.type === "timeZoneName")!.value;
+  const zone = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Amsterdam",
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(monday)
+    .find((part) => part.type === "timeZoneName")!.value;
   const offset = zone.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
-  const minutes = offset ? (Number(offset[2]) * 60 + Number(offset[3] || 0)) * (offset[1] === "+" ? 1 : -1) : 0;
+  const minutes = offset
+    ? (Number(offset[2]) * 60 + Number(offset[3] || 0)) *
+      (offset[1] === "+" ? 1 : -1)
+    : 0;
   return monday - minutes * 60000;
 }
 export function bannerEvent(s: State, seasonId: string, now = Date.now()) {
   const events = s.events
-    .filter(event => event.seasonId === seasonId && !event.practiceRound)
+    .filter((event) => event.seasonId === seasonId && !event.practiceRound)
     .sort((a, b) => bannerRaceDay(a) - bannerRaceDay(b));
-  return events.find(event => event.id === s.settings.bannerOverride)
-    || events.find(event => now < bannerMonday(event))
-    || events.at(-1);
+  return (
+    events.find((event) => event.id === s.settings.bannerOverride) ||
+    events.find((event) => now < bannerMonday(event)) ||
+    events.at(-1)
+  );
 }
 export function complete(p: Picks, kind: "gp" | "sprint") {
   return (

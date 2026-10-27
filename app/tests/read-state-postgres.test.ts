@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { seed } from "../lib/seed";
+import { migrateLeagues } from "../lib/leagues";
 process.env.DEMO_MODE = "false";
 process.env.DATABASE_URL = "postgresql://unused.invalid/test";
 const queries: string[] = [];
@@ -33,25 +34,38 @@ test("PostgreSQL snapshot reads use SELECT only, without transactions, row locks
 test("write path keeps row locks but skips unchanged updates and initializes schema only once", async () => {
   const calls: string[] = [];
   let payload = seed(false);
+  migrateLeagues(payload);
   const client = {
     query: async (sql: string, args?: string[]) => {
       calls.push(sql);
-      if (sql.includes("SELECT payload")) return {rows: [{payload: structuredClone(payload)}]};
+      if (sql.includes("SELECT payload"))
+        return { rows: [{ payload: structuredClone(payload) }] };
       if (sql.startsWith("UPDATE")) payload = JSON.parse(args![0]);
-      return {rows: []};
+      return { rows: [] };
     },
     release() {},
   };
-  (globalThis as unknown as {apexPool: unknown}).apexPool = {query: client.query, connect: async () => client};
-  const {transaction} = await import("../lib/store");
+  (globalThis as unknown as { apexPool: unknown }).apexPool = {
+    query: client.query,
+    connect: async () => client,
+  };
+  const { transaction } = await import("../lib/store");
   await transaction(() => undefined);
-  assert.ok(!calls.some(sql => sql.startsWith("UPDATE")));
-  await transaction(s => { s.settings.welcome = "Changed"; });
-  assert.equal(calls.filter(sql => sql.startsWith("CREATE TABLE")).length, 1);
-  assert.equal(calls.filter(sql => sql.includes("FOR UPDATE")).length, 2);
-  assert.equal(calls.filter(sql => sql.startsWith("UPDATE")).length, 1);
+  assert.ok(!calls.some((sql) => sql.startsWith("UPDATE")));
+  await transaction((s) => {
+    s.settings.welcome = "Changed";
+  });
+  assert.equal(calls.filter((sql) => sql.startsWith("CREATE TABLE")).length, 1);
+  assert.equal(calls.filter((sql) => sql.includes("FOR UPDATE")).length, 2);
+  assert.equal(calls.filter((sql) => sql.startsWith("UPDATE")).length, 1);
   assert.equal(payload.settings.welcome, "Changed");
-  await assert.rejects(transaction(s => { s.settings.welcome = "Rolled back"; throw new Error("cancel"); }), /cancel/);
+  await assert.rejects(
+    transaction((s) => {
+      s.settings.welcome = "Rolled back";
+      throw new Error("cancel");
+    }),
+    /cancel/,
+  );
   assert.equal(payload.settings.welcome, "Changed");
   assert.equal(calls.at(-1), "ROLLBACK");
 });

@@ -2,6 +2,7 @@ import { locked, standings, type State, type Season, type User } from "./model";
 export type ResponseContext = {
   scope: "season" | "archive" | "admin";
   seasonId?: string;
+  leagueId?: string;
 };
 export function scopedState(s: State, user: User, context: ResponseContext) {
   const selected =
@@ -20,6 +21,7 @@ export function scopedState(s: State, user: User, context: ResponseContext) {
     cutoff: season.cutoff,
     archived: season.archived,
     registrationClosed: season.registrationClosed,
+    leagueId: season.leagueId,
     drivers: [],
     constructors: [],
   });
@@ -68,7 +70,11 @@ export function scopedState(s: State, user: User, context: ResponseContext) {
     );
   }
   return {
-    context: { scope: context.scope, seasonId: selected?.id },
+    context: {
+      scope: context.scope,
+      seasonId: selected?.id,
+      leagueId: context.leagueId,
+    },
     summaries,
     state: {
       ...s,
@@ -83,13 +89,15 @@ export function scopedState(s: State, user: User, context: ResponseContext) {
         context.scope === "archive"
           ? []
           : s.championPicks.filter((pick) => pick.seasonId === selected?.id),
-      resultCorrections: s.resultCorrections?.filter(correction => eventIds.has(correction.eventId)),
+      resultCorrections: s.resultCorrections?.filter((correction) =>
+        eventIds.has(correction.eventId),
+      ),
       receipts: s.receipts?.filter(
         (receipt) =>
           eventIds.has(receipt.eventId) && receipt.userId === user.id,
       ),
       settings: { ...s.settings, savedBannerPhotos: undefined },
-      audit: context.scope === "admin" && user.role === "admin" ? s.audit : [],
+      audit: context.scope === "admin" && user.role !== "player" ? s.audit : [],
       passkeyChallenges: undefined,
       backupHealth:
         context.scope === "admin" && user.role === "admin"

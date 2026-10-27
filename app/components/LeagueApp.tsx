@@ -1,5 +1,7 @@
 "use client";
 import { appearanceStyle } from "@/lib/appearance";
+import { canManageLeague } from "@/lib/leagues";
+import LeagueControls from "./LeagueControls";
 import { backgroundRefresh } from "@/lib/background-refresh";
 import type { Call, ClientData as Data } from "@/lib/client-data";
 import { useLocale } from "@/lib/i18n";
@@ -93,7 +95,11 @@ const Rules = dynamic(() => import("./screens/Rules"), {
   ),
 });
 const Announcements = dynamic(() => import("./screens/LeagueAnnouncements"), {
-  loading: () => <section className="panel" role="status">…</section>,
+  loading: () => (
+    <section className="panel" role="status">
+      …
+    </section>
+  ),
 });
 const Archive = dynamic(() => import("./screens/Archive"), {
   loading: () => (
@@ -251,9 +257,13 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
       if (body.action === "logout" && "serviceWorker" in navigator) {
         try {
           const registration = await navigator.serviceWorker.getRegistration();
-          const subscription = await registration?.pushManager.getSubscription();
-          if (subscription) body = {...body,pushEndpoint:subscription.endpoint};
-        } catch { /* Logout remains available when browser push APIs are unavailable. */ }
+          const subscription =
+            await registration?.pushManager.getSubscription();
+          if (subscription)
+            body = { ...body, pushEndpoint: subscription.endpoint };
+        } catch {
+          /* Logout remains available when browser push APIs are unavailable. */
+        }
       }
       const r = await fetch("/api/league", {
         method: "POST",
@@ -336,6 +346,9 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
     s?.seasons.filter((x) => !x.archived).at(-1) ||
     s?.seasons.at(-1);
   const me = s?.users.find((u) => u.id === data?.userId);
+  const canManage = Boolean(
+    s && me && s.selectedLeagueId && canManageLeague(s, me, s.selectedLeagueId),
+  );
   const [eventKind, setEventKind] = useState<"gp" | "sprint">("gp");
   const go = (p: string, id?: string, kind: "gp" | "sprint" = "gp") => {
     const scope =
@@ -425,6 +438,17 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
         >
           <X />
         </button>
+        <LeagueControls
+          key={me.id}
+          s={s}
+          me={preview ? { ...me, role: "player" } : me}
+          call={call}
+          onChanged={() => go("home")}
+          onSelect={(id) => {
+            setPreview(false);
+            void loadScope({ scope: "season", leagueId: id }, "home");
+          }}
+        />
         <div className="nav-label">{tr("YOUR PADDOCK")}</div>
         <nav>
           {tr(
@@ -443,7 +467,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
           )}
         </nav>
         {tr(
-          me.role === "admin" && !preview && (
+          canManage && !preview && (
             <>
               <div className="nav-label">{tr("MANAGE THE LEAGUE")}</div>
               <button
@@ -451,7 +475,9 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                 onClick={() => go("admin")}
               >
                 <Shield size={18} />
-                {tr("Admin studio")}
+                {tr(
+                  me.role === "admin" ? "Administration" : "League management",
+                )}
               </button>
             </>
           ),
@@ -480,7 +506,9 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
             <strong>
               {tr(
                 page === "admin"
-                  ? "Admin studio"
+                  ? me.role === "admin"
+                    ? "Administration"
+                    : "League management"
                   : nav.find((x) => x[0] === page)?.[1] || "Profile",
               )}
             </strong>
@@ -547,7 +575,13 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                       <option key={x.id} value={x.id}>
                         {tr("View as ")}
                         {x.name}
-                        {tr(x.role === "admin" ? " (organiser)" : "")}
+                        {tr(
+                          x.role === "admin"
+                            ? " (admin)"
+                            : x.role === "organiser"
+                              ? " (organiser)"
+                              : "",
+                        )}
                       </option>
                     )),
                 )}
@@ -596,7 +630,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
                   description={tr("Set up your first season to open the grid.")}
                 />
                 {tr(
-                  me.role === "admin" && (
+                  canManage && (
                     <button className="primary" onClick={() => go("admin")}>
                       {tr("Create first season")}
                       <ArrowUpRight size={17} />
@@ -606,6 +640,7 @@ function LeagueContent({ initialData, onSignedOut }: LeagueProps) {
               </>
             ) : page === "admin" ? (
               <Admin
+                key={s.selectedLeagueId}
                 s={s}
                 season={season}
                 meId={me.id}

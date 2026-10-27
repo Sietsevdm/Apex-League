@@ -147,8 +147,9 @@ function ResultAdmin({
         </button>
       </div>
       <div className="info-bar">
+        {e.resultSync?.[kind]?.message && <p>{tr("Automatic results")}: {tr(e.resultSync[kind]!.message!)}</p>}
         {tr(
-          "Confirm first retirement and Driver of the Day manually. Sprint pole and missing fastest-lap data also need confirmation. Fetching results never publishes scores.",
+          "The worker automatically confirms and publishes complete GP and Sprint results. Missing sources retry hourly. Saved organiser drafts and ambiguous retirements need review. Manual fetching fills this form without publishing.",
         )}
       </div>
       <CorrectionPreview s={s} event={e} kind={kind} result={r} />
