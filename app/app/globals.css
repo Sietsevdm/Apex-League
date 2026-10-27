@@ -2838,7 +2838,7 @@ footer {
 .calendar-subscription label { margin: 15px 0; display: block; }
 
 .auth-options { display: grid; gap: 8px; }
-/* Demo-only weekend forecast design preview. */
+/* Live weekend forecast dialog. */
 .hero .forecast-trigger { cursor: pointer; font-family: inherit; text-align: left; }
 .hero .forecast-trigger > span { display: inline-flex; align-items: center; gap: 3px; }
 .weekend-forecast { width: min(650px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); padding: 0; border: 1px solid #2b3b4c; border-radius: 22px; color: #e9eff5; background: #101a27; box-shadow: 0 32px 120px #000a; text-align: left; }
@@ -2878,3 +2878,6 @@ footer {
 .forecast-practice small { display: inline-flex; gap: 2px; align-items: center; font-size: 9px; color: #91a9bf; }
 .forecast-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 20px; color: #8196ab; font-size: 9px; }
 @media(max-width: 540px) { .forecast-body { padding: 20px 16px; } .weekend-forecast h2 { font-size: 29px; } .forecast-card { padding: 14px; } .forecast-practice { grid-template-columns: 1fr; } .forecast-practice > div { justify-content: flex-start; } .forecast-practice strong { margin-right: 7px; } .forecast-cards { gap: 8px; } }
+.weekend-forecast .forecast-missing { min-height: 110px; display: flex; align-items: center; color: #a8bbcd; }
+.forecast-footer a { color: #91b7ce; text-decoration: underline; text-underline-offset: 3px; }
+.forecast-practice small { overflow-wrap: anywhere; }

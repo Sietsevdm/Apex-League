@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.21 — 27 October 2026
+
+- Replace the demo-only sample forecast with live Open-Meteo session-start forecasts for all authorised users, including qualifying, race, Sprint and practice sessions.
+- Use circuit coordinates and explicit UTC hourly mapping for temperature, precipitation probability and wind. Derive the outlook from real race-start data and show attribution/update time.
+- Show clear states for started sessions, unconfirmed times, dates outside forecast coverage, disabled weather and missing/provider data. Remove sample numbers and fixed weather claims.
+- Fetch on open, refresh while visible/online, cancel obsolete requests, cache/deduplicate coordinate lookups and forecast requests, and preserve per-league event access.
+- Pass all 113 tests, TypeScript and the production build; verify a real Suzuka forecast. Existing Next.js dependency advisory remains documented.
+
+
 ## 0.8.20 — 27 October 2026
 
 - Add a demo-only Weekend forecast design preview opened from the weather badge, with sample session temperatures, rain chances, wind and practice summaries. No live forecast integration is enabled.

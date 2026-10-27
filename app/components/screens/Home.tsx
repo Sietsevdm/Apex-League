@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { startVisibleTicker } from "@/lib/visible-timer";
 import { useBannerWeather } from "../BannerWeather";
 import GrandPrixFact from "../GrandPrixFact";
-import WeekendForecastPreview from "../WeekendForecastPreview";
+import WeekendForecast from "../WeekendForecast";
 import { standingsMovement } from "@/lib/standings-movement";
 import { weekendProgress } from "@/lib/weekend-progress";
 import { useLocale } from "@/lib/i18n";
@@ -23,14 +23,12 @@ function Banner({
   meId,
   go,
   rows,
-  previewForecast = false,
 }: {
   s: State;
   season: Season;
   meId: string;
   rows: ReturnType<typeof standings>;
   go: (p: string, id?: string, kind?: "gp" | "sprint") => void;
-  previewForecast?: boolean;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const [now, setNow] = useState(Date.now);
@@ -130,23 +128,12 @@ function Banner({
               );
             })}
           </div>
-          {previewForecast ? (
-            <WeekendForecastPreview event={e} weather={weather} />
-          ) : (
-            weather && (
-              <a
-                className="banner-weather"
-                href="https://open-meteo.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`${tr("Current weather at the circuit")} · ${date(weather.observedAt)} · Open-Meteo`}
-                aria-label={`${tr("Current weather at the circuit")}: ${weather.temperature}°C, ${tr(weather.label)}. Open-Meteo`}
-              >
-                {weather.temperature}°C · {tr(weather.label)}
-                {weather.condition === "night" ? ` · ${tr("Night")}` : ""}
-                <span>Open-Meteo</span>
-              </a>
-            )
+          {!season.archived && !e.practiceRound && (
+            <WeekendForecast
+              key={`${e.id}:${meId}`}
+              event={e}
+              weather={weather}
+            />
           )}
         </div>
         <div className="hero-copy">
@@ -258,12 +245,10 @@ function Home({
   season,
   meId,
   go,
-  previewForecast = false,
 }: {
   s: State;
   season: Season;
   meId: string;
-  previewForecast?: boolean;
   go: (p: string, id?: string, kind?: "gp" | "sprint") => void;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
@@ -277,14 +262,7 @@ function Home({
       >
         <Pill>{season.name}</Pill>
       </Heading>
-      <Banner
-        s={s}
-        season={season}
-        meId={meId}
-        go={go}
-        rows={rows}
-        previewForecast={previewForecast}
-      />
+      <Banner s={s} season={season} meId={meId} go={go} rows={rows} />
       <div className="overview-championship">
         <section className="panel">
           <div className="section-title">

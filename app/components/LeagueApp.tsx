@@ -681,13 +681,7 @@ function LeagueContent({
                 <>
                   {tr(
                     page === "home" && (
-                      <Home
-                        s={s}
-                        season={season}
-                        meId={me.id}
-                        go={go}
-                        previewForecast={data.demo}
-                      />
+                      <Home s={s} season={season} meId={me.id} go={go} />
                     ),
                   )}
                   {tr(

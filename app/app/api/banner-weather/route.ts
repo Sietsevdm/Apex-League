@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readState, demoMode } from "@/lib/store";
 import { readSession } from "@/lib/auth";
+import { weekendForecast } from "@/lib/weekend-forecast";
 import { bannerWeather } from "@/lib/banner-weather";
 import { canManageSeason, leagueSettings } from "@/lib/leagues";
 import { imageSlug, weatherBannerPhoto } from "@/lib/banner-images";
@@ -44,6 +45,13 @@ export async function GET(req: NextRequest) {
         { error: "Race unavailable." },
         { status: 404, headers },
       );
+    if (req.nextUrl.searchParams.get("forecast") === "1") {
+      const forecast =
+        season.archived || event.practiceRound
+          ? { sessions: [], disabled: true }
+          : await weekendForecast.forecast(event);
+      return NextResponse.json({ eventId: event.id, forecast }, { headers });
+    }
     const saved = leagueSettings(s, season.leagueId).savedBannerPhotos?.find(
       (p) =>
         p.year === season.year &&

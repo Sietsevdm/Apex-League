@@ -10,13 +10,17 @@ Invitation URLs with `?invite=...` open the account-creation join form immediate
 
 The login screen offers **Create your own league** beside invitation-based joining. New users enter a display name, email, password (at least 12 characters) and league name. Account and league are created atomically, they sign in as an **Organiser**, and League management opens for first-season setup. No invitation is needed to create a league. Invited signups remain Players; new Organisers cannot manage other leagues or site accounts. Existing email addresses must sign in rather than create duplicate accounts.
 
-## Weekend forecast design preview (0.8.20, demo only)
+## Live weekend forecasts (0.8.21)
 
-The demo overview weather badge opens a keyboard-accessible Weekend forecast dialog. It shows sample qualifying/race forecasts (and Sprint sessions when present), a practice strip, temperature, rain chance and wind. Session dates follow the selected banner event and use the viewer's timezone. Forecast numbers and the outlook are illustrative and labelled; no forecast provider is connected. Current banner weather continues to use the existing service. The prototype is enabled only for demo data; production keeps its existing weather link. Escape, the close button or the backdrop dismiss the dialog.
+The overview weather badge opens a functional Weekend forecast dialog for every account with access to that race. Open-Meteo hourly forecasts use the circuit's validated coordinates and the UTC hour containing each scheduled session start. It shows temperature, precipitation probability and wind, with qualifying, race and Sprint cards plus a practice summary. Viewer-facing session/update times use their configured timezone. Forecast dates in the local demo follow its simulated session schedule; the weather numbers themselves are fetched live.
+
+No sample forecasts or fixed weather outlooks remain. Started sessions, unknown session times, dates outside the forecast range and provider/missing-data failures have explicit states without invented numbers. Open-Meteo supports up to 16 days; actual hourly coverage decides each row's availability. Rain/precipitation probability describes the start hour, not the entire session. The outlook follows the race-start probability. Attribution and last-fetch time appear in the panel.
+
+Data loads only when the panel opens, refreshes every 15 minutes while open/visible/online, and aborts on close, navigation or hidden/offline state. The client drops weather older than 30 minutes. The server caches by coordinates for 15 minutes, deduplicates concurrent requests and retries failures after one minute. Cached hourly data is rematched whenever schedules change. Existing authenticated event access protects requests, including cross-league restrictions. No forecasts are fetched for archived or practice-only weekends, or calendars wholly outside the forecast range. Existing `BANNER_WEATHER_ENABLED` and optional `OPEN_METEO_API_KEY` settings apply; no new container or required setting is needed. Provider failures do not block league loading or prediction saves.
 
 ## Run locally
 
-Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.20; update both the app **and calendar worker**.
+Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.21; update both the app **and calendar worker**.
 
 The overview now includes a sourced **Did you know?** card between the banner and championship standings, with **324 facts across 27 circuits**. It follows the GP displayed in the banner and chooses a different fact on each full browser refresh, while keeping the current fact steady during timer/background updates. See [GP_FACTS.md](GP_FACTS.md) for coverage, primary sources, matching and refresh behaviour.
 

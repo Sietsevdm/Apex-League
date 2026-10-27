@@ -88,6 +88,7 @@ export function createWeatherService(fetcher: typeof fetch = fetch, clock = Date
     });
   }
   return {
+    location,
     async current(event: Event): Promise<CircuitWeather | null> {
       if (process.env.BANNER_WEATHER_ENABLED === "false") return null;
       const point = await location(event);
