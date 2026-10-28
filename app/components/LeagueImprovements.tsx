@@ -5,6 +5,7 @@ import { State, Season, Event, Result, Picks, locked } from "@/lib/model";
 import { resultImpact, submissionOverview } from "@/lib/enhancements";
 import { useLocale } from "@/lib/i18n";
 import { LaunchChecklist } from "./LeagueExtras";
+import PredictionStatus from "./PredictionStatus";
 type Call = (body: Record<string, unknown>, quiet?: boolean) => Promise<any>;
 
 export function SubmissionOverview({
@@ -27,8 +28,8 @@ export function SubmissionOverview({
       }
     ).submissionOverview?.[event.id]?.[kind] || [];
   return (
-    <section className="panel">
-      <h2>{t("Submission overview")}</h2>
+    <details className="panel submission-overview">
+      <summary>{t("Submission overview")}</summary>
       <p className="muted">
         {t(
           "Only entry status is shown here. Predictions remain private until the deadline.",
@@ -46,13 +47,13 @@ export function SubmissionOverview({
             {rows.map((r) => (
               <tr key={r.userId}>
                 <td>{r.name}</td>
-                <td>{t(r.status)}</td>
+                <td><PredictionStatus submitted={r.status === "Submitted"} exists={r.status === "Draft"} locked={locked(event, kind)} /></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </section>
+    </details>
   );
 }
 export function ReplacementNotice({

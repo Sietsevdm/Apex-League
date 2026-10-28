@@ -4,6 +4,24 @@ Version 0.8.18 feature: [Circuit weather banners](WEATHER_BANNERS.md) — four i
 
 The application source is in this directory. For setup, updates and recovery, use [DEPLOYMENT.md](DEPLOYMENT.md). For version history, use [CHANGELOG.md](../CHANGELOG.md).
 
+## Interface and prediction editing (0.8.24)
+
+The player UI groups navigation into Race weekend, Your season and Your league, with a distinct management entry. Cards share spacing and corner radii, primary actions remain prominent, secondary actions are quieter and the active navigation item has a clear accent. Shared prediction badges use text plus icons for Not started, Draft, Submitted and Locked. The submission overview is collapsible so the user's own picks stay central. Calendar and results empty states explain what happens next. English and Dutch copy match.
+
+The banner's open/closed, Sprint weekend and entry badges share height, padding, line height, text size and corner radius, with a lighter green open state. Desktop badges are 30 px tall; phone badges are 44 px tall to preserve interactive touch targets. Confirmed outcome lists keep full driver names on one line, with only the rank using the narrow numeric column; extreme text sizing can scroll the list rather than wrap or clip names.
+
+Saved submitted GP and Sprint picks remain editable until their existing server-enforced deadline. Choose **Edit predictions**, change any picks and choose **Save changes**. The previous submitted set stays intact while edits are in progress; incomplete edits cannot be saved and **Cancel changes** restores it. Submitted edits do not use draft autosave, so beginning an edit never silently removes submission status. New drafts still autosave and need an explicit complete submission. On deadline passage, the UI restores the saved picks and becomes read-only; the API independently rejects late writes. Receipt history preserves earlier submissions. No database migration or scoring-rule change is introduced.
+
+The isolated local preview is **http://localhost:3006/**. From the app directory, run `node --import tsx scripts/setup-ui-preview.ts` to recreate `.data/ui-cohesion-preview.json`, then start with `DEMO_MODE=true`, `DEMO_DATA_FILE=ui-cohesion-preview.json`, `APP_URL=http://localhost:3006` and demo-only session/backup secrets of at least 32 characters. Serve on port 3006. This file is separate from normal demo data and production data. The sample GP is already submitted, Sprint is a partial draft, Bahrain/Saudi Arabia are locked, and the **Preview · Empty calendar** season covers empty states. The demo account chooser lets you inspect another player's Not started state. Do not use this demo configuration in production.
+
+## Social sharing support (0.8.24)
+
+The login width fix explicitly removes the shared `main` element's 1580 px maximum width from `.auth-shell`. The image and its gradient span the viewport on wide desktops, while the authenticated screens retain their existing content limit. Browser checks cover a 2552 × 1319 desktop and 390 × 844 mobile viewport without horizontal overflow.
+
+Open Graph and large-image Twitter metadata describe Apex League with a public 1200 × 630 Night garage card at `/apex-share-preview.png`. The card preserves the Apex A mark and Paddock/Grid headline. Messaging apps can retrieve it without signing in. Metadata uses only fixed public copy, never player, league or invitation information. `APP_URL` is read at request time, after the Docker container receives its host settings, and must use the public HTTPS origin. Existing invitation links keep their original destination; no canonical redirect is introduced.
+
+Regenerate the optimized PNG from the app directory with `node --import tsx scripts/generate-social-preview.tsx`. The script composes the existing background and branding using `next/og`; it does not contact an image service. Local production verification with WhatsApp and Telegram user agents confirms absolute image URLs, dimensions, metadata and public HTTP 200 image access. Actual messaging-app rendering was not tested, and those services may retain cached previews after an update.
+
 ## Login headline (0.8.23)
 
 The default headline is **Friends in the Paddock.**, followed by the turquoise italic line **Rivals on the Grid.** Dutch translation and Branding editor placeholders match. Saved custom login text still takes precedence.
@@ -28,7 +46,7 @@ Data loads only when the panel opens, refreshes every 15 minutes while open/visi
 
 ## Run locally
 
-Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.23; update both the app **and calendar worker**.
+Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.24; update both the app **and calendar worker**.
 
 The overview now includes a sourced **Did you know?** card between the banner and championship standings, with **324 facts across 27 circuits**. It follows the GP displayed in the banner and chooses a different fact on each full browser refresh, while keeping the current fact steady during timer/background updates. See [GP_FACTS.md](GP_FACTS.md) for coverage, primary sources, matching and refresh behaviour.
 

@@ -1,14 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import "./globals.css";
+import { shareMetadata } from "@/lib/share-metadata";
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", variable: "--font-dm" });
 const barlow = Barlow_Condensed({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], display: "swap", variable: "--font-barlow" });
-export const metadata: Metadata = {
-  title: "Apex · Prediction League",
-  description: "Your friends. Your predictions. Your racing league.",
-  manifest: "/manifest.webmanifest",
-  icons: { icon: "/icon.svg", apple: "/icon-192.png" },
-};
+// Read APP_URL at request time: the Docker image is built before host settings exist.
+export function generateMetadata(): Metadata {
+  return shareMetadata();
+}
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

@@ -367,7 +367,7 @@ function Results({
             !r?.published ? (
               <Empty
                 title={tr("Awaiting results")}
-                body="Missing data stays pending until your organiser confirms it."
+                body="Results will appear after the race once official data is available. Your submitted predictions are kept safe while scores are being confirmed."
               />
             ) : (
               <>

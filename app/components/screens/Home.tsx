@@ -4,6 +4,7 @@ import { startVisibleTicker } from "@/lib/visible-timer";
 import { useBannerWeather } from "../BannerWeather";
 import GrandPrixFact from "../GrandPrixFact";
 import WeekendForecast from "../WeekendForecast";
+import PredictionStatus from "../PredictionStatus";
 import { standingsMovement } from "@/lib/standings-movement";
 import { weekendProgress } from "@/lib/weekend-progress";
 import { useLocale } from "@/lib/i18n";
@@ -46,7 +47,7 @@ function Banner({
     return (
       <Empty
         title={tr("Your next race awaits")}
-        body="Add the calendar in Admin studio to begin."
+        body="Your organiser hasn't added the race calendar yet. Once it's ready, your next race and prediction deadline will appear here."
       />
     );
   const gpLocked = locked(e, "gp", now);
@@ -113,7 +114,7 @@ function Banner({
                 ? "Submitted"
                 : entry
                   ? "Draft"
-                  : "Missing";
+                  : "Not started";
               const closed = season.archived || locked(e, kind, now);
               return (
                 <button
@@ -122,8 +123,7 @@ function Banner({
                   onClick={() => go("predict", e.id, kind)}
                 >
                   <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
-                  {tr(state)}
-                  {closed ? ` · ${tr("Locked")}` : ""}
+                  <PredictionStatus submitted={entry?.submitted} exists={Boolean(entry)} locked={closed} />
                 </button>
               );
             })}
@@ -159,7 +159,8 @@ function Banner({
                   ? "Explore the results"
                   : gpLocked
                     ? "View your predictions"
-                    : "Make your predictions",
+                    : s.entries.some(entry => entry.eventId === e.id && entry.kind === (nextDeadline?.kind || "gp") && entry.userId === meId && entry.submitted)
+                      ? "Edit your predictions" : "Make your predictions",
               )}
               <ArrowUpRight size={18} />
             </button>

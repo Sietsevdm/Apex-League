@@ -1163,6 +1163,7 @@ summary::-webkit-details-marker {
 .result-order {
   list-style: none;
   padding: 0;
+  overflow-x: auto;
 }
 .result-order li {
   display: flex;
@@ -1170,12 +1171,15 @@ summary::-webkit-details-marker {
   padding: 9px 0;
   font-size: calc(12px * var(--type-size, 1));
 }
-.result-order li > span {
+.result-order li > span:first-child {
   font-family: var(--type-family);
   font-size: calc(17px * var(--type-size, 1));
   color: var(--muted);
   width: 18px;
 }
+.result-order li { align-items: center; }
+.result-order li > span:first-child { flex: 0 0 18px; }
+.result-order .driver-label { flex: 1; width: auto; white-space: nowrap; }
 .result-extra {
   display: flex;
   justify-content: space-between;
@@ -1615,6 +1619,9 @@ summary::-webkit-details-marker {
   font-size: calc(12px * var(--type-size, 1));
 }
 .auth-shell {
+  width: 100%;
+  max-width: none;
+  margin: 0;
   --type-family: var(--body-family, var(--font-dm, system-ui));
   font-family: var(--type-family);
   background:
@@ -2521,7 +2528,7 @@ footer {
 .app .podium-card > strong,
 .app .round-number,
 .app .score-large,
-.app .result-order li > span,
+.app .result-order li > span:first-child,
 .app .bar-row > strong,
 .app .archive-card strong,
 .app .awards-grid > div > span {
@@ -2811,8 +2818,8 @@ footer {
 }
 .hero .banner-weather { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px 9px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 18px; background: rgba(7,13,25,.8); color: #e4eef6; font-size: 11px; text-decoration: none; }
 .hero .banner-weather span { color: #c3d0db; font-size: 10px; }
-.hero .pill.picks-open { color: #91b9a5; background: rgba(9,24,20,.82); border-color: rgba(125,166,145,.24); }
-.hero .pill.picks-open .live-dot { background: #7da991; box-shadow: none; animation: none; }
+.hero .pill.picks-open { color: #b3dfc7; background: rgba(28,59,44,.84); border-color: rgba(159,210,181,.34); }
+.hero .pill.picks-open .live-dot { background: #a1d4b6; box-shadow: none; animation: none; }
 .hero .pill.picks-closed { color: #ff6472; background: rgba(255,75,90,.14); border-color: rgba(255,75,90,.2); }
 .hero .pill.picks-closed .live-dot { background: #ff5263; }
 .app .hero .banner-countdown strong { display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 24px; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
@@ -2892,3 +2899,63 @@ footer {
 .weekend-forecast .forecast-missing { min-height: 110px; display: flex; align-items: center; color: #a8bbcd; }
 .forecast-footer a { color: #91b7ce; text-decoration: underline; text-underline-offset: 3px; }
 .forecast-practice small { overflow-wrap: anywhere; }
+
+/* Cohesive player interface: shared rhythm, actions and entry states. */
+.app { --panel-radius: 16px; --control-radius: 10px; }
+.app .panel, .app .calendar-card, .app .metric, .app .empty { border-radius: var(--panel-radius); }
+.app .panel { padding: 24px; margin-bottom: 24px; }
+.app .page-heading { margin-bottom: 28px; align-items: center; }
+.app .page-heading p { max-width: 64ch; margin-bottom: 0; color: var(--muted); }
+.app .primary, .app .secondary { min-height: 44px; border-radius: var(--control-radius); padding: 12px 18px; font-weight: 600; }
+.app .secondary { color: var(--text); background: color-mix(in srgb, var(--muted) 7%, transparent); border: 1px solid var(--border); }
+.app .secondary:hover { background: color-mix(in srgb, var(--muted) 13%, transparent); }
+.app .sidebar nav button.active { box-shadow: inset 3px 0 var(--accent); font-weight: 600; }
+.app .sidebar .nav-section-label { margin: 18px 13px 8px; font-size: 9px; letter-spacing: 1.3px; }
+.app .admin-link { border: 1px solid var(--border); }
+.prediction-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 7px; font-size: 11px; font-weight: 600; white-space: nowrap; color: var(--muted); background: color-mix(in srgb, var(--muted) 9%, transparent); }
+.prediction-status.submitted { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.prediction-status.draft { color: var(--gold); background: color-mix(in srgb, var(--gold) 10%, transparent); }
+.prediction-status.locked { border: 1px solid var(--border); }
+.app .entry-status { display: inline-flex; align-items: center; gap: 5px; }
+.app .entry-status .prediction-status { padding: 0; background: transparent; border: 0; font-size: inherit; }
+.prediction-guide { display: flex; gap: 16px; align-items: center; padding: 20px 24px; border: 1px solid var(--border); border-radius: 16px; margin-bottom: 24px; background: var(--surface); }
+.prediction-guide > div { flex: 1; min-width: 0; }
+.prediction-guide strong { font-size: 14px; color: var(--text); }
+.prediction-guide p { color: var(--muted); font-size: 12px; margin: 6px 0 0; line-height: 1.6; }
+.app .submit-bar { border-radius: 16px; padding: 18px 24px; border-top: 2px solid color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.app .submit-bar .prediction-save-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.app .empty { padding: 48px 24px; border: 1px dashed var(--border); background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.app .empty p { max-width: 54ch; margin-inline: auto; line-height: 1.7; }
+@media(max-width:760px) {
+  .app .panel { padding: 20px; margin-bottom: 20px; }
+  .prediction-guide { padding: 18px; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .prediction-guide > div { flex-basis: calc(100% - 130px); }
+  .prediction-guide > button { width: 100%; }
+  .app .submit-bar { padding: 16px; }
+  .app .submit-bar .prediction-save-actions { width: 100%; }
+  .prediction-save-actions > button { flex: 1; }
+}
+
+.submission-overview > summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text); }
+.submission-overview[open] > summary { margin-bottom: 18px; }
+/* Match the banner badges to the submitted-entry badge. Keep phone touch targets. */
+.app .hero-weekend .hero-top > .pill,
+.app .hero-weekend .hero-top .entry-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 30px;
+  min-height: 30px;
+  padding: 6px 9px;
+  gap: 6px;
+  border-radius: 7px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+@media(max-width:760px) {
+  .app .hero-weekend .hero-top > .pill,
+  .app .hero-weekend .hero-top .entry-status { height: 44px; min-height: 44px; }
+}

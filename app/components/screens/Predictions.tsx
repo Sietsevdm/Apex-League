@@ -11,6 +11,8 @@ import {
   locked,
 } from "@/lib/model";
 import { predictionDrivers } from "@/lib/season-controls";
+import { startVisibleTicker } from "@/lib/visible-timer";
+import PredictionStatus from "../PredictionStatus";
 import {
   ArrowDown,
   ArrowUp,
@@ -63,6 +65,9 @@ function Predictions({
         : "gp",
     );
   const e = events.find((x) => x.id === id);
+  const [now, setNow] = useState(Date.now);
+  const [editing, setEditing] = useState(false);
+  useEffect(() => startVisibleTicker(() => setNow(Date.now())), []);
   const entry = s.entries.find(
     (x) => x.eventId === id && x.kind === kind && x.userId === meId,
   );
@@ -77,6 +82,7 @@ function Predictions({
   useEffect(() => {
     revision.current++;
     dirty.current = false;
+    setEditing(false);
     clearTimeout(saveTimer.current);
     const item = s.entries.find(
       (x) => x.eventId === id && x.kind === kind && x.userId === meId,
@@ -85,7 +91,8 @@ function Predictions({
     setStatus(item?.submitted ? "Submitted" : "Draft");
   }, [id, kind]);
   useEffect(() => {
-    if (!dirty.current || !e || locked(e, kind)) return;
+    // Keep the submitted entry intact until the complete edited set is saved.
+    if (!dirty.current || !e || locked(e, kind) || entry?.submitted) return;
     const rev = ++revision.current;
     setStatus("Unsaved changes");
     saveTimer.current = setTimeout(async () => {
@@ -105,6 +112,14 @@ function Predictions({
     }, 900);
     return () => clearTimeout(saveTimer.current);
   }, [p]);
+  useEffect(() => {
+    if (!e || !editing || !locked(e, kind, now)) return;
+    clearTimeout(saveTimer.current);
+    dirty.current = false;
+    setP(entry?.picks || emptyPicks(kind === "gp" ? 10 : 8));
+    setEditing(false);
+    setStatus(entry?.submitted ? "Submitted" : "Draft");
+  }, [now, editing, id, kind]);
   if (!e)
     return (
       <Empty
@@ -116,7 +131,8 @@ function Predictions({
     ...season,
     drivers: predictionDrivers(s, season, e, kind),
   };
-  const isLocked = locked(e, kind);
+  const isLocked = locked(e, kind, now);
+  const readOnly = isLocked || Boolean(entry?.submitted && !editing);
   const member = s.users
     .find((u) => u.id === meId)
     ?.seasonIds.includes(season.id);
@@ -136,6 +152,7 @@ function Predictions({
       <div className="toolbar">
         <select
           value={id}
+          disabled={saving}
           onChange={(ev) => {
             setId(ev.target.value);
             setKind("gp");
@@ -154,6 +171,7 @@ function Predictions({
         <div className="segmented">
           <button
             className={kind === "gp" ? "selected" : ""}
+            disabled={saving}
             onClick={() => setKind("gp")}
           >
             {tr("Grand Prix")}
@@ -162,6 +180,7 @@ function Predictions({
             e.sprintQualifying && (
               <button
                 className={kind === "sprint" ? "selected" : ""}
+                disabled={saving}
                 onClick={() => setKind("sprint")}
               >
                 {tr("Sprint")}
@@ -184,10 +203,17 @@ function Predictions({
             setP(picks);
             setStatus("Unsaved changes");
           }}
-          disabled={isLocked || !member || saving}
+          disabled={readOnly || !member || saving}
         />
       </div>
       <ReplacementNotice event={e} season={season} kind={kind} picks={p} />
+      <section className="prediction-guide" aria-label={tr("Prediction status")}>
+        <PredictionStatus submitted={entry?.submitted} exists={Boolean(entry)} locked={isLocked} />
+        <div><strong>{tr(isLocked ? "Your picks are locked" : entry?.submitted ? editing ? "Make your changes" : "You're on the grid" : "Build your prediction")}</strong>
+          <p>{tr(isLocked ? "The deadline has passed. Your saved entry cannot be changed." : entry?.submitted ? editing ? "Your last submitted picks still count. Save changes to replace them before the deadline." : "Your predictions are submitted. You can edit them until the deadline." : "Drafts save automatically. Submit your complete picks before the deadline to take part.")}</p>
+        </div>
+        {entry?.submitted && !isLocked && !editing && <button className="secondary" onClick={() => setEditing(true)}>{tr("Edit predictions")}</button>}
+      </section>
       <SubmissionOverview s={s} event={e} kind={kind} />
       {tr(
         e.practiceRound && (
@@ -243,7 +269,7 @@ function Predictions({
                       value={v}
                       season={predictionSeason}
                       label={tr(`Position ${i + 1}`)}
-                      disabled={isLocked || !member}
+                      disabled={readOnly || saving || !member}
                       onChange={(value) => {
                         const order = [...p.order];
                         const other = order.indexOf(value);
@@ -256,7 +282,7 @@ function Predictions({
                   </div>
                   <div className="reorder">
                     <button
-                      disabled={isLocked || i === 0 || !member}
+                      disabled={readOnly || saving || i === 0 || !member}
                       aria-label={tr(`Move position ${i + 1} up`)}
                       onClick={() => {
                         const order = [...p.order];
@@ -267,7 +293,7 @@ function Predictions({
                       <ArrowUp size={13} />
                     </button>
                     <button
-                      disabled={isLocked || i === p.order.length - 1 || !member}
+                      disabled={readOnly || saving || i === p.order.length - 1 || !member}
                       aria-label={tr(`Move position ${i + 1} down`)}
                       onClick={() => {
                         const order = [...p.order];
@@ -309,7 +335,7 @@ function Predictions({
                   value={p[key] as string}
                   season={predictionSeason}
                   none={key === "retirement"}
-                  disabled={isLocked || !member}
+                  disabled={readOnly || saving || !member}
                   label={tr(label)}
                   onChange={(v) => change(key, v)}
                 />
@@ -334,7 +360,7 @@ function Predictions({
         </section>
       </div>
       <div className="submit-bar">
-        <div>
+        <div role="status" aria-live="polite">
           <CheckCircle2 size={18} />
           <span>
             {tr(
@@ -344,21 +370,24 @@ function Predictions({
                   ? entry?.submitted
                     ? "Submitted · locked"
                     : "No submitted entry"
-                  : status,
+                  : status.startsWith("Save failed:") ? status : editing ? dirty.current ? "Unsaved changes" : "Editing submitted picks" : status,
             )}
             <small>
               {tr(
                 isLocked
                   ? "Entries cannot be changed"
-                  : `Deadline: ${date(cutoff(e, kind))}`,
+                  : `${tr("Editable until")}: ${date(cutoff(e, kind))}`,
               )}
             </small>
           </span>
         </div>
+        <div className="prediction-save-actions">
+        {editing && !isLocked && <button className="secondary" disabled={saving} onClick={() => { setP(entry?.picks || emptyPicks(kind === "gp" ? 10 : 8)); dirty.current = false; setEditing(false); setStatus("Submitted"); }}>{tr("Cancel changes")}</button>}
         <button
           className="primary"
-          disabled={isLocked || !member || saving || !complete(p, kind)}
+          disabled={isLocked || !member || saving || (!(entry?.submitted && !editing) && !complete(p, kind))}
           onClick={async () => {
+            if (entry?.submitted && !editing) { setEditing(true); return; }
             clearTimeout(saveTimer.current);
             dirty.current = false;
             setSaving(true);
@@ -371,15 +400,19 @@ function Predictions({
                 picks: p,
                 submitted: true,
               });
-              setStatus("Submitted");
+              setStatus(editing ? "Changes saved · submitted" : "Submitted");
+              setEditing(false);
+            } catch (err) {
+              setStatus(`Save failed: ${(err as Error).message}`);
             } finally {
               setSaving(false);
             }
           }}
         >
-          {tr(isLocked ? "Predictions locked" : "Submit predictions")}
+          {tr(isLocked ? "Predictions locked" : entry?.submitted ? editing ? "Save changes" : "Edit predictions" : "Submit predictions")}
           <Check size={17} />
         </button>
+        </div>
       </div>
     </>
   );

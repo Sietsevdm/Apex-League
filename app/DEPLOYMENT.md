@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.23`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.24`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Administration → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Site administration → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.23`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.24`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -18,6 +18,8 @@ Version 0.8.20 adds public league creation and direct, league-bound invitation s
 
 Version 0.8.22 uses the new Night garage login background across the page, retains Apex branding and adds a subtly transparent sign-in panel. It also fixes the oval weather close button on phones. Existing custom `login.webp`/`login-mobile.webp` files still take precedence; move those overrides aside if you want to use the new bundled artwork. No new environment variable, database migration or stack configuration change is required.
 
+Version 0.8.24 adds clearer prediction editing before the existing lock deadline, consistent player navigation/cards/status badges, single-line result names, matching banner badges, an edge-to-edge desktop login background and a public social-sharing card. Saved submissions stay intact while editing; choose Save changes to replace them. Keep APP_URL set to the public HTTPS origin for sharing previews. No new environment variable, database migration or stack configuration change is required.
+
 ## First installation
 
 Use [compose.yml](compose.yml) for standalone Docker managed by Portainer. It runs the app, PostgreSQL and calendar worker. It assumes Nginx Proxy Manager already uses an external Docker network called `proxy`.
@@ -28,7 +30,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.23` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.24` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -85,6 +87,8 @@ New imports distinguish opening-round drivers from later substitutes. Existing i
 
 ## Banners and login artwork
 
+Social-preview support (0.8.24): keep `APP_URL` set to the public HTTPS origin. The application reads it at request time to produce absolute Open Graph image URLs for WhatsApp, Telegram and other preview crawlers. `/apex-share-preview.png` is a public bundled image and needs no image-folder upload or separate service. It must be reachable without authentication or a proxy challenge. Messaging apps may cache previews; changing the app alone may not refresh previously shared messages.
+
 The automatic banner switches to the next race at midnight on Monday after the current race weekend, using Europe/Amsterdam time (including daylight saving). It keeps the final race banner after the season ends. Manual overrides take priority.
 
 The image includes circuit photos in `public/banners/2027`; those photos can match other season years. Manual uploads take priority over custom folder images, which take priority over included photos. A circuit with no match uses the default illustration.
@@ -119,6 +123,8 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Troubleshooting
 
+- **New login design missing after updating:** confirm the running app container uses `ghcr.io/sietsevdm/apex-league:0.8.24`, rather than only changing the stack text. In Portainer, set the stack's `APEX_IMAGE` environment variable, update the stack with Re-pull image enabled, and verify the recreated `apex` container's image. The public `/login-garage.webp` URL must return the new artwork. If it returns 404 and the login CSS still uses a 32 px forecast close control, an older build is being served; check the app container and reverse-proxy destination. If the new asset exists but a different picture appears, check mounted `login`/`login-mobile` overrides. An older `APEX_IMAGE` value overrides the Compose fallback tag.
+
 Circuit weather banners were introduced in version 0.8.18; see [WEATHER_BANNERS.md](WEATHER_BANNERS.md). Weather uses outbound HTTPS to Open-Meteo and, for older calendars, Jolpi. Optional settings are `BANNER_WEATHER_ENABLED` (default true) and `OPEN_METEO_API_KEY` (customer endpoint); no new setting is required for the default non-commercial service.
 
 - **No registration button:** open Players → Members. The registration panel lists every season; reopen an archived season before opening its registration.
@@ -131,7 +137,7 @@ Circuit weather banners were introduced in version 0.8.18; see [WEATHER_BANNERS.
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.23 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.23` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.24 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.24` and update without re-pulling that local image. For development commands, see [README.md](README.md).
 
 ## Browser push reminders (0.8.17)
 

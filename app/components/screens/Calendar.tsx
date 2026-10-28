@@ -3,7 +3,7 @@ import { useLocale } from "@/lib/i18n";
 import { Season, State } from "@/lib/model";
 import { ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
-import { Heading, Pill } from "./Shared";
+import { Empty, Heading, Pill } from "./Shared";
 const CalendarDownload = dynamic(
   () => import("../LeagueExtras").then((m) => m.CalendarDownload),
   { loading: () => null },
@@ -30,6 +30,7 @@ function Calendar({
         )}
       />
       <CalendarDownload s={s} season={season} call={call} />
+      {!s.events.some(event => event.seasonId === season.id) && <Empty title="Your calendar is on its way" body="Your organiser hasn't added the race calendar yet. Race weekends and prediction deadlines will appear here when it's ready." />}
       <div className="calendar-list">
         {tr(
           s.events

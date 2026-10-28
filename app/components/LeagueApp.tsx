@@ -28,7 +28,7 @@ import {
   X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Auth from "./Auth";
 import { Heading } from "./screens/Shared";
 const Home = dynamic(() => import("./screens/Home"), {
@@ -399,9 +399,9 @@ function LeagueContent({
   const nav = [
     ["home", "Overview", LayoutDashboard],
     ["predict", "Predictions", ListOrdered],
-    ["leaderboard", "Standings", Trophy],
     ["calendar", "Race calendar", CalendarDays],
     ["results", "Results & recap", Flag],
+    ["leaderboard", "Standings", Trophy],
     ["compare", "Head to head", Users],
     ["champions", "Season picks", Target],
     ["stats", "My season", TrendingUp],
@@ -458,10 +458,13 @@ function LeagueContent({
             void loadScope({ scope: "season", leagueId: id }, "home");
           }}
         />
-        <div className="nav-label">{tr("YOUR PADDOCK")}</div>
+        <div className="nav-label">{tr("RACE WEEKEND")}</div>
         <nav>
           {tr(
             nav.map(([id, label, Icon]) => (
+              <Fragment key={id}>
+              {id === "leaderboard" && <div className="nav-label nav-section-label">{tr("YOUR SEASON")}</div>}
+              {id === "league" && <div className="nav-label nav-section-label">{tr("YOUR LEAGUE")}</div>}
               <button
                 key={id}
                 aria-current={page === id ? "page" : undefined}
@@ -472,6 +475,7 @@ function LeagueContent({
                 {tr(label)}
                 {tr(page === id && <span className="nav-dot" />)}
               </button>
+              </Fragment>
             )),
           )}
         </nav>

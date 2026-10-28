@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.8.24 — 28 October 2026
+
+- Keep Confirmed outcome driver names on one line by scoping the 18 px rank column and number typography to the first span only; allow the name to fill the remaining row.
+- Lighten the Predictions open badge to a restrained green tint and standardize banner badge height, font size, line height, padding and corners. Desktop badges use 30 px height; phone badges share 44 px height to retain touch targets.
+
+- Unify the player interface: consistent card spacing/radii, action sizes, quieter secondary buttons, stronger active navigation and separate race-weekend, season and league groups.
+- Standardize submitted/draft/not-started/locked badges with text and icons across the dashboard, prediction form and submission overview. Collapse the submission table so the player's own picks come first.
+- Add explicit Edit predictions, Save changes and Cancel changes controls for submitted GP/Sprint entries until the deadline. Keep the last submitted picks while editing, stop submitted entries from becoming autosaved drafts, retain draft autosave and restore saved picks if the deadline passes while editing.
+- Explain editable deadlines, draft/submitted confirmations and calendar/results empty states in English and Dutch. Add an isolated interactive local demo with submitted GP, draft Sprint, locked races and empty calendar scenarios. All 115 tests, TypeScript and production build pass. Browser checks cover saved edits, cancellation, incomplete edits, reload persistence, locked controls and mobile width.
+
+- Remove the inherited 1580 px page-width limit from the login shell so the background reaches both desktop edges. Verify 2552 px desktop and 390 px mobile viewports with no horizontal overflow.
+
+- Add Open Graph and large-image Twitter metadata so messaging apps can show an Apex title, description and branded Night garage preview.
+- Include an optimized 1200 × 630 public PNG, with the existing Apex mark and Paddock/Grid headline. Read APP_URL at request time so Docker host settings generate the correct absolute image URL.
+- Keep share metadata fixed and public, without account, league or invitation details. Verify both WhatsApp and Telegram crawler user agents receive metadata unauthenticated and that the image returns HTTP 200. Five relevant tests, TypeScript and production build pass. GitHub publication does not install the update on the VPS.
+
 ## 0.8.23 — 28 October 2026
 
 - Update the default login headline to “Friends in the Paddock.” and “Rivals on the Grid.”, emphasizing the second line in turquoise italics.
