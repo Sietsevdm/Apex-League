@@ -1,11 +1,9 @@
-# Version 0.8.25
+# Version 0.8.26
 
-Players can open a weekend score to compare **Your pick → Actual result → Points earned**, see GP/Sprint subtotals and a clear combined total. Unpublished sessions remain Pending; scoring rules and privacy restrictions are unchanged.
+The mobile weekend banner is easier to scan: the race title comes first, status labels are quieter, GP/Sprint buttons share a row and the main prediction button spans the width. Countdown columns are unboxed and deadlines, season metrics, weather and weekend progress follow a clear reading order.
 
-Overview identifies remaining GP/Sprint submissions with a direct next action. Exact deadlines show date, time and timezone, and dates consistently use the player's saved timezone. Organisers see an outstanding-only checklist for incomplete calendar details, results awaiting review and missing active-player submissions.
+A lighter translucent overlay reveals more of the circuit artwork without blur. Exact deadlines, timezone labels, submission states and actions remain available. Desktop styling is retained.
 
-Sign out is available at the sidebar bottom while navigation scrolls separately. Sidebar section labels now match in size, weight and spacing. Typography follows Appearance settings consistently; small labels, narrow-phone results summaries and prediction-history overflow have been corrected. Demo sign-in remains persistent after signing out and back in.
+Validation: all 118 tests and TypeScript pass. Browser checks cover 320/390 px phones, desktop, the forecast dialog and navigation to the saved Sprint draft. The existing Next.js dependency advisory remains outstanding.
 
-All 118 tests and the production build pass. Browser checks cover player screens, eleven organiser panels, profile and authentication forms at desktop/phone sizes, plus enlarged font settings. See TYPOGRAPHY_AUDIT.md for coverage. The existing Next.js dependency security advisory remains outstanding.
-
-Update the app and calendar worker to `ghcr.io/sietsevdm/apex-league:0.8.25` with **Re-pull image** enabled. Preserve existing secrets and volumes. No scoring-rule change, new required setting or database migration is introduced. GitHub publication does not install this update on your VPS.
+Update the app and calendar worker to `ghcr.io/sietsevdm/apex-league:0.8.26` with Re-pull image enabled. Preserve existing secrets and volumes. No new environment variable, database migration or scoring change is required. GitHub publication does not install this update on your VPS.

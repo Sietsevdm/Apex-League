@@ -147,13 +147,7 @@ function Banner({
               );
             })}
           </div>
-          {!season.archived && !e.practiceRound && (
-            <WeekendForecast
-              key={`${e.id}:${meId}`}
-              event={e}
-              weather={weather}
-            />
-          )}
+
         </div>
         <div className="hero-copy">
           <div className="eyebrow">
@@ -262,6 +256,13 @@ function Banner({
             </small>
           </div>
         </dl>
+        {!season.archived && !e.practiceRound && (
+          <WeekendForecast
+            key={`${e.id}:${meId}`}
+            event={e}
+            weather={weather}
+          />
+        )}
         <ol className="weekend-progress" aria-label={tr("Weekend progress")}>
           {stages.map((session, i) => (
             <li

@@ -1,5 +1,12 @@
 # Apex League development
 
+## Mobile weekend banner — version 0.8.26, 28 October 2026
+
+At widths up to 760 px, the race title leads the banner, passive status labels lose their boxes, GP/Sprint entry buttons share a row, and the main prediction action spans the width. The countdown uses unboxed columns; deadlines and season metrics have separate dividers. A translucent dark gradient (6% at the top, 22% at 190 px and 55% at the bottom) reveals the banner image without blur and protects text contrast and the forecast follows the metrics in normal flow. Desktop styling stays in place. All deadline dates and timezone labels remain visible.
+
+Preview: http://localhost:3007/ with isolated `.data/ui-cohesion-preview.json` sample data. Browser checks: 320 px and 390 px with no horizontal overflow, 1280 px desktop, forecast open/close and Sprint CTA opening the saved draft. TypeScript and all 118 tests pass. Screenshot: `outputs/mobile-weekend-preview.png`. Approved for GitHub publication as 0.8.26; VPS installation remains a separate step. The existing Next.js advisory remains outstanding.
+
+
 Version 0.8.18 feature: [Circuit weather banners](WEATHER_BANNERS.md) — four image variants for all 24 included circuits, automatic weather/daylight selection and organiser previews.
 
 The application source is in this directory. For setup, updates and recovery, use [DEPLOYMENT.md](DEPLOYMENT.md). For version history, use [CHANGELOG.md](../CHANGELOG.md).

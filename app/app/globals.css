@@ -3021,3 +3021,33 @@ footer {
  .organiser-checklist .attention-row { flex-wrap:wrap; }
  .organiser-checklist .attention-row button { width:100%; }
 }
+
+/* Mobile weekend: a clear reading order and quiet supporting information. */
+@media (max-width: 760px) {
+  .app .hero.hero-weekend { padding: 22px 20px 18px; min-height: 0; gap: 0; isolation: isolate; }
+  .app .hero.hero-weekend::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(7,13,25,.06), rgba(7,13,25,.22) 190px, rgba(9,15,25,.55) 100%); pointer-events: none; }
+  .app .hero-weekend .hero-copy { display: contents; }
+  .app .hero-weekend .hero-copy .eyebrow { position: static; order: 0; max-width: none; margin: 0 0 12px; font-size: calc(10px * var(--labels-size,1)); letter-spacing: .06em; }
+  .app .hero-weekend h2 { order: 1; font-size: calc(32px * var(--heading-size,1)); margin: 0 0 8px; }
+  .app .hero-weekend .hero-copy > p { order: 2; margin: 0 0 22px; }
+  .app .hero-weekend .hero-top { order: 3; width: 100%; max-width: none; margin: 0; justify-content: flex-start; gap: 8px 12px; }
+  .app .hero-weekend .hero-top > .pill { height: auto; min-height: 0; padding: 0; border: 0; background: transparent; justify-content: flex-start; font-size: calc(11px * var(--labels-size,1)); }
+  .app .hero-weekend .hero-top .prediction-readiness { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: 100%; margin: 6px 0 0; gap: 8px; }
+  .app .hero-weekend .hero-top .entry-status { width: 100%; min-width: 0; height: auto; min-height: 44px; flex-wrap: wrap; white-space: normal; gap: 4px; }
+  .app .hero-weekend .hero-bottom { order: 4; margin-top: 12px; width: 100%; gap: 20px; align-items: stretch; }
+  .app .hero-weekend .hero-bottom > .primary { width: 100%; justify-content: space-between; min-height: 48px; }
+  .app .hero-weekend .banner-countdown { width: 100%; }
+  .app .hero-weekend .countdown-units { gap: 0; margin-top: 8px; width: fit-content; }
+  .app .hero-weekend .countdown-unit { min-width: 64px; padding: 0 18px; background: none; border: 0; border-right: 1px solid rgba(255,255,255,.16); border-radius: 0; }
+  .app .hero-weekend .countdown-unit:first-child { padding-left: 0; }
+  .app .hero-weekend .countdown-unit:last-child { border: 0; }
+  .app .hero-weekend .countdown-unit > span { margin-top: 3px; font-size: calc(10px * var(--labels-size,1)); }
+  .app .hero-weekend .banner-deadlines { margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.12); gap: 8px; }
+  .app .hero-weekend .banner-deadlines .deadline-time { line-height: 1.6; }
+  .app .hero-weekend .banner-season-summary { order: 5; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 18px 0 0; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); }
+  .app .hero-weekend .banner-season-summary > div { min-width: 0; }
+  .app .hero-weekend .banner-season-summary small { display: block; }
+  .app .hero-weekend .banner-season-summary .score-link { text-align: left; }
+  .app .hero-weekend .banner-weather { order: 6; position: static; width: 100%; max-width: none; margin: 18px 0 0; border-radius: 10px; justify-content: space-between; min-height: 44px; }
+  .app .hero-weekend .weekend-progress { order: 7; width: 100%; max-width: none; padding-top: 20px; margin-top: 0; }
+}

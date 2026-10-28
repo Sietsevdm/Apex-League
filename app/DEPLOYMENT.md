@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.25`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.26`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Administration → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Site administration → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.25`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.26`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -20,6 +20,8 @@ Version 0.8.22 uses the new Night garage login background across the page, retai
 
 Version 0.8.25 adds weekend score explanations and totals, actionable GP/Sprint reminders, exact timezone-labelled deadlines, an outstanding-only organiser checklist, bottom-sidebar Sign out and typography fixes across desktop and phone layouts. No scoring-rule change, new environment variable, database migration or stack configuration change is required.
 
+Version 0.8.26 simplifies the mobile weekend banner and lightens its image overlay without blur. No environment, database or stack configuration change is required.
+
 ## First installation
 
 Use [compose.yml](compose.yml) for standalone Docker managed by Portainer. It runs the app, PostgreSQL and calendar worker. It assumes Nginx Proxy Manager already uses an external Docker network called `proxy`.
@@ -30,7 +32,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.25` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.26` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -123,7 +125,7 @@ Passkeys require the final HTTPS hostname in `APP_URL`. Players manage them in P
 
 ## Troubleshooting
 
-- **New login design missing after updating:** confirm the running app container uses `ghcr.io/sietsevdm/apex-league:0.8.25`, rather than only changing the stack text. In Portainer, set the stack's `APEX_IMAGE` environment variable, update the stack with Re-pull image enabled, and verify the recreated `apex` container's image. The public `/login-garage.webp` URL must return the new artwork. If it returns 404 and the login CSS still uses a 32 px forecast close control, an older build is being served; check the app container and reverse-proxy destination. If the new asset exists but a different picture appears, check mounted `login`/`login-mobile` overrides. An older `APEX_IMAGE` value overrides the Compose fallback tag.
+- **New login design missing after updating:** confirm the running app container uses `ghcr.io/sietsevdm/apex-league:0.8.26`, rather than only changing the stack text. In Portainer, set the stack's `APEX_IMAGE` environment variable, update the stack with Re-pull image enabled, and verify the recreated `apex` container's image. The public `/login-garage.webp` URL must return the new artwork. If it returns 404 and the login CSS still uses a 32 px forecast close control, an older build is being served; check the app container and reverse-proxy destination. If the new asset exists but a different picture appears, check mounted `login`/`login-mobile` overrides. An older `APEX_IMAGE` value overrides the Compose fallback tag.
 
 Circuit weather banners were introduced in version 0.8.18; see [WEATHER_BANNERS.md](WEATHER_BANNERS.md). Weather uses outbound HTTPS to Open-Meteo and, for older calendars, Jolpi. Optional settings are `BANNER_WEATHER_ENABLED` (default true) and `OPEN_METEO_API_KEY` (customer endpoint); no new setting is required for the default non-commercial service.
 
@@ -137,7 +139,7 @@ Circuit weather banners were introduced in version 0.8.18; see [WEATHER_BANNERS.
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.25 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.25` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.26 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.26` and update without re-pulling that local image. For development commands, see [README.md](README.md).
 
 ## Browser push reminders (0.8.17)
 

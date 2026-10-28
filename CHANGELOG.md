@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.26 — 28 October 2026
+
+- Simplify phone reading order, status badges and countdown; use a full-width prediction action and grouped deadlines/metrics with stronger text contrast.
+- Lighten the mobile image overlay without blur so the race artwork remains visible behind the content.
+- Keep weather in normal flow on phones and retain desktop positioning. All existing deadlines, timezone labels and actions remain available.
+- Reviewed locally at http://localhost:3007/. GitHub publication does not install the update on the VPS. TypeScript and 118 tests pass; browser checks cover 320/390 px phones, desktop, forecast and Sprint navigation.
+
 ## 0.8.25 — 28 October 2026
 
 - Match sidebar section-label font size, family, weight, line height and letter spacing, including Race weekend, Your season, Your league and Manage the league.
