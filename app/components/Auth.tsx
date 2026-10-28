@@ -60,29 +60,28 @@ export default function Auth({
     };
   }, [mode, form.invite]);
   return (
-    <main className="auth-shell">
+    <main className="auth-shell"
+      style={{
+        "--login-image": `url("${data.loginImage || "/login-garage.webp"}")`,
+        "--login-mobile-image": `url("${data.loginMobileImage || data.loginImage || "/login-garage-mobile.webp"}")`,
+      } as React.CSSProperties}
+    >
       <link
         rel="preload"
         as="image"
-        href={data.loginMobileImage || data.loginImage || "/login-race.svg"}
+        href={data.loginMobileImage || data.loginImage || "/login-garage-mobile.webp"}
         media="(max-width: 760px)"
         fetchPriority="high"
       />
       <link
         rel="preload"
         as="image"
-        href={data.loginImage || "/login-race.svg"}
+        href={data.loginImage || "/login-garage.webp"}
         media="(min-width: 761px)"
         fetchPriority="high"
       />
       <div
         className="auth-story"
-        style={
-          {
-            "--login-image": `url("${data.loginImage || "/login-race.svg"}")`,
-            "--login-mobile-image": `url("${data.loginMobileImage || data.loginImage || "/login-race.svg"}")`,
-          } as React.CSSProperties
-        }
       >
         <div className="brand">
           <span className="brand-mark">{tr("A")}</span>

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.22 — 28 October 2026
+
+- Keep the Weekend forecast close control circular on phones: explicit 44 × 44 px sizing, a square aspect ratio and no flex shrinking, preserving the mobile touch target.
+- Add three original ImageGen login backgrounds: Race celebration, Night garage and Golden-hour circuit, each with an optimized mobile WebP. Night garage is the user-selected bundled default.
+- Extend the login background across the page, keep the existing Apex A mark and league name as a separate responsive overlay, and preserve custom desktop/mobile image uploads. Add a translucent desktop sign-in card and a stacked mobile layout.
+- Save a comparison gallery and desktop/mobile screenshots under outputs/login-options; generation prompts and provenance are documented there. All 113 tests, TypeScript and the production build pass. Browser checks confirm a 44 × 44 px circular close button at 390 px and no mobile login overflow. Existing Next.js dependency advisory remains. GitHub release; VPS installation remains a separate step.
+
 ## 0.8.21 — 27 October 2026
 
 - Replace the demo-only sample forecast with live Open-Meteo session-start forecasts for all authorised users, including qualifying, race, Sprint and practice sessions.

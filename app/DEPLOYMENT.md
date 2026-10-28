@@ -1,12 +1,12 @@
 # Install and update Apex League
 
-Current image: `ghcr.io/sietsevdm/apex-league:0.8.21`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
+Current image: `ghcr.io/sietsevdm/apex-league:0.8.22`. The public image supports AMD64 and ARM64 and needs no registry password. Source and releases: [Sietsevdm/Apex-League](https://github.com/Sietsevdm/Apex-League). See [CHANGELOG.md](../CHANGELOG.md) for version history.
 
 ## Update an existing Portainer stack
 
 1. Read the release notes and wait for its GitHub Actions build to succeed. Administration → Overview → App updates shows available stable releases.
 2. Create/download an encrypted backup through Site administration → Data & history. Back up custom images separately.
-3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.21`.
+3. Open the existing Portainer stack. Set `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.22`.
 4. Choose **Update the stack** with **Re-pull image** enabled. The app and calendar worker share the image setting.
 5. Refresh the website, check the installed version and confirm your league data is present.
 
@@ -15,6 +15,8 @@ Keep the stack name, existing secret values, database and backup volumes, image 
 To roll back, select the previous published image tag and re-pull/redeploy. If the release requires restoring data, restore the backup created before upgrading; image rollback alone does not reverse data changes. Keep `BACKUP_SECRET` unchanged so old snapshots remain readable.
 
 Version 0.8.20 adds public league creation and direct, league-bound invitation signup. Version 0.8.21 connects the weekend forecast panel to live Open-Meteo hourly data in production and demo modes. It uses the existing weather settings and displays explicit unavailable/out-of-range states instead of samples. No stack configuration change or new required environment variable is introduced.
+
+Version 0.8.22 uses the new Night garage login background across the page, retains Apex branding and adds a subtly transparent sign-in panel. It also fixes the oval weather close button on phones. Existing custom `login.webp`/`login-mobile.webp` files still take precedence; move those overrides aside if you want to use the new bundled artwork. No new environment variable, database migration or stack configuration change is required.
 
 ## First installation
 
@@ -26,7 +28,7 @@ Create an `apex-league` stack with the Compose file and these Portainer environm
 
 | Variable | Purpose |
 | --- | --- |
-| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.21` |
+| `APEX_IMAGE` | `ghcr.io/sietsevdm/apex-league:0.8.22` |
 | `UPDATES_REPOSITORY` | `Sietsevdm/Apex-League` |
 | `APP_URL` | Your final HTTPS URL without a trailing slash, for example `https://apex.mr-gadget.xyz` |
 | `DB_PASSWORD` | Long random password; use alphanumeric characters unless URL punctuation is percent-encoded in the connection string |
@@ -129,7 +131,7 @@ Circuit weather banners were introduced in version 0.8.18; see [WEATHER_BANNERS.
 
 ## Build locally instead of pulling an image
 
-From the app directory, run `docker build -t apex-league:0.8.21 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.21` and update without re-pulling that local image. For development commands, see [README.md](README.md).
+From the app directory, run `docker build -t apex-league:0.8.22 .` on the Docker host used by Portainer. Set `APEX_IMAGE=apex-league:0.8.22` and update without re-pulling that local image. For development commands, see [README.md](README.md).
 
 ## Browser push reminders (0.8.17)
 

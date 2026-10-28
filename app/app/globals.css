@@ -1617,16 +1617,17 @@ summary::-webkit-details-marker {
 .auth-shell {
   --type-family: var(--body-family, var(--font-dm, system-ui));
   font-family: var(--type-family);
-  background: var(--bg);
+  background:
+    linear-gradient(90deg, #0b1020d9 0%, #0b102066 52%, #0b1020d9 100%),
+    var(--login-image, url("/login-garage.webp")) center / cover;
+  background-color: #0b1020;
   color: var(--text);
   display: grid;
   grid-template-columns: 1.15fr 1fr;
   min-height: 100vh;
 }
 .auth-story {
-  background:
-    linear-gradient(90deg, #0b1020c9, #0b102090),
-    var(--login-image, url("/login-race.svg")) center/cover;
+  min-width: 0;
   padding: 55px 65px;
   color: #f5f7fb;
   display: flex;
@@ -1655,6 +1656,11 @@ summary::-webkit-details-marker {
   padding: 55px 40px;
   align-self: center;
   justify-self: center;
+  margin-block: 32px;
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
+  border: 1px solid #ffffff14;
+  border-radius: 20px;
+  backdrop-filter: blur(6px);
 }
 .auth-card h2 {
   font-family: var(--type-family);
@@ -2241,16 +2247,16 @@ footer {
   }
   .auth-shell {
     grid-template-columns: 1fr;
+    background-image:
+      linear-gradient(180deg, #0b102078 0%, #0b10203b 28%, #0b1020ef 65%, #0b1020 100%),
+      var(--login-mobile-image, var(--login-image, url("/login-garage-mobile.webp")));
+    background-size: 100% 100%, auto 600px;
+    background-position: center, 62% top;
+    background-repeat: no-repeat;
   }
   .auth-story {
     min-height: 300px;
     padding: 25px;
-    background-image:
-      linear-gradient(90deg, #0b1020da, #0b10209c),
-      var(--login-mobile-image, var(--login-image, url("/login-race.svg")));
-    background-position:
-      center,
-      62% center;
   }
   .auth-story .brand {
     font-size: calc(18px * var(--type-size, 1));
@@ -2269,6 +2275,11 @@ footer {
   }
   .auth-card {
     padding: 35px 25px;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
   }
   .toast,
   .error-toast {
@@ -2846,7 +2857,7 @@ footer {
 .forecast-body { padding: 28px; background: radial-gradient(ellipse at top right,#1b394b66,transparent 65%); }
 .forecast-heading { display: flex; justify-content: space-between; align-items: center; }
 .forecast-eyebrow { color: #6dcbbe; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
-.forecast-close { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid #344151; border-radius: 50%; background: #ffffff06; color: #a7b7c9; cursor: pointer; }
+.forecast-close { display: grid; place-items: center; box-sizing: border-box; flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; min-height: 44px; aspect-ratio: 1; padding: 0; border: 1px solid #344151; border-radius: 50%; background: #ffffff06; color: #a7b7c9; cursor: pointer; }
 .weekend-forecast h2 { margin: 0 0 8px; font-size: 34px; line-height: 1.2; color: #f0f5fa; }
 .forecast-location { display: flex; align-items: center; gap: 6px; margin: 0; color: #9bafc2; font-size: 12px; }
 .forecast-preview-note { display: inline-flex; align-items: center; gap: 7px; margin: 17px 0; font-size: 10px; color: #afbac7; }

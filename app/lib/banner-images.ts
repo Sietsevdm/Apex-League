@@ -134,8 +134,9 @@ export async function decorateImages<T>(data: T): Promise<T> {
   const response = data as any;
   if (!("authenticated" in response)) return data;
   const custom = await imageCatalog();
-  response.loginImage = custom.find((a) => a.key === "login")?.url || "/login-race.svg";
-  response.loginMobileImage = custom.find((a) => a.key === "login-mobile")?.url || response.loginImage;
+  const login = custom.find((a) => a.key === "login")?.url;
+  response.loginImage = login || "/login-garage.webp";
+  response.loginMobileImage = custom.find((a) => a.key === "login-mobile")?.url || login || "/login-garage-mobile.webp";
   if (!response.state) return data;
   const bundled = (await imageCatalog(path.join(process.cwd(), "public", "banners")))
     .map((asset) => ({ ...asset, url: asset.url.replace("/api/images/", "/banners/") }));
