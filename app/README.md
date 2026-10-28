@@ -4,6 +4,10 @@ Version 0.8.18 feature: [Circuit weather banners](WEATHER_BANNERS.md) — four i
 
 The application source is in this directory. For setup, updates and recovery, use [DEPLOYMENT.md](DEPLOYMENT.md). For version history, use [CHANGELOG.md](../CHANGELOG.md).
 
+## Login headline (0.8.23)
+
+The default headline is **Friends in the Paddock.**, followed by the turquoise italic line **Rivals on the Grid.** Dutch translation and Branding editor placeholders match. Saved custom login text still takes precedence.
+
 ## Login league creation (0.8.20)
 
 Login artwork (0.8.22): the pagewide background has three original photographic options, with Night garage selected as the default. Race celebration and Golden-hour circuit are retained alternatives. Each has a desktop and smaller mobile WebP in public/. The existing Apex A mark and league name form a separate responsive overlay, so cropping the background never cuts off the logo. Custom mounted login/login-mobile images retain precedence. The desktop form has a 76% opaque panel with subtle 6 px blur; phones stack the hero and form without horizontal overflow. See [login artwork, previews and provenance](../docs/login-artwork.md). Regenerate the static visual previews from the app directory with `node --import tsx login-artwork-preview.ts` after a build. They use the real login component and styles, but their forms do not submit.
@@ -24,7 +28,7 @@ Data loads only when the panel opens, refreshes every 15 minutes while open/visi
 
 ## Run locally
 
-Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.22; update both the app **and calendar worker**.
+Version 0.8.19 (27 October 2026): live session fills, subdued Predictions open badge, tiled countdown, automatic GP/Sprint result confirmation, three account roles, owned leagues and a grouped management menu. The current image is 0.8.23; update both the app **and calendar worker**.
 
 The overview now includes a sourced **Did you know?** card between the banner and championship standings, with **324 facts across 27 circuits**. It follows the GP displayed in the banner and chooses a different fact on each full browser refresh, while keeping the current fact steady during timer/background updates. See [GP_FACTS.md](GP_FACTS.md) for coverage, primary sources, matching and refresh behaviour.
 

@@ -1,9 +1,7 @@
-# Version 0.8.22
+# Version 0.8.23
 
-The login screen now uses the selected Night garage artwork across the page, with separate optimized desktop and mobile WebP assets. Existing Apex branding stays visible independently of image cropping. The desktop sign-in panel has a 76% opaque background with subtle blur, showing a little of the scene while retaining readable text and clear form fields. Phones keep the stacked layout. Two alternative generated scenes are included for reference.
+The default login headline now reads **Friends in the Paddock.** followed by ***Rivals on the Grid.*** The second line uses turquoise italics. Branding editor defaults and Dutch translation match; saved custom login text still takes precedence.
 
-The Weekend forecast close button stays circular on phones, with a non-shrinking 44 × 44 px touch target. Previously the global mobile minimum-height rule stretched its 32 px width into an oval.
+This release also includes 0.8.22's selected Night garage pagewide background, Apex branding, subtly transparent sign-in panel and circular 44 × 44 px mobile weather close button. Existing mounted login images continue to override the bundled artwork.
 
-All 113 automated tests, TypeScript and the production build pass. The selected transparency adjustment also passed the 8 relevant login/image checks and a browser visual check. Browser verification confirms a 44 × 44 px circular close button at a 390 px viewport and no horizontal login overflow. The existing Next.js dependency security advisory remains outstanding.
-
-Update to `ghcr.io/sietsevdm/apex-league:0.8.22` and re-pull/redeploy the app and calendar worker. Preserve existing secrets and volumes and take an encrypted backup first. No database migration, new environment variable or stack configuration change is required. Custom mounted `login.webp` and `login-mobile.webp` still override the bundled artwork; move those files aside to see Night garage if necessary. GitHub publication does not install this update on the VPS.
+Update the app and calendar worker to `ghcr.io/sietsevdm/apex-league:0.8.23` with Re-pull image enabled. Preserve secrets and volumes and take an encrypted backup first. No new settings or database migration is required. GitHub publication does not install this update on the VPS. The existing Next.js dependency security advisory remains outstanding.

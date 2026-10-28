@@ -92,9 +92,9 @@ export default function Auth({
             {tr(data.loginText?.eyebrow || "THE NEXT RACE STARTS WITH YOU")}
           </div>
           <h1>
-            {tr(data.loginText?.headline || "Friends on the grid.")}
+            {tr(data.loginText?.headline || "Friends in the Paddock.")}
             <br />
-            <em>{tr(data.loginText?.accent || "Rivals on Sunday.")}</em>
+            <em>{tr(data.loginText?.accent || "Rivals on the Grid.")}</em>
           </h1>
           <p>
             {tr(

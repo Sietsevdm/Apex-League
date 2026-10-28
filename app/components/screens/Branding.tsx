@@ -12,8 +12,8 @@ function LoginTextEditor({ s, call }: { s: State; call: Call }) {
     [error, setError] = useState("");
   const fields = [
     ["eyebrow", "Login introduction", "THE NEXT RACE STARTS WITH YOU"],
-    ["headline", "Login headline", "Friends on the grid."],
-    ["accent", "Highlighted headline", "Rivals on Sunday."],
+    ["headline", "Login headline", "Friends in the Paddock."],
+    ["accent", "Highlighted headline", "Rivals on the Grid."],
     [
       "description",
       "Login description",

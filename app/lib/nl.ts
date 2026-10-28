@@ -347,6 +347,8 @@ export const dutch: Record<string, string> = {
   "THE NEXT RACE STARTS WITH YOU": "DE VOLGENDE RACE BEGINT BIJ JOU",
   "Friends on the grid.": "Vrienden op de grid.",
   "Rivals on Sunday.": "Rivalen op zondag.",
+  "Friends in the Paddock.": "Vrienden in de paddock.",
+  "Rivals on the Grid.": "Rivalen op de grid.",
   "Make your picks. Follow the points. Own the bragging rights.":
     "Doe je voorspellingen. Volg de punten. Verdien de eer.",
   "Your private Formula 1 prediction league.":

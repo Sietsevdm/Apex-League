@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.23 — 28 October 2026
+
+- Update the default login headline to “Friends in the Paddock.” and “Rivals on the Grid.”, emphasizing the second line in turquoise italics.
+- Match Branding editor placeholders and Dutch translations, retaining saved custom login copy.
+- Includes the Night garage login background, transparent panel and mobile forecast close fix from 0.8.22. No settings or database migration required.
+
 ## 0.8.22 — 28 October 2026
 
 - Keep the Weekend forecast close control circular on phones: explicit 44 × 44 px sizing, a square aspect ratio and no flex shrinking, preserving the mobile touch target.

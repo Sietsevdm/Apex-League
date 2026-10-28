@@ -1639,7 +1639,7 @@ summary::-webkit-details-marker {
   margin-bottom: 25px;
 }
 .auth-story h1 em {
-  font-style: normal;
+  font-style: italic;
   color: var(--accent);
 }
 .auth-story p {
