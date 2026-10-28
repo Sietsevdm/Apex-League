@@ -7,7 +7,9 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import DriverLabel from "../DriverLabel";
 import { Empty, Heading, Metric, Pill, driverName } from "./Shared";
-const ResultCorrections = dynamic(() => import("../ResultCorrections"), {loading: () => null});
+const ResultCorrections = dynamic(() => import("../ResultCorrections"), {
+  loading: () => null,
+});
 const ShareCard = dynamic(() => import("../ShareCard"), {
   loading: () => null,
 });
@@ -87,6 +89,25 @@ function Results({
     ),
     r = e[kind];
   const sc = score(entry?.picks || emptyPicks(kind === "gp" ? 10 : 8), r, kind);
+  const sessions = (
+    ["gp", ...(e.hasSprint || e.sprintQualifying ? ["sprint"] : [])] as (
+      "gp" | "sprint"
+    )[]
+  ).map((sessionKind) => {
+    const saved = s.entries.find(
+      (p) =>
+        p.eventId === e.id &&
+        p.userId === playerId &&
+        p.kind === sessionKind &&
+        p.submitted,
+    );
+    const result = sessionKind === "gp" ? e.gp : e.sprint;
+    return {
+      kind: sessionKind,
+      published: Boolean(result?.published),
+      points: saved ? score(saved.picks, result, sessionKind).total : 0,
+    };
+  });
   const original = entry?.picks || emptyPicks(kind === "gp" ? 10 : 8);
   const mapped = mappedPicks(
     original,
@@ -174,6 +195,56 @@ function Results({
         )}
       </Heading>
       <Provenance result={r} />
+      <section
+        className="panel weekend-score-summary"
+        aria-label={tr("Weekend score")}
+      >
+        <div>
+          <h2>
+            {tr(
+              playerId === meId
+                ? "Your weekend score"
+                : "Player's weekend score",
+            )}
+          </h2>
+          <p>
+            {e.name} · {s.users.find((user) => user.id === playerId)?.name}
+          </p>
+        </div>
+        <div className="weekend-score-total">
+          <strong>
+            {sessions.some((session) => session.published)
+              ? sessions.reduce(
+                  (total, session) =>
+                    total + (session.published ? session.points : 0),
+                  0,
+                )
+              : "—"}
+          </strong>
+          <span>{tr("points earned")}</span>
+        </div>
+        <div className="weekend-score-sessions">
+          {sessions.map((session) => (
+            <button
+              className={`secondary ${kind === session.kind ? "selected" : ""}`}
+              key={session.kind}
+              onClick={() => setKind(session.kind)}
+            >
+              {session.kind === "gp" ? "GP" : tr("Sprint")} ·{" "}
+              {session.published
+                ? `${session.points} ${tr("pts")}`
+                : tr("Pending")}
+            </button>
+          ))}
+        </div>
+        {sessions.some((session) => !session.published) && (
+          <small>
+            {tr(
+              "Only published sessions are included. Remaining results are pending.",
+            )}
+          </small>
+        )}
+      </section>
       {tr(
         shareOpen && (
           <ShareCard
@@ -231,7 +302,7 @@ function Results({
       )}
       {tr(
         e.gp?.published && (
-          <div className="metrics">
+          <div className="metrics results-metrics">
             <Metric
               label={tr("WEEKEND WINNER")}
               value={
@@ -292,8 +363,8 @@ function Results({
           <div className="section-title">
             <h2>{tr("Player points breakdown")}</h2>
             <strong className="accent score-large">
-              {tr(sc.total)}
-              <small>{tr("pts")}</small>
+              {tr(r?.published ? sc.total : "Pending")}
+              {r?.published && <small>{tr("pts")}</small>}
             </strong>
           </div>
           <label>
@@ -318,47 +389,78 @@ function Results({
               </p>
             ),
           )}
-          <div className="score-list">
-            {tr(
-              sc.details.map((d) => (
-                <div key={d.label}>
-                  <span>{tr(d.label)}</span>
-                  <span className="score-explanation">
-                    <small>
-                      {tr("Prediction")}: {names(pickFor(d.label))}
-                    </small>
-                    {names(pickFor(d.label)) !==
-                      names(pickFor(d.label, mapped)) && (
-                      <small>
-                        {tr("Scored as")}: {names(pickFor(d.label, mapped))}
-                      </small>
-                    )}
-                    <small>
-                      {tr("Confirmed outcome")}:{" "}
-                      {r?.published
-                        ? names(outcomeFor(d.label))
-                        : tr("Pending")}
-                    </small>
-                  </span>
-                  <Pill
-                    fontGroup={
-                      d.status === "pending" || d.status === "void"
-                        ? "labels"
-                        : "numbers"
-                    }
-                    tone={d.status === "correct" ? "accent" : ""}
-                  >
-                    {tr(
-                      d.status === "pending"
-                        ? "Pending"
-                        : d.status === "void"
-                          ? "Void"
-                          : `${d.points} / ${d.possible}`,
-                    )}
-                  </Pill>
-                </div>
-              )),
-            )}
+          <div
+            className="score-table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label={tr("Score breakdown")}
+          >
+            <table className="score-breakdown-table">
+              <caption>
+                {tr("Your pick → Actual result → Points earned")}
+              </caption>
+              <thead>
+                <tr>
+                  <th>{tr("Category")}</th>
+                  <th>
+                    {tr(playerId === meId ? "Your pick" : "Player's pick")}
+                  </th>
+                  <th>{tr("Actual result")}</th>
+                  <th>{tr("Points earned")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tr(
+                  sc.details.map((d) => (
+                    <tr key={d.label}>
+                      <th scope="row">{tr(d.label)}</th>
+                      <td>
+                        <span>{names(pickFor(d.label))}</span>
+                        {names(pickFor(d.label)) !==
+                          names(pickFor(d.label, mapped)) && (
+                          <small>
+                            {tr("Scored as")}: {names(pickFor(d.label, mapped))}
+                          </small>
+                        )}
+                      </td>
+                      <td>
+                        {d.status === "void"
+                          ? tr("Void")
+                          : r?.published
+                            ? names(outcomeFor(d.label))
+                            : tr("Pending")}
+                      </td>
+                      <td>
+                        <Pill
+                          fontGroup={
+                            d.status === "pending" || d.status === "void"
+                              ? "labels"
+                              : "numbers"
+                          }
+                          tone={d.status === "correct" ? "accent" : ""}
+                        >
+                          {tr(
+                            d.status === "pending"
+                              ? "Pending"
+                              : d.status === "void"
+                                ? "Void"
+                                : `${d.points} / ${d.possible}`,
+                          )}
+                        </Pill>
+                      </td>
+                    </tr>
+                  )),
+                )}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colSpan={3}>{tr("Session total")}</th>
+                  <td>
+                    <strong>{r?.published ? sc.total : tr("Pending")}</strong>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         </section>
         <section className="panel">

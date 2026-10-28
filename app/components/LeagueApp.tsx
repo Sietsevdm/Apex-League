@@ -19,6 +19,7 @@ import {
   Info,
   LayoutDashboard,
   ListOrdered,
+  LogOut,
   Menu,
   Shield,
   Target,
@@ -132,7 +133,7 @@ function LeagueContent({
   initialPage = "home",
   onSignedOut,
 }: LeagueProps) {
-  const { t: tr, language, setLanguage, date } = useLocale();
+  const { t: tr, language, setLanguage, date, setTimezone } = useLocale();
   const [data, updateData] = useState<Data>(initialData);
   const dataRef = useRef(initialData);
   const [seasonId, setSeasonId] = useState(initialData.context?.seasonId || "");
@@ -355,6 +356,7 @@ function LeagueContent({
     s?.seasons.filter((x) => !x.archived).at(-1) ||
     s?.seasons.at(-1);
   const me = s?.users.find((u) => u.id === data?.userId);
+  useEffect(() => { setTimezone(me?.timezone); }, [me?.timezone, setTimezone]);
   const canManage = Boolean(
     s && me && s.selectedLeagueId && canManageLeague(s, me, s.selectedLeagueId),
   );
@@ -496,6 +498,7 @@ function LeagueContent({
           ),
         )}
         <div className="sidebar-bottom">
+          <button className="sidebar-signout" onClick={async () => { setMenu(false); await call({ action: "logout" }); }}><LogOut size={17} />{tr("Sign out")}</button>
           <span className="live-dot" />
           {tr("YOUR GRID. YOUR RULES.")}
           <p>{tr("Built for the entire season.")}</p>

@@ -82,6 +82,7 @@ function Stats({
       </section>
       <section className="panel">
         <h2>{tr("Prediction history")}</h2>
+        <div className="table-scroll" role="region" aria-label={tr("Prediction history")} tabIndex={0}>
         <table>
           <thead>
             <tr>
@@ -118,6 +119,7 @@ function Stats({
             )}
           </tbody>
         </table>
+        </div>
       </section>
       <ReceiptHistory key={season.id} s={s} season={season} meId={meId} />
     </>

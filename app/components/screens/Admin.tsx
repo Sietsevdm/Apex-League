@@ -3,6 +3,8 @@ import type { Call } from "@/lib/client-data";
 import { useLocale } from "@/lib/i18n";
 import { Season, State, cutoff } from "@/lib/model";
 import { registrationOpen } from "@/lib/season-controls";
+import { organiserTasks } from "@/lib/weekend-guidance";
+import DeadlineTime from "../DeadlineTime";
 import {
   CalendarDays,
   ChevronRight,
@@ -144,6 +146,7 @@ function Admin({
   const unresolved = events.filter(
     (e) => Date.parse(e.race) < Date.now() && !e.gp?.published,
   );
+  const attention = season ? organiserTasks(s, season.id) : [];
   return (
     <>
       <Heading
@@ -228,36 +231,37 @@ function Admin({
                     icon={<Shield />}
                   />
                 </div>
-                <section className="panel">
+                <section className="panel organiser-checklist">
                   <h2>{tr("Needs your attention")}</h2>
                   {tr(
-                    unresolved.length ? (
-                      unresolved.map((e) => (
-                        <div className="attention-row" key={e.id}>
+                    attention.length ? (
+                      attention.map((task) => (
+                        <div className="attention-row" key={task.key}>
                           <span>
-                            <strong>{e.name}</strong>
-                            <small>
-                              {tr(
-                                e.practiceRound
-                                  ? "Practice round"
-                                  : "Race completed · results not published",
-                              )}
-                            </small>
+                            <strong>
+                              {tr(task.title)}{" "}
+                              <span className="task-count">{task.count}</span>
+                            </strong>
+                            <small>{tr(task.detail)}</small>
                           </span>
                           <button
                             className="secondary"
-                            onClick={() => setTab("results")}
+                            onClick={() => setTab(task.tab)}
                           >
-                            {tr("Review results")}
+                            {tr(
+                              task.tab === "events"
+                                ? "Review calendar"
+                                : task.tab === "results"
+                                  ? "Review results"
+                                  : "View players",
+                            )}
                             <ChevronRight size={16} />
                           </button>
                         </div>
                       ))
                     ) : (
                       <p className="muted">
-                        {tr(
-                          "You\u2019re up to date. Upcoming weekends appear below.",
-                        )}
+                        {tr("Nothing needs your attention right now.")}
                       </p>
                     ),
                   )}
@@ -311,7 +315,26 @@ function Admin({
                                       : "—",
                                   )}
                                 </td>
-                                <td>{tr(date(cutoff(e, "gp")))}</td>
+                                <td>
+                                  <DeadlineTime
+                                    value={cutoff(e, "gp")}
+                                    timezone={
+                                      s.users.find((user) => user.id === meId)
+                                        ?.timezone
+                                    }
+                                    label="GP deadline"
+                                  />
+                                  {(e.hasSprint || e.sprintQualifying) && (
+                                    <DeadlineTime
+                                      value={cutoff(e, "sprint")}
+                                      timezone={
+                                        s.users.find((user) => user.id === meId)
+                                          ?.timezone
+                                      }
+                                      label="Sprint deadline"
+                                    />
+                                  )}
+                                </td>
                               </tr>
                             )),
                         )}

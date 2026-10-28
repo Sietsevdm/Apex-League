@@ -11,9 +11,12 @@ export type Language = "en" | "nl";
 const LocaleContext = createContext<{
   language: Language;
   setLanguage: (language: Language) => void;
-}>({ language: "en", setLanguage: () => {} });
+  timezone?: string;
+  setTimezone: (timezone?: string) => void;
+}>({ language: "en", setLanguage: () => {}, setTimezone: () => {} });
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("en");
+  const [timezone, setTimezone] = useState<string>();
   useEffect(() => {
     const saved = localStorage.getItem("league-language");
     if (saved === "nl" || saved === "en") {
@@ -30,7 +33,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("league-language", value);
   };
   return (
-    <LocaleContext.Provider value={{ language, setLanguage: change }}>
+    <LocaleContext.Provider value={{ language, setLanguage: change, timezone, setTimezone }}>
       {children}
     </LocaleContext.Provider>
   );
@@ -74,7 +77,7 @@ export function useLocale() {
       value
         ? new Date(value).toLocaleString(
             locale.language === "nl" ? "nl-NL" : "en-GB",
-            options,
+            { ...(locale.timezone ? { timeZone: locale.timezone } : {}), ...options },
           )
         : translate("Time to be confirmed", locale.language),
   };

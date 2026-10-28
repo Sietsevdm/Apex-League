@@ -4,6 +4,14 @@ Version 0.8.18 feature: [Circuit weather banners](WEATHER_BANNERS.md) — four i
 
 The application source is in this directory. For setup, updates and recovery, use [DEPLOYMENT.md](DEPLOYMENT.md). For version history, use [CHANGELOG.md](../CHANGELOG.md).
 
+## Weekend guidance (0.8.25)
+
+Open a completed weekend from Overview or Results & recap to see the player's combined published GP/Sprint total and a category-by-category **Your pick → Actual result → Points earned** table. Session totals remain separate and unpublished results stay Pending. Scoring rules, replacement rules and privacy restrictions are unchanged.
+
+Overview identifies the remaining GP/Sprint action and links to that session. Exact deadlines include date, year, time and timezone beside the countdown and in Predictions; other dates consistently use the profile timezone. Administration → Overview lists only outstanding calendar details, completed sessions awaiting published results and missing active-player submissions for the next open event. It reads the privacy-safe submission overview rather than private drafts.
+
+The sidebar has a persistent bottom Sign out button with separately scrolling navigation. Demo accounts can sign back in after signing out. Typography now scales consistently with Appearance settings; see [the page audit](TYPOGRAPHY_AUDIT.md) for coverage and verification limits. The isolated preview fixture also includes a missing calendar time and a completed session awaiting results, explicitly named Preview, and pins the Singapore weekend banner for review. No live data is changed.
+
 ## Interface and prediction editing (0.8.24)
 
 The player UI groups navigation into Race weekend, Your season and Your league, with a distinct management entry. Cards share spacing and corner radii, primary actions remain prominent, secondary actions are quieter and the active navigation item has a clear accent. Shared prediction badges use text plus icons for Not started, Draft, Submitted and Locked. The submission overview is collapsible so the user's own picks stay central. Calendar and results empty states explain what happens next. English and Dutch copy match.

@@ -20,6 +20,9 @@ async function main() {
   state.seasons.unshift({ ...state.seasons[0], id: "empty-preview", name: "Preview · Empty calendar", year: 2026 });
   state.users.forEach(user => user.seasonIds.push("empty-preview"));
   state.settings.welcome = "Your next race, your saved picks and everything you need for the weekend.";
+  state.settings.bannerOverride = e.id;
+  state.events.push({ ...state.events[0], id: "review-preview", name: "Preview · Results awaiting review", practice: time(-74), qualifying: time(-26), race: time(-2), gp: undefined, lockedGp: true });
+  state.events.push({ ...e, id: "calendar-preview", name: "Preview · Missing calendar time", practice: time(200), qualifying: "", race: time(250), hasSprint: false, sprintQualifying: undefined, sprintRace: undefined, gpDeadline: undefined, sprintDeadline: undefined });
   await fs.mkdir(".data", { recursive: true });
   await fs.writeFile(".data/ui-cohesion-preview.json", JSON.stringify(state));
   console.log("Created isolated preview: submitted GP, draft Sprint, completed races and an empty-calendar season.");

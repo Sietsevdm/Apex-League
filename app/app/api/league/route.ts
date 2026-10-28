@@ -548,6 +548,7 @@ export async function POST(req: NextRequest) {
         if (!u || !verifyPassword(text(b.password, 1000), u.password))
           fail("Email or password is incorrect.", 401);
         cookie = session(u.id, u.version);
+        if (demoMode) demoCookie = u.id;
         return view(s, u, req, responseSeasonId);
       }
       if (b.action === "register" || b.action === "registerLeague") {

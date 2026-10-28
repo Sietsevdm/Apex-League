@@ -54,9 +54,22 @@ test("login, logout and registration retain branding while enforcing API authent
       login.data.state.users.every((user: any) => !("password" in user)),
     );
     assert.match(login.response.headers.get("set-cookie")!, /apex_session=/);
+    assert.match(
+      login.response.headers.get("set-cookie")!,
+      /apex_demo=demo-admin/,
+    );
+    const loginRefresh = await GET(
+      new NextRequest("http://127.0.0.1:3000/api/league", {
+        headers: { cookie: `apex_demo=${login.data.userId}` },
+      }),
+    );
+    assert.equal((await loginRefresh.json()).userId, login.data.userId);
     const logout = await post({ action: "logout" }, "demo-admin");
     assert.equal(logout.data.authenticated, false);
-    assert.match(logout.response.headers.get("set-cookie")!, /apex_demo=signed-out/);
+    assert.match(
+      logout.response.headers.get("set-cookie")!,
+      /apex_demo=signed-out/,
+    );
     assert.equal(logout.data.loginText.headline, "Custom headline");
     assert.equal(logout.data.name, "Custom paddock");
     assert.ok(!("state" in logout.data));

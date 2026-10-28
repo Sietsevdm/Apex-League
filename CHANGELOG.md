@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.25 — 28 October 2026
+
+- Match sidebar section-label font size, family, weight, line height and letter spacing, including Race weekend, Your season, Your league and Manage the league.
+- Add a weekend score total and GP/Sprint subtotals, with a category table showing the original pick, confirmed result and points earned. Unpublished sessions remain Pending; replacement scoring stays visible.
+- Add a specific next-action dashboard message for submitted, draft, missing and locked GP/Sprint picks, with a direct action for the outstanding session.
+- Show independent GP and Sprint deadlines with date, year, time, timezone abbreviation and IANA zone. Dates throughout the app respect the player's saved timezone.
+- Give organisers an outstanding-only attention list for incomplete calendars, unpublished completed sessions and missing active-player submissions. Counts use the privacy-safe submission overview.
+- Add Sign out at the bottom of the sidebar, keeping navigation scrollable independently. Demo sign-in restores its account cookie after signing out.
+- Audit every player page, all eleven organiser panels, profile and login/join/create forms on desktop and phone. Raise tiny 7–9 px text to 10 px, make newer text follow Appearance controls, contain prediction-history scrolling and stack narrow-phone result summaries. See app/TYPOGRAPHY_AUDIT.md.
+- Validation: 118 tests pass, including dashboard/checklist scenarios and login persistence; TypeScript and production build pass. GitHub publication does not install the update on the VPS. The existing Next.js dependency advisory is still outstanding.
+
 ## 0.8.24 — 28 October 2026
 
 - Keep Confirmed outcome driver names on one line by scoping the 18 px rank column and number typography to the first span only; allow the name to fill the remaining row.

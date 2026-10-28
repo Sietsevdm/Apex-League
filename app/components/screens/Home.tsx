@@ -5,6 +5,8 @@ import { useBannerWeather } from "../BannerWeather";
 import GrandPrixFact from "../GrandPrixFact";
 import WeekendForecast from "../WeekendForecast";
 import PredictionStatus from "../PredictionStatus";
+import DeadlineTime from "../DeadlineTime";
+import { weekendTasks } from "@/lib/weekend-guidance";
 import { standingsMovement } from "@/lib/standings-movement";
 import { weekendProgress } from "@/lib/weekend-progress";
 import { useLocale } from "@/lib/i18n";
@@ -65,6 +67,19 @@ function Banner({
     .map((kind) => ({ kind, time: Date.parse(cutoff(e, kind)) }))
     .sort((a, b) => a.time - b.time);
   const nextDeadline = deadlines[0];
+  const tasks = weekendTasks(s, e, meId, now);
+  const nextTask = tasks
+    .filter((task) => !task.locked && !task.submitted)
+    .sort((a, b) => Date.parse(a.deadline) - Date.parse(b.deadline))[0];
+  const timezone = s.users.find((user) => user.id === meId)?.timezone;
+  const lastCompleted = s.events
+    .filter(
+      (event) =>
+        event.seasonId === season.id &&
+        !event.practiceRound &&
+        event.gp?.published,
+    )
+    .sort((a, b) => Date.parse(b.race) - Date.parse(a.race))[0];
   const raceTime = Date.parse(e.race);
   const target = nextDeadline?.time ?? raceTime;
   const seconds = Math.max(0, Math.ceil((target - now) / 1000));
@@ -123,7 +138,11 @@ function Banner({
                   onClick={() => go("predict", e.id, kind)}
                 >
                   <strong>{kind === "gp" ? "GP" : tr("Sprint")}</strong> ·{" "}
-                  <PredictionStatus submitted={entry?.submitted} exists={Boolean(entry)} locked={closed} />
+                  <PredictionStatus
+                    submitted={entry?.submitted}
+                    exists={Boolean(entry)}
+                    locked={closed}
+                  />
                 </button>
               );
             })}
@@ -151,16 +170,23 @@ function Banner({
             <button
               className="primary"
               onClick={() =>
-                go(published ? "results" : "predict", e.id, nextDeadline?.kind)
+                go(
+                  published ? "results" : "predict",
+                  e.id,
+                  nextTask?.kind || nextDeadline?.kind,
+                )
               }
             >
               {tr(
                 published
-                  ? "Explore the results"
+                  ? "Open your weekend score"
                   : gpLocked
                     ? "View your predictions"
-                    : s.entries.some(entry => entry.eventId === e.id && entry.kind === (nextDeadline?.kind || "gp") && entry.userId === meId && entry.submitted)
-                      ? "Edit your predictions" : "Make your predictions",
+                    : nextTask
+                      ? nextTask.kind === "sprint"
+                        ? "Complete Sprint picks"
+                        : "Complete GP picks"
+                      : "Edit your predictions",
               )}
               <ArrowUpRight size={18} />
             </button>
@@ -196,6 +222,18 @@ function Banner({
                   <strong>{countdown}</strong>
                 )}
               </div>
+              <div className="banner-deadlines">
+                {tasks.map((task) => (
+                  <DeadlineTime
+                    key={task.kind}
+                    value={task.deadline}
+                    timezone={timezone}
+                    label={
+                      task.kind === "gp" ? "GP deadline" : "Sprint deadline"
+                    }
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -208,6 +246,15 @@ function Banner({
           <div>
             <dt>{tr("SEASON POINTS")}</dt>
             <dd>{me?.total || 0}</dd>
+            {lastCompleted && (
+              <button
+                className="score-link"
+                onClick={() => go("results", lastCompleted.id)}
+              >
+                {tr("Open last weekend score")}
+                <ChevronRight size={14} />
+              </button>
+            )}
             <small>
               {tr(
                 `${(rows[0]?.total || 0) - (me?.total || 0)} points to the leader`,
@@ -237,6 +284,51 @@ function Banner({
           ))}
         </ol>
       </section>
+      {!season.archived && (
+        <section className="next-action-card" aria-label={tr("Your next step")}>
+          <div>
+            <h2>{tr("Your next step")}</h2>
+            <p>
+              {tasks
+                .map(
+                  (task) =>
+                    `${task.kind === "gp" ? "GP" : tr("Sprint")}: ${tr(task.submitted ? "Submitted" : task.locked ? "Locked without a submission" : task.draft ? "Draft needs submitting" : "Still needs your picks")}`,
+                )
+                .join(" · ")}
+            </p>
+            <small>
+              {tr(
+                nextTask
+                  ? "Finish the remaining picks before their deadline. Your submitted picks are already safe."
+                  : nextDeadline
+                    ? "You're up to date. Your submitted picks remain editable until locking."
+                    : "Predictions are locked. Open the results to see your points.",
+              )}
+            </small>
+          </div>
+          <button
+            className="secondary"
+            onClick={() =>
+              go(
+                published || !nextDeadline ? "results" : "predict",
+                e.id,
+                nextTask?.kind || nextDeadline?.kind,
+              )
+            }
+          >
+            {tr(
+              nextTask
+                ? nextTask.kind === "sprint"
+                  ? "Complete Sprint picks"
+                  : "Complete GP picks"
+                : nextDeadline
+                  ? "Review your picks"
+                  : "Open your weekend score",
+            )}
+            <ArrowUpRight size={16} />
+          </button>
+        </section>
+      )}
       <GrandPrixFact key={`${season.id}:${e.id}`} event={e} />
     </>
   );
