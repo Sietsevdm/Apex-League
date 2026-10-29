@@ -1,5 +1,19 @@
 # Apex League development
 
+## Android calendar subscriptions — 29 October 2026 (0.8.27)
+
+The previous generic Open calendar app link used webcal, which Android Google Calendar does not handle as a URL-subscription setup action. The subscription panel now provides Set up Google Calendar with explicit computer/web setup instructions, a static Google Calendar link (no private token in the destination), and phone visibility/notification guidance. The explicit Add to iOS Calendar button opens Apple Calendar via webcal; Apple Calendar retains its named webcal action and manual iPhone instructions. Failed clipboard copying focuses/selects the link and explains manual copying. English and Dutch labels match. Creating a token is not confirmation of subscription or notifications. Google controls feed refresh and alarms.
+
+Validation: TypeScript and all five league-followup tests pass, including token privacy, replacement, revocation and membership. Native Android calendar handoff was not tested. Included in 0.8.27. GitHub publication does not install the update on the VPS. Official reference: https://support.google.com/calendar/answer/37100
+
+
+## Unified Apex logo — 29 October 2026 (0.8.27)
+
+The default logo now uses one shared SVG, `public/apex-logo.svg`, matching the supplied turquoise rounded square and dark italic A. Login, sidebar and loading screens use this asset; favicon (`icon.svg`), 192/512 px installed-app icons, Apple touch icon and social-sharing artwork use the same mark. Custom uploaded league logos retain their existing override. Standalone 512 px PNG: `public/apex-logo.png`. SVG outlines do not depend on font loading or Appearance font settings.
+
+TypeScript and the share-metadata test pass. Social-sharing image regenerated with the shared logo. Included in 0.8.27. GitHub publication does not install the update on the VPS.
+
+
 ## Mobile weekend banner — version 0.8.26, 28 October 2026
 
 At widths up to 760 px, the race title leads the banner, passive status labels lose their boxes, GP/Sprint entry buttons share a row, and the main prediction action spans the width. The countdown uses unboxed columns; deadlines and season metrics have separate dividers. A translucent dark gradient (6% at the top, 22% at 190 px and 55% at the bottom) reveals the banner image without blur and protects text contrast and the forecast follows the metrics in normal flow. Desktop styling stays in place. All deadline dates and timezone labels remain visible.

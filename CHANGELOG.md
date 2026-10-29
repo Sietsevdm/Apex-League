@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.27 — 29 October 2026
+
+- Replace the misleading generic webcal action with Google Calendar setup guidance and a named Apple Calendar action. Add manual setup and clipboard-failure fallback, with matching Dutch text.
+- Explain that Android Google Calendar requires initial web setup and that creating a subscription URL does not confirm reminders.
+
+
+### Consistent Apex logo
+
+- Match the default login, sidebar, loading, favicon, installed-app, Apple touch and social-sharing logos to the supplied turquoise square and dark italic A reference.
+- Add reusable apex-logo.svg and apex-logo.png assets; use one font-independent vector across default application branding. Preserve custom league logo overrides.
+
+
 ## 0.8.26 — 28 October 2026
 
 - Simplify phone reading order, status badges and countdown; use a full-width prediction action and grouped deadlines/metrics with stronger text contrast.

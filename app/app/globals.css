@@ -3051,3 +3051,15 @@ footer {
   .app .hero-weekend .banner-weather { order: 6; position: static; width: 100%; max-width: none; margin: 18px 0 0; border-radius: 10px; justify-content: space-between; min-height: 44px; }
   .app .hero-weekend .weekend-progress { order: 7; width: 100%; max-width: none; padding-top: 20px; margin-top: 0; }
 }
+
+/* The same fixed Apex mark is used in navigation, login and loading screens. */
+.brand-mark { background: transparent; }
+.brand-mark img, .brand .brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+.calendar-setup { margin-top:16px; padding:16px; border:1px solid var(--border); border-radius:12px; }
+.calendar-setup p, .calendar-setup li { font-size:calc(13px * var(--body-size,1)); line-height:1.7; }
+.calendar-setup ol { padding-left:22px; }
+.calendar-setup li + li { margin-top:8px; }
+.calendar-manual-help { margin-top:16px; }
+.calendar-manual-help summary { cursor:pointer; }
+.calendar-subscription .button-row { flex-wrap:wrap; }

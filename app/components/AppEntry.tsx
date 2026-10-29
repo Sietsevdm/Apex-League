@@ -13,7 +13,7 @@ function Loading() {
   const { t } = useLocale();
   return (
     <main className="app loading">
-      <div className="brand-mark">A</div>
+      <div className="brand-mark"><img src="/apex-logo.svg" alt="A" /></div>
       <h2>{t("Preparing your grid…")}</h2>
     </main>
   );

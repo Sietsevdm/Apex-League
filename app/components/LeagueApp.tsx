@@ -387,7 +387,7 @@ function LeagueContent({
   if (!data)
     return (
       <main className="app loading" style={style}>
-        <div className="brand-mark">{tr("A")}</div>
+        <div className="brand-mark"><img src="/apex-logo.svg" alt="A" /></div>
         <h2>{tr("Preparing your grid\u2026")}</h2>
         {tr(error && <p>{tr(error)}</p>)}
       </main>
@@ -434,7 +434,7 @@ function LeagueContent({
             s.settings.logo ? (
               <img src={s.settings.logo} alt={tr("League logo")} />
             ) : (
-              <span className="brand-mark">{tr("A")}</span>
+              <span className="brand-mark"><img src="/apex-logo.svg" alt="A" /></span>
             ),
           )}
           <span>

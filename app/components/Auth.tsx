@@ -84,7 +84,7 @@ export default function Auth({
         className="auth-story"
       >
         <div className="brand">
-          <span className="brand-mark">{tr("A")}</span>
+          <span className="brand-mark"><img src="/apex-logo.svg" alt="A" /></span>
           {tr(data.name || "Apex League")}
         </div>
         <div>
