@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.8.30 — Security patch, calendar artwork and browser navigation, 31 October 2026
+
+Upgrade Next.js from 16.4.0 to exactly 16.4.3 using the security policy selected by the official upgrade command. Set experimental.agentUpgrade to security for future reminders, preserving existing deployment settings. The working app is outside Git, so it was upgraded in place; publishing branches/commits and open pull requests were checked for duplicates and none matched. Frozen pnpm installation, exact installed version, TypeScript, all 122 tests and production build pass. Production dependency audit reports zero known vulnerabilities at verification time. Browser checks on the patched production app confirm calendar artwork, 12 px schedule times, Back navigation and refresh restoration. Source ZIP: outputs/apex-league-v0.8.30.zip. GitHub publication does not install this update on the VPS.
+
+
+### Browser Back and Forward
+
+In-app screen changes now create browser history entries. Browser Back/Forward restores the page, race ID, GP/Sprint entry context and league/season data scope without adding another entry; refresh restores the current history location. History stores navigation metadata only, never predictions or credentials, and server authorisation still applies to restored scopes. The initial app entry is replaced rather than duplicated; Back can still leave the site once the first app page is reached. Native phone back/swipe actions use the same browser history; physical-phone gestures were not separately tested. Browser verification covered Calendar → Standings → Back → Overview → Forward, refresh, Administration scope changes and restoring Japanese GP predictions. All 122 tests, TypeScript and production build pass. Next.js security upgrade included below. Local preview http://127.0.0.1:3007/. Included in 0.8.30; VPS installation remains a separate step.
+
+
+### Calendar circuit artwork
+
+Calendar race cards now fill with each event’s existing matched circuit image, retain the saved vertical focal point, and use a stronger dark gradient behind the text, brighter secondary labels, 12 px semibold session times and subtle text shadows for readability. Action buttons retain their dark backgrounds. Uploaded/matched event images follow the existing banner-resolution rules; missing images use the circuit illustration, and failed loads retain a dark readable card. Images load lazily and are decorative for screen readers. Verified all seven local demo cards load their artwork, desktop three-column layout and 390 px phone layout without horizontal overflow. TypeScript passes. Local preview: http://127.0.0.1:3007/ → Race calendar, using isolated ui-cohesion-preview.json demo data. Screenshots: outputs/calendar-artwork-desktop.png and outputs/calendar-artwork-mobile.png. Included in 0.8.30; VPS installation remains a separate step.
+
+
 ## 0.8.29 — Team logos and colors in driver dropdowns, 31 October 2026
 
 Driver menus now combine locally stored official 2026 team logos with saved team-color row backgrounds and contrasting text. A shared custom picker covers prediction, championship, result and season-management driver selectors and the original-driver replacement selector. It supports arrows, Home/End, typing names, Enter/Space, Escape, Tab and outside-click dismissal, with combobox/listbox semantics and a viewport-contained scrollable menu. Selected drivers retain their team logo; unknown teams use a color marker. Names/team labels and neutral empty/No retirements options remain available. Existing pick IDs and scoring are unchanged. Logo sources: public/team-logos/README.md. Browser checks verified keyboard selection, autosave, all menu logos loading and 390 px phone width without horizontal overflow. All 122 existing tests, TypeScript and production build pass. The existing Next.js security advisory remains outstanding. Prepared for GitHub publication as 0.8.29. GitHub publication does not update the VPS.

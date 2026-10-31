@@ -37,7 +37,8 @@ function Calendar({
             .filter((e) => e.seasonId === season.id)
             .sort((a, b) => Date.parse(a.practice) - Date.parse(b.practice))
             .map((e, i) => (
-              <section className="calendar-card" key={e.id}>
+              <section className="calendar-card calendar-card-artwork" key={e.id}>
+                <img className="calendar-card-image" src={e.photo || "/circuit-night.svg"} alt="" loading="lazy" decoding="async" style={{ objectPosition: `center ${e.focal ?? 50}%` }} onError={event => { event.currentTarget.style.display = "none"; }} />
                 <div className="calendar-round">
                   <div className="round-number">
                     {tr(e.practiceRound ? "P" : String(i + 1).padStart(2, "0"))}

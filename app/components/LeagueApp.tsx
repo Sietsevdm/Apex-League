@@ -1,4 +1,5 @@
 "use client";
+import { useNavigationHistory } from "@/lib/navigation-history";
 import { appearanceStyle } from "@/lib/appearance";
 import { canManageLeague } from "@/lib/leagues";
 import LeagueControls from "./LeagueControls";
@@ -321,7 +322,7 @@ function LeagueContent({
       finish?.(fresh);
     }
   };
-  const loadScope = async (context: ResponseContext, targetPage?: string) => {
+  const loadScope = async (context: ResponseContext, targetPage?: string, targetEventId?: string) => {
     const version = ++navigationVersion.current;
     navigationRequest.current?.abort();
     const controller = new AbortController();
@@ -338,13 +339,16 @@ function LeagueContent({
       const next = await response.json();
       if (!response.ok) throw new Error(next.error);
       if (controller.signal.aborted || version !== navigationVersion.current)
-        return;
+        return false;
       setData(next);
       if (targetPage) setPage(targetPage);
+      if (targetEventId !== undefined) setEventId(targetEventId);
       fresh = true;
+      return true;
     } catch (error) {
       if (!controller.signal.aborted && version === navigationVersion.current)
         setError((error as Error).message);
+      return false;
     } finally {
       finish?.(fresh);
       if (version === navigationVersion.current) setScopeLoading(false);
@@ -380,6 +384,26 @@ function LeagueContent({
       document.getElementById("main-content")?.focus({ preventScroll: true }),
     );
   };
+  useNavigationHistory({ page, eventId, kind: eventKind, context: { ...contextRef.current, seasonId: seasonId || undefined } }, async route => {
+    setMenu(false);
+    setNotice("");
+    const context = contextRef.current;
+    const changed = route.context.scope !== context.scope || route.context.seasonId !== context.seasonId || route.context.leagueId !== context.leagueId;
+    if (changed || scopeLoading) {
+      const ok = await loadScope(route.context, route.page, route.eventId);
+      if (!ok) return false;
+    } else {
+      // Cancel any older screen request before restoring a page from history.
+      navigationVersion.current++;
+      navigationRequest.current?.abort();
+      setPage(route.page);
+      setEventId(route.eventId);
+    }
+    setEventKind(route.kind);
+    window.scrollTo({ top: 0, behavior: "auto" });
+    requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
+    return true;
+  });
   const style = appearanceStyle({
     theme: s?.settings.theme || data.theme,
     typography: s?.settings.typography || data.typography,
