@@ -11,6 +11,7 @@ export type Theme = {
   muted: string;
 };
 export type Driver = {
+  providerDriverId?: string;
   replacementOnly?: boolean;
   id: string;
   name: string;
@@ -49,6 +50,7 @@ export type Entry = {
   updatedAt: string;
 };
 export type Event = {
+  replacementSync?: { lastAttempt?: string; status?: "waiting" | "checked" | "updated"; message?: string; lease?: string; leaseUntil?: number };
   resultSync?: Partial<
     Record<
       "gp" | "sprint",

@@ -896,9 +896,8 @@ export async function POST(req: NextRequest) {
           to,
           kind,
           policy: b.policy,
-          note: text(b.note, 300),
+          note: text(b.note ?? "", 300),
         };
-        if (!rule.note) fail("Explain the replacement policy.");
         event.replacements = [
           ...(event.replacements || []).filter(
             (r) => !(r.kind === kind && r.from === from),

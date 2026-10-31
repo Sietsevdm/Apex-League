@@ -1,6 +1,7 @@
 import { State, Event, Result, Picks, locked, standings, score } from "./model";
 
 export type Replacement = {
+  source?: "automatic";
   from: string;
   to: string;
   kind: "gp" | "sprint";

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { syncDueCalendars } from "@/lib/calendar-sync";
+import { syncDueReplacements } from "@/lib/automatic-replacements";
 import { syncDueResults } from "@/lib/automatic-results";
 import { transaction } from "@/lib/store";
 import { createBackup } from "@/lib/backups";
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not authorised." }, { status: 401 });
   try {
     const outcomes = await syncDueCalendars();
+    const replacements = await syncDueReplacements();
     const results = await syncDueResults();
     const backup = await transaction(async (s) => {
       if (!process.env.BACKUP_SECRET || process.env.BACKUP_SECRET.length < 32)
@@ -35,7 +37,7 @@ export async function POST(req: NextRequest) {
         return "failed";
       }
     });
-    return NextResponse.json({ outcomes, results, backup });
+    return NextResponse.json({ outcomes, replacements, results, backup });
   } catch (e) {
     console.error(e);
     return NextResponse.json(

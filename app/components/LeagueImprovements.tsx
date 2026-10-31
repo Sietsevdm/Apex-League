@@ -82,7 +82,7 @@ export function ReplacementNotice({
               ? "Original picks follow the replacement driver for this session."
               : "Original picks remain with the original driver for this session.",
           )}{" "}
-          {r.note}
+          {t(r.note)}
           {picks &&
             [
               ...picks.order,
@@ -122,7 +122,6 @@ export function ReplacementAdmin({
     [name, setName] = useState(""),
     [team, setTeam] = useState(""),
     [policy, setPolicy] = useState("keep"),
-    [note, setNote] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const event = events.find((e) => e.id === id);
@@ -139,6 +138,8 @@ export function ReplacementAdmin({
           "Set a session policy before publishing results. Original predictions and receipts are preserved; championship picks stay unchanged.",
         )}
       </p>
+      <p className="muted">{t("GP replacements are checked hourly against provider race entries. Existing GP picks follow automatically confirmed replacements; Sprint and championship picks stay unchanged.")}</p>
+      {event?.replacementSync?.message && <p role="status">{t(event.replacementSync.message)}</p>}
       {open && <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -154,7 +155,6 @@ export function ReplacementAdmin({
               name,
               team,
               policy,
-              note,
             });
           } catch (e) {
             setError((e as Error).message);
@@ -241,15 +241,6 @@ export function ReplacementAdmin({
               <option value="keep">{t("Keep original driver picks")}</option>
               <option value="carry">{t("Picks follow replacement")}</option>
             </select>
-          </label>
-          <label>
-            {t("Explanation")}
-            <textarea
-              required
-              maxLength={300}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
           </label>
         </div>
         <p>

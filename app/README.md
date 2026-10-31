@@ -1,5 +1,10 @@
 # Apex League development
 
+## Driver replacements — 31 October 2026 (0.8.28)
+
+The existing hourly calendar worker now checks GP race entries from Jolpica, starting seven days before each GP and retrying until results are published. It compares complete opening-round and event race entry lists, confirms a replacement only when exactly one seat changes within the same team, adds missing reserve drivers and carries all GP prediction categories to the replacement for scoring. Saved submissions, receipts, Sprint and championship picks remain unchanged. Existing manual policies take priority, announcements and audit entries are added once, and incomplete/ambiguous lists wait for organiser review. Automatic GP publication waits while a replacement check is unresolved. Practice-only participants never trigger replacements. First-round changes, double-seat changes, team transfers and unrecognised original drivers require manual confirmation. This depends on provider entry publication and is not instant team-announcement monitoring. Manual confirmation remains available, with no Explanation field or required note; previously saved notes remain visible.
+
+
 ## Android calendar subscriptions — 29 October 2026 (0.8.27)
 
 The previous generic Open calendar app link used webcal, which Android Google Calendar does not handle as a URL-subscription setup action. The subscription panel now provides Set up Google Calendar with explicit computer/web setup instructions, a static Google Calendar link (no private token in the destination), and phone visibility/notification guidance. The explicit Add to iOS Calendar button opens Apple Calendar via webcal; Apple Calendar retains its named webcal action and manual iPhone instructions. Failed clipboard copying focuses/selects the link and explains manual copying. English and Dutch labels match. Creating a token is not confirmation of subscription or notifications. Google controls feed refresh and alarms.

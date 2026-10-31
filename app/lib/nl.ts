@@ -1024,6 +1024,11 @@ export const dutch: Record<string, string> = {
   "Scoring policy": "Puntenbeleid",
   "Keep original driver picks": "Oorspronkelijke coureurskeuzes behouden",
   "Picks follow replacement": "Keuzes volgen vervanger",
+  "GP replacements are checked hourly against provider race entries. Existing GP picks follow automatically confirmed replacements; Sprint and championship picks stay unchanged.": "GP-vervangingen worden elk uur gecontroleerd aan de hand van de race-inschrijvingen bij de dataprovider. Bestaande GP-keuzes volgen automatisch bevestigde vervangers; Sprint- en kampioenschapskeuzes blijven ongewijzigd.",
+  "GP replacements confirmed automatically; picks follow the replacement driver.": "GP-vervangingen automatisch bevestigd; keuzes volgen de vervanger.",
+  "GP race entries checked; no new replacements.": "GP-race-inschrijvingen gecontroleerd; geen nieuwe vervangingen.",
+  "Waiting for a complete, unambiguous GP race entry list.": "Wachten op een volledige, eenduidige GP-race-inschrijflijst.",
+  "Automatically confirmed from Jolpica GP race entries.": "Automatisch bevestigd op basis van Jolpica GP-race-inschrijvingen.",
   Explanation: "Toelichting",
   "Affected entries": "Betrokken inzendingen",
   "Review the policy with your league. Choosing carry applies equally to all picks for the original driver, without reopening the deadline.":

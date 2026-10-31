@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.28 — 31 October 2026
+
+The existing hourly calendar worker now checks GP race entries from Jolpica, starting seven days before each GP and retrying until results are published. It compares complete opening-round and event race entry lists, confirms a replacement only when exactly one seat changes within the same team, adds missing reserve drivers and carries all GP prediction categories to the replacement for scoring. Saved submissions, receipts, Sprint and championship picks remain unchanged. Existing manual policies take priority, announcements and audit entries are added once, and incomplete/ambiguous lists wait for organiser review. Automatic GP publication waits while a replacement check is unresolved. Practice-only participants never trigger replacements. First-round changes, double-seat changes, team transfers and unrecognised original drivers require manual confirmation. This depends on provider entry publication and is not instant team-announcement monitoring. Manual confirmation remains available, with no Explanation field or required note; previously saved notes remain visible.
+
+Validation: all 122 tests, TypeScript and production build pass. Update both app and calendar worker; GitHub publication does not install this update on the VPS.
+
+
 ## 0.8.27 — 29 October 2026
 
 - Replace the misleading generic webcal action with Google Calendar setup guidance and a named Apple Calendar action. Add manual setup and clipboard-failure fallback, with matching Dutch text.

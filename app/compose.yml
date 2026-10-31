@@ -1,6 +1,6 @@
 services:
   apex:
-    image: ${APEX_IMAGE:-ghcr.io/sietsevdm/apex-league:0.8.27}
+    image: ${APEX_IMAGE:-ghcr.io/sietsevdm/apex-league:0.8.28}
     container_name: apex
     restart: unless-stopped
     environment:
@@ -31,7 +31,7 @@ services:
     security_opt:
       - no-new-privileges:true
   calendar-worker:
-    image: ${APEX_IMAGE:-ghcr.io/sietsevdm/apex-league:0.8.27}
+    image: ${APEX_IMAGE:-ghcr.io/sietsevdm/apex-league:0.8.28}
     restart: unless-stopped
     # This background process has no HTTP server; do not inherit the web probe.
     healthcheck:

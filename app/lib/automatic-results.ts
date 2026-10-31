@@ -18,6 +18,8 @@ const normal = (s: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 function driverId(driver: Json, season: Season) {
+  const byProvider = season.drivers.find(d => driver.id && d.providerDriverId === driver.id);
+  if (byProvider) return byProvider.id;
   const full = normal(`${driver.given_name} ${driver.family_name}`);
   const exact = season.drivers.filter((d) => normal(d.name) === full);
   const matches = exact.length
@@ -239,6 +241,10 @@ export async function syncDueResults(
               now - Date.parse(status.lastAttempt) < 3600000)
           )
             continue;
+          if (kind === "gp" && event.replacementSync?.status === "waiting") {
+            (event.resultSync ||= {})[kind] = { ...status, status: "waiting", message: "Waiting for the GP replacement check before automatic publication." };
+            continue;
+          }
           if (event[kind === "gp" ? "gpDraft" : "sprintDraft"]) {
             (event.resultSync ||= {})[kind] = {
               ...status,

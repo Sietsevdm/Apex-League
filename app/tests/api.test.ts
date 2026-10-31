@@ -121,12 +121,12 @@ test("API enforces privacy, roles, deadlines, registration and idempotent public
       name: "Reserve Driver",
       team: "Red Bull",
       policy: "carry",
-      note: "Test replacement",
     };
     assert.equal((await post(replacement, "demo-1")).status, 403);
     assert.equal((await post({ ...replacement, from: "UNKNOWN" })).status, 400);
     assert.equal((await post(replacement)).status, 200);
     const replacedOwner = await get("demo-1");
+    assert.equal(replacedOwner.state.events.find((e: any) => e.id === "singapore").replacements[0].note, "");
     assert.deepEqual(replacedOwner.state.receipts[0].picks, picks);
     assert.equal(
       replacedOwner.state.events.find((e: any) => e.id === "singapore")
