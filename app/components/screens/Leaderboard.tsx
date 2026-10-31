@@ -1,7 +1,7 @@
 "use client";
 import { standingsMovement } from "@/lib/standings-movement";
 import { useLocale } from "@/lib/i18n";
-import { Season, State, standings } from "@/lib/model";
+import { Season, State, standings, bannerEvent } from "@/lib/model";
 import { Trophy } from "lucide-react";
 import { Heading, StandingsTable } from "./Shared";
 function Leaderboard({
@@ -15,6 +15,7 @@ function Leaderboard({
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   const rows = standings(s, season.id);
+  const weekend = season.archived ? undefined : bannerEvent(s, season.id);
   return (
     <>
       <Heading
@@ -47,7 +48,8 @@ function Leaderboard({
         )}
       </div>
       <section className="panel">
-        <StandingsTable rows={rows} meId={meId} movement={standingsMovement(s, season.id)} />
+        {weekend && <p className="muted standings-weekend-caption">{tr("Weekend picks")} · {weekend.name} · {tr("Checkmark means submitted; predictions remain private until the deadline.")}</p>}
+        <StandingsTable submissions={weekend ? { s, event: weekend } : undefined} rows={rows} meId={meId} movement={standingsMovement(s, season.id)} />
       </section>
       <section className="panel">
         <h2>{tr("Where the points come from")}</h2>

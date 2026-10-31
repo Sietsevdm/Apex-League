@@ -3088,3 +3088,14 @@ footer {
 
 .app .calendar-card-artwork .schedule strong { font-size:calc(12px * var(--type-size,1)); font-weight:600; line-height:1.5; }
 .app .calendar-card-artwork .schedule span { font-size:calc(11px * var(--type-size,1)); font-weight:500; }
+
+/* Current weekend and privacy-safe submission status. */
+.calendar-list .calendar-card-current { border:2px solid var(--accent); box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 15%,transparent),0 8px 28px #0003; }
+.calendar-current-label { display:inline-block; margin-bottom:9px; padding:5px 8px; border-radius:6px; background:var(--accent); color:#07131b; font-size:calc(10px * var(--type-size,1)); font-weight:700; line-height:1.4; }
+.standings-weekend-caption { margin:0 0 16px; line-height:1.6; }
+.weekend-submission { display:inline-flex; flex-wrap:wrap; gap:8px; min-width:70px; }
+.weekend-submission-item { display:inline-flex; align-items:center; gap:5px; white-space:nowrap; font-size:calc(11px * var(--type-size,1)); }
+.weekend-submission-item.submitted { color:var(--accent); }
+.weekend-submission-item.draft { color:var(--gold); }
+.weekend-submission-item.pending { color:var(--muted); }
+.standings-submission-heading { white-space:nowrap; }

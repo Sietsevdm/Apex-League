@@ -1,5 +1,17 @@
 # Apex League development
 
+## 0.8.31 — 31 October 2026
+
+### Team-colored selected drivers
+
+Chosen drivers now retain the same saved team-color background and contrasting black/white text as their dropdown options, alongside the existing team logo. Empty and No retirements selections retain neutral styling. Popup neutral rows keep the league surface/text colors rather than inheriting the selected team color. Shared driver pickers apply the appearance consistently without changing saved picks or scoring. TypeScript and production build pass. Browser verified blue Red Bull, orange McLaren and pink Alpine selections, contrasting text, and neutral empty/menu backgrounds. Included in 0.8.31; GitHub publication does not install this update on the VPS.
+
+
+### Current weekend and standings submission status
+
+The current non-practice weekend is highlighted on the calendar with an accent border and Current race weekend label, using the same event selection and organiser override as the overview. Archived seasons have no current-weekend highlight. Standings now include a Weekend picks column for that event, with separate GP/Sprint icons: checkmark for submitted, draft icon for saved drafts, empty circle for not started, cross for missed and question mark for unavailable summaries. Accessible labels/tooltips name each state. Only the existing API submission-status summary is read; private predictions are never inferred or revealed. The compact overview standings remain unchanged. English/Dutch labels included. All 124 tests, TypeScript and production build pass; local browser verified one Singapore highlight and independent submitted GP/draft Sprint status. Local preview http://127.0.0.1:3007/. Included in 0.8.31; VPS installation remains a separate step.
+
+
 ## 0.8.30 — Security patch, calendar artwork and browser navigation, 31 October 2026
 
 Upgrade Next.js from 16.4.0 to exactly 16.4.3 using the security policy selected by the official upgrade command. Set experimental.agentUpgrade to security for future reminders, preserving existing deployment settings. The working app is outside Git, so it was upgraded in place; publishing branches/commits and open pull requests were checked for duplicates and none matched. Frozen pnpm installation, exact installed version, TypeScript, all 122 tests and production build pass. Production dependency audit reports zero known vulnerabilities at verification time. Browser checks on the patched production app confirm calendar artwork, 12 px schedule times, Back navigation and refresh restoration. Source ZIP: outputs/apex-league-v0.8.30.zip. GitHub publication does not install this update on the VPS.

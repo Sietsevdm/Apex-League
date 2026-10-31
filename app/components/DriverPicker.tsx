@@ -77,8 +77,8 @@ export default function DriverPicker({
       const viewportWidth = document.documentElement.clientWidth;
       const width = Math.min(Math.max(rect.width, 300), viewportWidth - 16);
       setPosition({
-        fontFamily: theme.fontFamily, fontSize: theme.fontSize, color: theme.color,
-        backgroundColor: theme.backgroundColor, borderColor: theme.borderColor,
+        fontFamily: theme.fontFamily, fontSize: theme.fontSize, color: theme.getPropertyValue("--text").trim() || "#F4F7FB",
+        backgroundColor: theme.getPropertyValue("--surface").trim() || "#151D30", borderColor: theme.borderColor,
         left: Math.max(8, Math.min(rect.left, viewportWidth - width - 8)),
         top:
           below >= Math.min(360, above)
@@ -130,6 +130,7 @@ export default function DriverPicker({
         ref={trigger}
         type="button"
         className="driver-picker-trigger"
+        style={selected.color ? driverOptionStyle(selected.color) : undefined}
         role="combobox"
         aria-label={t(label || "Select driver")}
         aria-expanded={open}

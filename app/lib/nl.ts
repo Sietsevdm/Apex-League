@@ -1,4 +1,9 @@
 export const dutch: Record<string, string> = {
+  "Unavailable": "Niet beschikbaar",
+  "Current race weekend": "Huidig raceweekend",
+  "Weekend picks": "Weekendvoorspellingen",
+  "Checkmark means submitted; predictions remain private until the deadline.": "Een vinkje betekent ingediend; voorspellingen blijven privé tot de deadline.",
+
   "Set up Google Calendar": "Google Agenda instellen",
   "Add to iOS Calendar": "Toevoegen aan iOS-agenda",
   "Open Apple Calendar": "Apple Agenda openen",

@@ -1,4 +1,6 @@
 "use client";
+import WeekendSubmission from "../WeekendSubmission";
+import type { Event, State } from "@/lib/model";
 import DriverSelect from "../DriverPicker";
 import { useLocale } from "@/lib/i18n";
 import { Season, standings } from "@/lib/model";
@@ -100,10 +102,12 @@ function StandingsTable({
   rows,
   meId,
   movement = {},
+  submissions,
 }: {
   rows: ReturnType<typeof standings>;
   meId: string;
   movement?: Record<string, number>;
+  submissions?: { s: State; event: Event };
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
   return (
@@ -113,6 +117,7 @@ function StandingsTable({
           <tr>
             <th>{tr("POS")}</th>
             <th>{tr("PLAYER")}</th>
+            {submissions && <th className="standings-submission-heading" title={submissions.event.name}>{tr("Weekend picks")}</th>}
             <th>{tr("WINS")}</th>
             <th className="right">{tr("POINTS")}</th>
             <th className="right">{tr("CHANGE")}</th>
@@ -154,6 +159,7 @@ function StandingsTable({
                     />
                   </div>
                 </td>
+                {submissions && <td><WeekendSubmission s={submissions.s} event={submissions.event} userId={r.id} /></td>}
                 <td className="muted">{tr(r.wins)}</td>
                 <td className="right points">{tr(r.total)}</td>
                 <td
