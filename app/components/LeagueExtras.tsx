@@ -468,6 +468,7 @@ export function Awards({ s, season }: { s: State; season: Season }) {
 export function CalendarDownload({ s, season, call }: { s: State; season: Season; call: import("@/lib/client-data").Call }) {
   const { t: tr, language } = useLocale();
   return (
+    <div className="calendar-tools">
     <section className="panel">
       <h2>{tr("Deadline reminders")}</h2>
       <p className="tiny">
@@ -487,8 +488,11 @@ export function CalendarDownload({ s, season, call }: { s: State; season: Season
       >
         {tr("Download reminder calendar")}
       </button>
+    </section>
+    <section className="panel">
       <CalendarSubscription key={season.id} seasonId={season.id} call={call} />
     </section>
+    </div>
   );
 }
 export function PredictionExtras({

@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.32 — 31 October 2026
+
+### Constructor logos and colors
+
+The Constructors’ champion selector now uses the shared accessible picker with locally bundled team logos, team-color backgrounds and contrasting text in both the menu and selected field. Colors follow saved driver/team settings, matching known team aliases where needed; unknown teams retain a neutral fallback. Constructor values and championship scoring/locking are preserved. TypeScript and production build pass. Browser verified all 11 logos load, 11 constructor options plus the neutral placeholder, and the selected Ferrari field retains its logo and red background. Included in 0.8.32; GitHub publication does not install this update on the VPS.
+
+
+### Side-by-side calendar tools
+
+The calendar download and subscription tools are now separate equal-width cards side by side on desktop, stacking below 760 px. The former internal divider is removed within this layout, while subscription setup, token privacy and download behavior remain unchanged. TypeScript and production build pass; browser measurements confirm equal card heights and widths aligned on the same desktop row. Included in 0.8.32; VPS installation remains a separate step.
+
+
+### Compact prediction rows
+
+Removed the redundant Winner/Second place/Position labels above finishing-order pickers, while retaining each picker’s accessible Position label. Rank numbers now center vertically beside the selected driver, and row padding is reduced to remove spare space. Positions 1/2/3 use consistent gold/silver/bronze in prediction rows, standings ranks and podium position labels, including tied standings ranks. Reorder buttons and mobile touch targets remain available. Removed the submission-overview panel from the prediction screen; standings retain privacy-safe GP/Sprint checkmarks. TypeScript and production build pass. Browser verified zero redundant position labels, no submission-overview panel, centered number/field alignment, matching medal colors on predictions/standings and 390 px phone layout without horizontal overflow. Included in 0.8.32; GitHub publication does not install this update on the VPS.
+
+
 ## 0.8.31 — 31 October 2026
 
 ### Team-colored selected drivers

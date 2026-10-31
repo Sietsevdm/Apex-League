@@ -57,17 +57,7 @@ function Champions({
           <Pill>{tr("10 POINTS")}</Pill>
           <h2>{tr("Constructors\u2019 champion")}</h2>
           <p>{tr("Which team will come out on top?")}</p>
-          <select
-            disabled={closed}
-            value={constructor}
-            onChange={(e) => setConstructor(e.target.value)}
-            aria-label={tr("Constructor champion")}
-          >
-            <option value="">{tr("Choose a constructor")}</option>
-            {tr(
-              season.constructors.map((c) => <option key={c}>{tr(c)}</option>),
-            )}
-          </select>
+          <DriverSelect constructors season={season} disabled={closed} value={constructor} onChange={setConstructor} label="Constructor champion" />
         </section>
       </div>
       <button

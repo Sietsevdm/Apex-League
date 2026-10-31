@@ -26,10 +26,6 @@ import {
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { DriverSelect, Empty, Heading, Pill, remaining } from "./Shared";
-const SubmissionOverview = dynamic(
-  () => import("../LeagueImprovements").then((m) => m.SubmissionOverview),
-  { loading: () => null },
-);
 const ReplacementNotice = dynamic(
   () => import("../LeagueImprovements").then((m) => m.ReplacementNotice),
   { loading: () => null },
@@ -216,7 +212,6 @@ function Predictions({
         </div>
         {entry?.submitted && !isLocked && !editing && <button className="secondary" onClick={() => setEditing(true)}>{tr("Edit predictions")}</button>}
       </section>
-      <SubmissionOverview s={s} event={e} kind={kind} />
       {tr(
         e.practiceRound && (
           <div className="info-bar">
@@ -256,17 +251,10 @@ function Predictions({
             {tr(
               p.order.map((v, i) => (
                 <div className="position-pick" key={i}>
-                  <span className={i < 3 ? "podium-number" : ""}>
+                  <span className={i < 3 ? `podium-number podium-number-${i + 1}` : ""}>
                     {tr(String(i + 1).padStart(2, "0"))}
                   </span>
                   <div>
-                    <label>
-                      {tr(
-                        i < 3
-                          ? ["WINNER", "SECOND PLACE", "THIRD PLACE"][i]
-                          : `POSITION ${i + 1}`,
-                      )}
-                    </label>
                     <DriverSelect
                       value={v}
                       season={predictionSeason}

@@ -1,11 +1,13 @@
-# Version 0.8.31
+# Version 0.8.32
 
-The race calendar highlights the current weekend with an accent border and label, matching the overview's selected event. Practice rounds and archived seasons are excluded from the highlight.
+Prediction rows are more compact: repeated Winner/Second place/Position labels are removed, numbers align with driver fields, and surrounding padding is reduced. Accessible picker labels and reorder controls remain. The redundant submission-overview panel is removed from predictions; submission indicators remain on Standings.
 
-Standings now show a Weekend picks column with independent GP and Sprint submission indicators. A checkmark means submitted; draft, not-started, missed and unavailable states have distinct icons and accessible labels. Status comes from the existing privacy-safe summary, without revealing predictions. The compact overview standings are unchanged.
+Positions 1, 2 and 3 now use matching gold, silver and bronze in prediction rows, standings ranks and podium position labels.
 
-Chosen drivers now retain their team-color background alongside the team logo. Black or white text is selected for contrast. Empty and No retirements fields remain neutral, as do neutral menu rows.
+Calendar deadline downloads and subscription setup now occupy separate side-by-side cards on desktop and stack on phones.
 
-Validation: all 124 automated tests, TypeScript and production build pass. Browser checks verified the current-weekend highlight, independent GP/Sprint status, 390 px standings without page overflow, selected-driver colors and neutral menu styling. Next.js remains on security-patched 16.4.3.
+The Constructors’ champion menu now matches driver pickers, with team logos, team-color backgrounds and contrasting text in both the menu and selected field. All saved constructor values, deadlines and scoring remain unchanged.
 
-Update app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.31` with Re-pull image enabled. Preserve secrets and persistent volumes. No database migration or environment change is required. GitHub publication does not install this update on your VPS.
+Validation: TypeScript and production build pass; browser checks confirm compact centered rows, matching medal colors, no redundant submission panel, a 390 px layout without horizontal overflow, equal calendar-tool cards and all 11 constructor logos plus the selected-team color. All 124 automated tests pass.
+
+Update app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.32` with Re-pull image enabled. Preserve secrets and persistent volumes. No database migration or environment change is required. GitHub publication does not install this update on your VPS.

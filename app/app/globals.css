@@ -3099,3 +3099,18 @@ footer {
 .weekend-submission-item.draft { color:var(--gold); }
 .weekend-submission-item.pending { color:var(--muted); }
 .standings-submission-heading { white-space:nowrap; }
+
+/* Position numbers provide the visible finishing-order labels. */
+.position-pick > span { display:flex; align-items:center; justify-content:center; line-height:1; }
+@media (max-width:760px) { .position-pick { padding:8px 10px; } }
+
+/* Shared medal colors for finishing-order positions and standings ranks. */
+.rank.rank-1, .position-pick > span.podium-number-1, .podium-card.place-1 > span { color:#f4c76b; }
+.rank.rank-2, .position-pick > span.podium-number-2, .podium-card.place-2 > span { color:#cbd5e1; }
+.rank.rank-3, .position-pick > span.podium-number-3, .podium-card.place-3 > span { color:#d99a6c; }
+
+.calendar-tools { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; margin-bottom:22px; }
+.calendar-tools > .panel { margin:0; min-width:0; }
+.calendar-tools .calendar-subscription { border-top:0; padding-top:0; margin-top:0; }
+.calendar-tools h2, .calendar-tools h3 { font-size:calc(18px * var(--type-size,1)); }
+@media (max-width:760px) { .calendar-tools { grid-template-columns:1fr; gap:16px; } }

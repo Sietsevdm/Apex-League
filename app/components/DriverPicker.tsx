@@ -14,6 +14,7 @@ export default function DriverPicker({
   none = false,
   disabled = false,
   label,
+  constructors = false,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -21,15 +22,20 @@ export default function DriverPicker({
   none?: boolean;
   disabled?: boolean;
   label?: string;
+  constructors?: boolean;
 }) {
   const { t } = useLocale(),
     id = useId();
   const options = [
-    { id: "", name: t("Choose a driver"), team: "", color: "" },
+    { id: "", name: t(constructors ? "Choose a constructor" : "Choose a driver"), team: "", color: "" },
     ...(none
       ? [{ id: "none", name: t("No retirements"), team: "", color: "" }]
       : []),
-    ...driversByConstructor(season.drivers),
+    ...(constructors ? season.constructors.map(team => {
+      const logo = teamLogo(team);
+      const driver = season.drivers.find(d => d.team.trim().toLowerCase() === team.trim().toLowerCase()) || (logo ? season.drivers.find(d => teamLogo(d.team) === logo) : undefined);
+      return { id: team, name: team, team, color: driver?.color || "#8BA7BD" };
+    }) : driversByConstructor(season.drivers)),
   ];
   const selected = options.find((o) => o.id === value) || options[0];
   const [open, setOpen] = useState(false),
@@ -132,7 +138,7 @@ export default function DriverPicker({
         className="driver-picker-trigger"
         style={selected.color ? driverOptionStyle(selected.color) : undefined}
         role="combobox"
-        aria-label={t(label || "Select driver")}
+        aria-label={t(label || (constructors ? "Constructor champion" : "Select driver"))}
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={open ? id : undefined}
@@ -202,7 +208,7 @@ export default function DriverPicker({
             ref={popup}
             id={id}
             role="listbox"
-            aria-label={t(label || "Select driver")}
+            aria-label={t(label || (constructors ? "Constructor champion" : "Select driver"))}
             className="driver-picker-menu"
             style={position}
             onPointerDown={(e) => e.preventDefault()}
@@ -223,7 +229,7 @@ export default function DriverPicker({
                 {badge(o.team, o.color)}
                 <span className="driver-picker-copy">
                   <span>{o.name}</span>
-                  {o.team && <small>{o.team}</small>}
+                  {o.team && o.team !== o.name && <small>{o.team}</small>}
                 </span>
                 {o.id === value && <Check size={16} aria-hidden="true" />}
               </div>
