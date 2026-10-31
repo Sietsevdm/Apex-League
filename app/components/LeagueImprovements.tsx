@@ -1,5 +1,6 @@
 "use client";
-import { driversByConstructor } from "@/lib/driver-order";
+import DriverPicker from "./DriverPicker";
+import { driversByConstructor, driverOptionStyle } from "@/lib/driver-order";
 import { useEffect, useState } from "react";
 import { State, Season, Event, Result, Picks, locked } from "@/lib/model";
 import { resultImpact, submissionOverview } from "@/lib/enhancements";
@@ -194,18 +195,7 @@ export function ReplacementAdmin({
           </label>
           <label>
             {t("Original driver")}
-            <select
-              required
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            >
-              <option value="">{t("Choose a driver")}</option>
-              {driversByConstructor(season.drivers).map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+            <DriverPicker value={from} onChange={setFrom} season={season} label="Original driver" />
           </label>
           <label>
             {t("Replacement driver ID")}
@@ -217,7 +207,7 @@ export function ReplacementAdmin({
             />
             <datalist id="replacement-drivers">
               {driversByConstructor(season.drivers).map((d) => (
-                <option key={d.id} value={d.id}>
+                <option key={d.id} value={d.id} style={driverOptionStyle(d.color)}>
                   {d.name}
                 </option>
               ))}
@@ -260,7 +250,7 @@ export function ReplacementAdmin({
         {error && <p role="alert">{t(error)}</p>}
         <button
           className="primary"
-          disabled={busy || !event || event[kind]?.published}
+          disabled={busy || !event || !from || !to || event[kind]?.published}
         >
           {t("Confirm replacement")}
         </button>

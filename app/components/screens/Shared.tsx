@@ -1,5 +1,5 @@
 "use client";
-import { driversByConstructor } from "@/lib/driver-order";
+import DriverSelect from "../DriverPicker";
 import { useLocale } from "@/lib/i18n";
 import { Season, standings } from "@/lib/model";
 import { Flag } from "lucide-react";
@@ -66,52 +66,6 @@ function Empty({ title, body }: { title: string; body: string }) {
       <h3>{tr(title)}</h3>
       <p>{tr(body)}</p>
     </div>
-  );
-}
-function DriverSelect({
-  value,
-  onChange,
-  season,
-  none = false,
-  disabled = false,
-  label,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  season: Season;
-  none?: boolean;
-  disabled?: boolean;
-  label?: string;
-}) {
-  const { t: tr, language, setLanguage, date } = useLocale();
-  return (
-    <span className="driver-select">
-      <span
-        className="driver-color"
-        aria-hidden="true"
-        style={{
-          backgroundColor:
-            season.drivers.find((d) => d.id === value)?.color || "#8BA7BD",
-        }}
-      />
-      <select
-        aria-label={tr(label || "Select driver")}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={disabled}
-      >
-        <option value="">{tr("Choose a driver")}</option>
-        {tr(none && <option value="none">{tr("No retirements")}</option>)}
-        {tr(
-          driversByConstructor(season.drivers).map((d) => (
-            <option key={d.id} value={d.id}>
-              {tr(d.name)}
-              {tr(d.team ? ` · ${d.team}` : "")}
-            </option>
-          )),
-        )}
-      </select>
-    </span>
   );
 }
 function driverName(season: Season, id: string) {

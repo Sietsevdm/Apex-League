@@ -1,11 +1,11 @@
-# Version 0.8.28
+# Version 0.8.29
 
-The hourly worker now checks GP race entries for driver replacements. When complete provider lists identify one changed seat within the same team, the reserve driver is added and existing GP picks follow the replacement across all scoring categories. Original submissions and receipts are preserved; Sprint and championship picks remain unchanged. Organiser policies take priority. Announcements and audit records explain applied replacements.
+Driver dropdowns now combine team logos before driver names with team-colored row backgrounds and contrasting text. Selected drivers retain the logo. Names and team labels remain visible, and unknown teams retain a color marker. Eleven official 2026 team marks are bundled locally.
 
-Checks begin seven days before a GP and retry until results are published. Provider publication timing determines availability; this is not instant monitoring of team announcements. Incomplete, ambiguous or subsequently changed lineups wait for organiser review, and unresolved replacement checks hold automatic GP result publication. First-round changes, transfers and double-seat changes require manual confirmation. Practice-only substitutes do not trigger a replacement.
+The shared picker covers GP/Sprint predictions, championship picks, result entry, season setup and the original-driver replacement control. It supports keyboard arrows, Home/End, typing driver names, Enter/Space selection, Escape/Tab dismissal and outside clicks. The scrollable menu stays within the viewport on phones.
 
-The manual replacement form no longer has an Explanation field, and confirmation accepts requests without a note. Existing notes remain visible.
+The picker uses the selected season's roster and existing replacement eligibility rules. It does not change saved driver IDs, submissions, deadlines or scoring. The preview used a smaller sample roster; live season rosters are preserved.
 
-Validation: all 122 tests, TypeScript and production build pass. A real Jolpica GP entry response was verified. The existing Next.js security advisory remains outstanding.
+Validation: all 122 automated tests, TypeScript and production build pass. Browser checks verified keyboard selection, draft autosave, loaded logos and a 390 px phone layout without horizontal overflow. The existing Next.js security advisory remains outstanding.
 
-Update both app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.28` with Re-pull image enabled, preserving existing secrets and volumes. No new environment variable or database migration is required. The existing hourly worker must be running for automatic checks. GitHub publication does not install this update on the VPS.
+Update app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.29` with Re-pull image enabled, preserving secrets and persistent volumes. No database migration or environment change is required. GitHub publication does not install this update on the VPS.
