@@ -204,7 +204,7 @@ function Predictions({
         />
       </div>
       <ReplacementNotice event={e} season={season} kind={kind} picks={p} />
-      <DeadlineTime value={cutoff(e, kind)} timezone={s.users.find(user => user.id === meId)?.timezone} label={kind === "gp" ? "GP deadline" : "Sprint deadline"} />
+      <DeadlineTime value={cutoff(e, kind)} timezone={s.users.find(user => user.id === meId)?.timezone} label={kind === "gp" ? "GP predictions deadline" : "Sprint predictions deadline"} />
       <section className="prediction-guide" aria-label={tr("Prediction status")}>
         <PredictionStatus submitted={entry?.submitted} exists={Boolean(entry)} locked={isLocked} />
         <div><strong>{tr(isLocked ? "Your picks are locked" : entry?.submitted ? editing ? "Make your changes" : "You're on the grid" : "Build your prediction")}</strong>

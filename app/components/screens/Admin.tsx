@@ -322,7 +322,7 @@ function Admin({
                                       s.users.find((user) => user.id === meId)
                                         ?.timezone
                                     }
-                                    label="GP deadline"
+                                    label="GP predictions deadline"
                                   />
                                   {(e.hasSprint || e.sprintQualifying) && (
                                     <DeadlineTime
@@ -331,7 +331,7 @@ function Admin({
                                         s.users.find((user) => user.id === meId)
                                           ?.timezone
                                       }
-                                      label="Sprint deadline"
+                                      label="Sprint predictions deadline"
                                     />
                                   )}
                                 </td>

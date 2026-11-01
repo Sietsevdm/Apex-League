@@ -48,7 +48,7 @@ function Leaderboard({
         )}
       </div>
       <section className="panel">
-        {weekend && <p className="muted standings-weekend-caption">{tr("Weekend picks")} · {weekend.name} · {tr("Checkmark means submitted; predictions remain private until the deadline.")}</p>}
+        {weekend && <p className="muted standings-weekend-caption">{tr("Weekend picks")} · {weekend.name} · {tr("Checkmark means submitted; predictions become visible after qualifying.")}</p>}
         <StandingsTable submissions={weekend ? { s, event: weekend } : undefined} rows={rows} meId={meId} movement={standingsMovement(s, season.id)} />
       </section>
       <section className="panel">

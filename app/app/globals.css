@@ -2823,9 +2823,9 @@ footer {
 }
 .hero .banner-weather { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px 9px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.22); border-radius: 18px; background: rgba(7,13,25,.8); color: #e4eef6; font-size: calc(11px * var(--type-size, 1)); text-decoration: none; }
 .hero .banner-weather span { color: #c3d0db; font-size: calc(10px * var(--type-size, 1)); }
-.hero .pill.picks-open { color: #b3dfc7; background: rgba(28,59,44,.84); border-color: rgba(159,210,181,.34); }
-.hero .pill.picks-open .live-dot { background: #a1d4b6; box-shadow: none; animation: none; }
-.hero .pill.picks-closed { color: #ff6472; background: rgba(255,75,90,.14); border-color: rgba(255,75,90,.2); }
+.hero .pill.picks-open { color: #54e3a2; background: #070d19; border-color: rgba(84,227,162,.4); }
+.hero .pill.picks-open .live-dot { background: #54e3a2; box-shadow: none; animation: none; }
+.hero .pill.picks-closed { color: #ff6472; background: #070d19; border-color: rgba(255,75,90,.4); }
 .hero .pill.picks-closed .live-dot { background: #ff5263; }
 .app .hero .banner-countdown strong { display: block; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: calc(24px * var(--type-size, 1)); font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
 .weekend-progress { display: flex; gap: 6px; max-width: 620px; padding: 0; margin: 28px 0 0; list-style: none; }
@@ -3114,3 +3114,7 @@ footer {
 .calendar-tools .calendar-subscription { border-top:0; padding-top:0; margin-top:0; }
 .calendar-tools h2, .calendar-tools h3 { font-size:calc(18px * var(--type-size,1)); }
 @media (max-width:760px) { .calendar-tools { grid-template-columns:1fr; gap:16px; } }
+
+/* Keep podium medals; all remaining prediction and standings positions use logo teal. */
+.rank:not(.rank-1):not(.rank-2):not(.rank-3),
+.position-pick > span:not(.podium-number) { color: #22dcc5; }

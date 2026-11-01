@@ -33,6 +33,7 @@ import {
   Result,
   cutoff,
   locked,
+  predictionsVisible,
   complete,
   emptyResult,
 } from "@/lib/model";
@@ -297,7 +298,7 @@ function view(
     (p) =>
       p.userId === u.id ||
       (p.submitted &&
-        locked(
+        predictionsVisible(
           s.events.find((e) => e.id === p.eventId)!,
           p.kind,
         )),

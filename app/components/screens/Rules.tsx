@@ -77,7 +77,7 @@ function Rules({ s, season }: { s: State; season: Season }) {
         <h3>{tr("Deadlines and privacy")}</h3>
         <p>
           {tr(
-            "Each prediction set locks one hour before its own qualifying session. Drafts do not score: submit your completed entry. Submitted picks become visible after locking. Season picks close one hour before the opening weekend\u2019s first qualifying session. Player registration is opened and closed manually by your organiser.",
+            "Each prediction set locks one hour before its own qualifying session. Drafts do not score: submit your completed entry. Submitted picks become visible to league members in Results after the corresponding qualifying session (scheduled start plus one hour). Season picks close one hour before the opening weekend\u2019s first qualifying session. Player registration is opened and closed manually by your organiser.",
           )}
         </p>
         <h3>{tr("Equal points")}</h3>

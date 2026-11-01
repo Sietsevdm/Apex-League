@@ -245,6 +245,13 @@ test("API enforces privacy, roles, deadlines, registration and idempotent public
     assert.equal(publicLogin.loginText.welcome, "Welcome to our grid");
     assert.equal((await post({ action: "previousYearLineup", seasonId: "sample-season" }, "demo-1")).status, 403);
     assert.equal((await post({ action: "previousYearLineup", seasonId: "sample-season" })).status, 400);
+    const stillPrivate = await get();
+    assert.equal(stillPrivate.state.entries.some((p: any) => p.userId === "demo-1" && p.eventId === "singapore"), false);
+    await transaction(s => {
+      const event = s.events.find(e => e.id === "singapore")!;
+      event.qualifying = new Date(Date.now() - 7200000).toISOString();
+      event.gp = undefined;
+    });
     const revealed = await get();
     assert.ok(
       revealed.state.entries.some(

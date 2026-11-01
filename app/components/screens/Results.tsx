@@ -1,6 +1,6 @@
 "use client";
 import { useLocale } from "@/lib/i18n";
-import { Season, State, emptyPicks, score, standings } from "@/lib/model";
+import { Season, State, emptyPicks, predictionsVisible, score, standings } from "@/lib/model";
 import { mappedPicks } from "@/lib/enhancements";
 import { Download, Flag, Target, TrendingUp, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -385,7 +385,7 @@ function Results({
           {tr(
             !entry && (
               <p className="muted">
-                {tr("No submitted prediction for this session.")}
+                {tr(playerId !== meId && !predictionsVisible(e, kind) ? "Submitted predictions become visible here after qualifying (scheduled start plus one hour)." : "No submitted prediction for this session.")}
               </p>
             ),
           )}

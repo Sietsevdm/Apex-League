@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.33 - Prediction reveal and readability, 1 November 2026
+
+Submitted GP and Sprint picks now become visible to authorised league members in Results after their respective qualifying session, using scheduled start plus one hour. Edit deadlines remain unchanged. This is a calendar estimate, not live confirmation of qualifying completion; delays and red flags can differ. Published results also permit reveal once locked. Drafts and submission receipts remain private. The Results player selector works before race results publish and explains when picks are still hidden.
+
+Predictions Open and Closed badges both use an opaque dark background. Open uses green text/dot and a matching green border; Closed uses red. Deadline labels now read GP predictions deadline / Sprint predictions deadline, with Dutch equivalents. Standings and finishing-order prediction positions 4 onward use logo teal (#22dcc5); gold/silver/bronze positions 1-3 remain unchanged.
+
+Validation: all 125 tests pass, including API privacy before/after qualifying and independent GP/Sprint reveal boundaries; production build passes. No new browser visual verification. Documentation and publishing source mirror updated. Prepared for authorised GitHub publication as 0.8.33. VPS installation remains separate. Synced sources untouched.
+
+
 ## 0.8.32 — 31 October 2026
 
 ### Constructor logos and colors
@@ -311,3 +320,5 @@ Newest versions appear first. Versions before 0.8.0 were distributed as local re
 
 ## 0.1.0
 - Initial self-hosted prediction league with GP/Sprint picks, scoring, admin tools, PostgreSQL and Docker deployment.
+
+1 November 2026 follow-up: Open badge changed to green (#54e3a2) text/dot with a matching border; dark background retained. Verified CSS selectors and publishing mirror. Included in 0.8.33; VPS installation remains separate.

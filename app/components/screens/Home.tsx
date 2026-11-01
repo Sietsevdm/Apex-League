@@ -223,7 +223,7 @@ function Banner({
                     value={task.deadline}
                     timezone={timezone}
                     label={
-                      task.kind === "gp" ? "GP deadline" : "Sprint deadline"
+                      task.kind === "gp" ? "GP predictions deadline" : "Sprint predictions deadline"
                     }
                   />
                 ))}

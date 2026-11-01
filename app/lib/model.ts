@@ -291,6 +291,13 @@ export function locked(e: Event, kind: "gp" | "sprint", now = Date.now()) {
     now >= Date.parse(cutoff(e, kind))
   );
 }
+/** Reveal separately from the edit deadline, using the calendar's one-hour qualifying estimate. */
+export function predictionsVisible(e: Event | undefined, kind: "gp" | "sprint", now = Date.now()) {
+  if (!e || !locked(e, kind, now)) return false;
+  if (e[kind]?.published) return true;
+  const start = Date.parse(kind === "gp" ? e.qualifying : e.sprintQualifying || "");
+  return Number.isFinite(start) && now >= start + 60 * 60_000;
+}
 export function score(p: Picks, r: Result | undefined, kind: "gp" | "sprint") {
   p = mappedPicks(
     p,

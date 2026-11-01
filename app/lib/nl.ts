@@ -1,4 +1,7 @@
 export const dutch: Record<string, string> = {
+  "Submitted predictions become visible here after qualifying (scheduled start plus one hour).": "Ingediende voorspellingen worden hier zichtbaar na de kwalificatie (geplande start plus een uur).",
+  "Each prediction set locks one hour before its own qualifying session. Drafts do not score: submit your completed entry. Submitted picks become visible to league members in Results after the corresponding qualifying session (scheduled start plus one hour). Season picks close one hour before the opening weekend’s first qualifying session. Player registration is opened and closed manually by your organiser.": "Elke voorspelling sluit een uur voor de bijbehorende kwalificatie. Concepten tellen niet mee: dien je volledige voorspelling in. Ingediende voorspellingen zijn voor competitieleden zichtbaar bij Resultaten na de bijbehorende kwalificatie (geplande start plus een uur). Seizoensvoorspellingen sluiten een uur voor de eerste kwalificatie van het openingsweekend. Je organisator opent en sluit de spelersregistratie handmatig.",
+
   "Unavailable": "Niet beschikbaar",
   "Current race weekend": "Huidig raceweekend",
   "Weekend picks": "Weekendvoorspellingen",
@@ -30,8 +33,8 @@ export const dutch: Record<string, string> = {
   "You're up to date. Your submitted picks remain editable until locking.": "Je bent helemaal bij. Je ingediende voorspellingen blijven aanpasbaar tot de deadline.",
   "Predictions are locked. Open the results to see your points.": "Voorspellingen zijn gesloten. Bekijk de resultaten om je punten te zien.",
   "Review your picks": "Bekijk je voorspellingen",
-  "GP deadline": "GP-deadline",
-  "Sprint deadline": "Sprintdeadline",
+  "GP predictions deadline": "GP-voorspellingsdeadline",
+  "Sprint predictions deadline": "Sprintvoorspellingsdeadline",
   "Your weekend score": "Je weekendscore",
   "Player's weekend score": "Weekendscore van speler",
   "Weekend score": "Weekendscore",

@@ -260,3 +260,14 @@ Calendar subscriptions reuse stable GP/Sprint event UIDs, UTC deadlines and 24-h
 Ordinary league reads now use committed snapshots without a writer lock or rewrite. Bootstrap, one-time legacy registration migrations and new deadline-lock transitions still use short transactions; prediction saves, authorization and deadline validation remain transactional. No-op transactions skip persistence, and PostgreSQL table initialization is cached per process. The banner's one-second timer pauses while hidden and refreshes immediately on return. See PERFORMANCE.md for verification limits.
 
 Validation for this follow-up: all 83 automated tests and the final production build pass. Browser checks cover direct session navigation, rank arrows, calendar-link creation/revocation and mobile correction history. Real PostgreSQL load and external calendar-client refresh still need deployed verification.
+
+## 0.8.33 - Prediction reveal and readability, 1 November 2026
+
+Submitted GP and Sprint picks now become visible to authorised league members in Results after their respective qualifying session, using scheduled start plus one hour. Edit deadlines remain unchanged. This is a calendar estimate, not live confirmation of qualifying completion; delays and red flags can differ. Published results also permit reveal once locked. Drafts and submission receipts remain private. The Results player selector works before race results publish and explains when picks are still hidden.
+
+Predictions Open and Closed badges both use an opaque dark background. Open uses green text/dot and a matching green border; Closed uses red. Deadline labels now read GP predictions deadline / Sprint predictions deadline, with Dutch equivalents. Standings and finishing-order prediction positions 4 onward use logo teal (#22dcc5); gold/silver/bronze positions 1-3 remain unchanged.
+
+Validation: all 125 tests pass, including API privacy before/after qualifying and independent GP/Sprint reveal boundaries; production build passes. No new browser visual verification. Documentation and publishing source mirror updated. Prepared for authorised GitHub publication as 0.8.33. VPS installation remains separate. Synced sources untouched.
+
+
+1 November 2026 follow-up: Open badge changed to green (#54e3a2) text/dot with a matching border; dark background retained. Verified CSS selectors and publishing mirror. Included in 0.8.33; VPS installation remains separate.
