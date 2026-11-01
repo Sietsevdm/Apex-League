@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.37 - Weekend predictions and player insights, 1 November 2026
+
+Weekend predictions replaces Head to head with one full-width timing-style grid, Everyone / You + rival filters, a focused rival selector and a compact Rival of the weekend recommendation. Compare rival activates the focused grid view. Against the grid shows clear-majority differences in a closed-by-default disclosure, with gold outlines retaining team-color chips and logos. Sidebar labels are explicitly left-aligned when wrapping.
+
+My season gains a Personal bests sub-view for highest weekend score, most exact positions and longest/current scoring streak, using complete published championship weekends. Practice, title bonuses and fully void weekends are excluded. Strict record improvements on the latest completed weekend get a New personal best label. Prediction privacy and scoring remain unchanged. Details: app/PLAYER_INSIGHTS.md.
+
+Validation: all 138 tests and production build pass. Browser checks cover filters, rival selection, private/Sprint states, aligned records and desktop/390/320 px layouts without page overflow. Update the existing Portainer stack to image ghcr.io/sietsevdm/apex-league:0.8.37 after the GitHub release build succeeds, with Re-pull image enabled. Both app and calendar-worker use this image; retain settings and volumes.
+
+
 ## 0.8.35 - Weekend predictions, awards and Results cleanup, 1 November 2026
 
 Reordered Results & recap into weekend/player controls, one score summary with a single GP/Sprint switch and compact winner/leader context, weekend awards, weekend standings, then two closed-by-default detail sections. Removed the four large highlight metric cards and duplicate session/player controls. Share results is now a subdued secondary action. Selected-session publication status sits inside the score summary.
@@ -355,3 +364,17 @@ Head to head verification: TypeScript and all 11 existing scoring/selection test
 ## 0.8.36 - Season picks alignment, 1 November 2026
 
 Fixed the screenshot-reported Season picks spacing: equal-width/equal-height champion cards with aligned selector baselines, consistent card gaps and a separate save-action row with 24 px desktop / 20 px phone clearance before the title-contenders panel. The contenders table now scrolls inside its card when needed. Locked-state controls remain disabled; no saved picks or deadlines change. Production build passes. Browser verified matching desktop card widths (577.5 px) and picker tops, matching 343 px phone cards, exact 24/20 px button-to-panel gaps, disabled locked save controls and no phone overflow. Screenshot outputs/weekend-social/season-picks-aligned-mobile.jpg. Local preview http://localhost:3008/, session 68610; only its named demo dataset cutoff was set to the past to reproduce the locked screenshot. No live data changes, publication or VPS installation.
+
+## Unreleased - Player insights preview, 1 November 2026
+
+Added Rival of the weekend to Head to head (nearest championship points gap, positions and reveal-safe differences), Against the grid inside the existing weekend grid (strict-majority comparisons, original saved picks, team-color chips and gold outlines), and a Personal bests sub-view within My season (best weekend, most exact positions, longest/current scoring streak and latest-record badges). No new sidebar pages. Only submitted revealed picks feed majority/difference views; records use complete published non-practice weekends and shared scoring. Ties, missing entries, incomplete Sprint weekends, void rounds and title bonuses follow documented rules. Details: app/PLAYER_INSIGHTS.md.
+
+All 137 automated tests and final production build pass. Browser verified aligned card/value/footer positions, rival selection action, hidden future picks, desktop and 390/320 px phone layouts with no page overflow or console errors. Screenshots outputs/player-insights/. Existing isolated simulated preview remains http://localhost:3008/, server session 4428; My season -> Personal bests and Head to head show the additions. Documentation and publishing source mirror updated. Local only; no GitHub push, release, VPS installation or live data change.
+
+## Unreleased - Unified Weekend predictions preview, 1 November 2026
+
+Renamed Head to head to Weekend predictions and removed the duplicate two-player table. The full-width timing-style grid now has Everyone / You + rival filters, a rival selector in focused mode, player counts, more compact column spacing and a compact rival recommendation above it. Compare rival activates the two-player grid filter. Against the grid is collapsed by default and resets closed on event/session changes; its majority calculations still use the full eligible league. Existing compare page ID, GP/Sprint selection and privacy remain unchanged.
+
+All 138 tests and production build pass. Browser verified one table, eight Everyone rows, two focused rows, manual rival switching, collapsible highlights, Sprint columns, private future weekends and 390/320 px phone layouts without page overflow or console errors. Screenshots outputs/unified-grid/. Isolated preview remains http://localhost:3008/, session 96819, left on Everyone. Documentation and publishing mirror updated. No publication or VPS installation.
+
+1 November 2026 - Sidebar label alignment (local preview): navigation buttons inherited centered text, making the wrapped Weekend predictions label appear shifted right. Explicitly left-aligned sidebar navigation text and prevented icons shrinking. Production build passes. Local preview only; no publication.

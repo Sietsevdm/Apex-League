@@ -4,7 +4,7 @@ Version 0.8.35, 1 November 2026. GitHub publication does not install the update 
 
 ## Where to find them
 
-- **Head to head:** the Weekend prediction grid sits below the existing two-player comparison. Both use the same weekend and GP/Sprint controls. The initial weekend still follows the overview banner and organiser override.
+- **Weekend predictions:** one full-width grid replaces the separate Head to head comparison. Everyone / You + rival filters preserve focused comparisons in that same grid. Against the grid is collapsed by default, and Compare rival activates the focused filter.
 - **Results & recap:** Weekend awards appears beneath the weekend/session controls and above the points breakdown.
 
 ## Prediction grid

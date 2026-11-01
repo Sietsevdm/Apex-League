@@ -428,7 +428,7 @@ function LeagueContent({
     ["calendar", "Race calendar", CalendarDays],
     ["results", "Results & recap", Flag],
     ["leaderboard", "Standings", Trophy],
-    ["compare", "Head to head", Users],
+    ["compare", "Weekend predictions", Users],
     ["champions", "Season picks", Target],
     ["stats", "My season", TrendingUp],
     ["league", "League & rules", Info],

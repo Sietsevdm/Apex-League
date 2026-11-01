@@ -37,6 +37,17 @@ test("weekend grid hides even locally present picks before reveal and excludes d
   assert.doesNotMatch(html, />VER</);
 });
 
+test("focused grid shows only the viewer and chosen rival while highlights keep the full league context", () => {
+  const s = seed(true), season = s.seasons[0], event = s.events[0];
+  const html = renderToStaticMarkup(createElement(WeekendPredictionGrid, { s, season, event, kind: "gp", meId: s.users[0].id, rivalId: s.users[1].id, focused: true }));
+  const body = html.slice(html.indexOf("<tbody>"), html.indexOf("</tbody>"));
+  assert.equal((body.match(/<tr/g) || []).length, 2);
+  assert.ok(body.includes(s.users[0].name));
+  assert.ok(body.includes(s.users[1].name));
+  assert.ok(!body.includes(s.users[2].name));
+  assert.match(html, /against-grid-disclosure/);
+});
+
 test("awards wait for all sessions, exclude practice and share perfect podiums without mutating scores", () => {
   const s = seed(true), e = s.events[0];
   const first = s.entries.find(p => p.eventId === e.id)!;

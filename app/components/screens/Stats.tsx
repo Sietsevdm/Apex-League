@@ -4,6 +4,8 @@ import { Season, State, score, standings } from "@/lib/model";
 import { Flag, Target, TrendingUp, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Heading, Metric } from "./Shared";
+import { useState } from "react";
+import PersonalBests from "../PersonalBests";
 import ReceiptHistory from "../ReceiptHistory";
 import SeasonProgress from "../SeasonProgress";
 const Awards = dynamic(() => import("../LeagueExtras").then((m) => m.Awards), {
@@ -19,6 +21,7 @@ function Stats({
   meId: string;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
+  const [view, setView] = useState<"overview" | "bests">("overview");
   const me = standings(s, season.id).find((r) => r.id === meId);
   const weeks = me?.weekends || [];
   const best = Math.max(0, ...weeks.map((w) => w.total));
@@ -28,6 +31,11 @@ function Stats({
         eyebrow="YOUR SEASON STORY"
         title={tr("Progress through the grid")}
       />
+      <div className="segmented season-insight-tabs" role="group" aria-label={tr("My season views")}>
+        <button className={view === "overview" ? "selected" : ""} aria-pressed={view === "overview"} onClick={() => setView("overview")}>{tr("Overview")}</button>
+        <button className={view === "bests" ? "selected" : ""} aria-pressed={view === "bests"} onClick={() => setView("bests")}>{tr("Personal bests")}</button>
+      </div>
+      {view === "bests" ? <PersonalBests s={s} season={season} meId={meId} /> : <>
       <Awards s={s} season={season} />
       <SeasonProgress key={season.id} s={s} season={season} meId={meId} />
       <div className="metrics">
@@ -122,6 +130,7 @@ function Stats({
         </div>
       </section>
       <ReceiptHistory key={season.id} s={s} season={season} meId={meId} />
+      </>}
     </>
   );
 }
