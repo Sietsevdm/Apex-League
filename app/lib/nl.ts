@@ -1,4 +1,6 @@
 export const dutch: Record<string, string> = {
+  "Reset": "Wissen",
+  "different call": "afwijkende keuze",
   "Weekend predictions": "Weekendvoorspellingen",
   "Every player's calls, side by side.": "Alle voorspellingen naast elkaar.",
   "Prediction session": "Voorspellingssessie",

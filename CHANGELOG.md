@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.38 - Prediction reset and submission cleanup, 2 November 2026
+
+Added Reset for the selected GP or Sprint prediction form. Draft resets use normal autosave; submitted entries stay counted while cleared edits are rebuilt, and Cancel changes restores the submission. Reset is unavailable after locking, while saving, for non-members or when already empty. Phone action bars align Reset/Cancel above a full-width primary action.
+
+Your next step disappears once all applicable weekend prediction sets are submitted, remaining visible for missing or draft GP/Sprint sets. Against the grid no longer repeats its heading/count when expanded; singular differences use 1 different call.
+
+Validation: all 140 tests and final production build pass. Browser verified clearing all GP categories, incomplete-save prevention, cancellation restoring submitted picks, locked Reset protection and aligned phone controls without overflow. Update the existing Portainer stack to ghcr.io/sietsevdm/apex-league:0.8.38 after its release build succeeds, with Re-pull image enabled; app and calendar-worker update together.
+
+
 ## 0.8.37 - Weekend predictions and player insights, 1 November 2026
 
 Weekend predictions replaces Head to head with one full-width timing-style grid, Everyone / You + rival filters, a focused rival selector and a compact Rival of the weekend recommendation. Compare rival activates the focused grid view. Against the grid shows clear-majority differences in a closed-by-default disclosure, with gold outlines retaining team-color chips and logos. Sidebar labels are explicitly left-aligned when wrapping.
@@ -378,3 +387,15 @@ Renamed Head to head to Weekend predictions and removed the duplicate two-player
 All 138 tests and production build pass. Browser verified one table, eight Everyone rows, two focused rows, manual rival switching, collapsible highlights, Sprint columns, private future weekends and 390/320 px phone layouts without page overflow or console errors. Screenshots outputs/unified-grid/. Isolated preview remains http://localhost:3008/, session 96819, left on Everyone. Documentation and publishing mirror updated. No publication or VPS installation.
 
 1 November 2026 - Sidebar label alignment (local preview): navigation buttons inherited centered text, making the wrapped Weekend predictions label appear shifted right. Explicitly left-aligned sidebar navigation text and prevented icons shrinking. Production build passes. Local preview only; no publication.
+
+## Unreleased - Submission guidance and majority heading cleanup, 1 November 2026
+
+Your next step now renders only when at least one applicable weekend prediction set is not submitted. It disappears reactively after all own sets are submitted, including locked entries, and remains for missing/draft GP or Sprint sets. Sprint detection also accounts for sprintRace-only calendar metadata. Archived-season behavior is preserved. The outer Against the grid disclosure is now the only heading/count; its expanded content starts with the explanation and highlights. A single difference reads 1 different call.
+
+All 140 tests and production build pass, including render checks for GP/Sprint submission transitions, drafts, standard weekends and absence of duplicate inner headings/counters. Local preview http://localhost:3008/ rebuilt and restarted, session 57091. Documentation and publishing mirror updated. No publication, live data change or VPS installation.
+
+## Unreleased - Prediction Reset button, 1 November 2026
+
+Added Reset to the prediction action bar. It clears finishing order plus pole, fastest lap, retirement and Driver of the Day for the selected GP or Sprint only, using the existing 10/8-position empty form. Draft resets follow normal autosave. Resetting a submitted entry starts unsaved editing and preserves the counted submission until a complete replacement is saved; Cancel changes restores it. Reset is disabled after lock, while saving, for non-members and when already empty. Pending draft-save timers are cleared before reset. No API or scoring change.
+
+All 140 automated tests and final production build pass. Browser verified clearing all GP fields, incomplete Save disabled, Cancel restoring the original submitted selections, and Reset disabled on a locked weekend. Phone action bar now places status above equal-width Reset/Cancel controls and a full-width primary button; measured 44 px button heights and no page overflow at 390 px. Screenshot outputs/prediction-reset/mobile.jpg. Local preview remains http://localhost:3008/, server session 10848, left with unsaved reset fields and the original demo submission intact. Documentation and publishing source mirror updated; no publication or VPS changes.

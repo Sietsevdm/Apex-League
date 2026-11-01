@@ -2948,8 +2948,10 @@ footer {
   .prediction-guide { padding: 18px; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
   .prediction-guide > div { flex-basis: calc(100% - 130px); }
   .prediction-guide > button { width: 100%; }
-  .app .submit-bar { padding: 16px; }
-  .app .submit-bar .prediction-save-actions { width: 100%; }
+  .app .submit-bar { padding: 16px; flex-direction:column; align-items:stretch; gap:12px; }
+  .app .submit-bar .prediction-save-actions { width: 100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .app .submit-bar .prediction-save-actions .primary { grid-column:1/-1; }
+  .app .submit-bar .prediction-save-actions > button { min-height:44px; min-width:0; padding:10px 8px; }
   .prediction-save-actions > button { flex: 1; }
 }
 

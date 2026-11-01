@@ -9,7 +9,7 @@ export function weekendTasks(
   return (
     [
       "gp",
-      ...(event.hasSprint || event.sprintQualifying ? ["sprint"] : []),
+      ...(event.hasSprint || event.sprintQualifying || event.sprintRace ? ["sprint"] : []),
     ] as ("gp" | "sprint")[]
   ).map((kind) => {
     const entry = s.entries.find(

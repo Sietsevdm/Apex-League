@@ -43,3 +43,5 @@ Browser checks cover the rival comparison action, the hidden future-weekend stat
 Screenshots: `outputs/player-insights/` in the workspace. Server session: 96819. Included in 0.8.37. No VPS installation or live league data change.
 
 Unified-grid refinement verified: one table, eight Everyone rows, two focused rows, manual rival changes, collapsed/expanded majority highlights, Sprint columns and hidden future predictions. Desktop and 390/320 px phone widths have no page overflow. The internal compare page ID is retained so existing browser navigation history continues to resolve.
+
+The Against the grid disclosure owns its heading and difference count; the inner component renders only the explanation and choices, avoiding duplicated labels when expanded. Singular/plural counts are localized.

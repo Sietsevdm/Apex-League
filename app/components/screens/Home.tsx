@@ -285,7 +285,7 @@ function Banner({
           ))}
         </ol>
       </section>
-      {!season.archived && (
+      {!season.archived && tasks.some(task => !task.submitted) && (
         <section className="next-action-card" aria-label={tr("Your next step")}>
           <div>
             <h2>{tr("Your next step")}</h2>

@@ -20,6 +20,7 @@ import {
   Check,
   CheckCircle2,
   Clock,
+  RotateCcw,
   Shield,
   Target,
 } from "lucide-react";
@@ -372,6 +373,15 @@ function Predictions({
           </span>
         </div>
         <div className="prediction-save-actions">
+        <button className="secondary" disabled={isLocked || !member || saving || ![...p.order, p.pole, p.fastest, p.retirement, p.dotd].some(Boolean)} onClick={() => {
+          if (!member || saving || locked(e, kind)) return;
+          clearTimeout(saveTimer.current);
+          revision.current++;
+          dirty.current = true;
+          if (entry?.submitted) setEditing(true);
+          setP(emptyPicks(kind === "gp" ? 10 : 8));
+          setStatus(entry?.submitted ? "Unsaved changes" : "Draft");
+        }}><RotateCcw size={16} />{tr("Reset")}</button>
         {editing && !isLocked && <button className="secondary" disabled={saving} onClick={() => { setP(entry?.picks || emptyPicks(kind === "gp" ? 10 : 8)); dirty.current = false; setEditing(false); setStatus("Submitted"); }}>{tr("Cancel changes")}</button>}
         <button
           className="primary"

@@ -25,7 +25,7 @@ export default function WeekendPredictionGrid({ s, season, event, kind, meId, ri
       <span className="weekend-grid-count">{users.length}/{members.length} {t("players shown")}</span>
     </div>}
     {!visible ? <div className="weekend-social-empty"><strong>{t("The grid is still secret")}</strong><p>{t("Submitted predictions become visible here after qualifying (scheduled start plus one hour).")}</p></div> : <>
-      <details className="against-grid-disclosure" key={`${event.id}-${kind}`}><summary><span>{t("Against the grid")}</span><small>{against.size} {t("different calls")}</small></summary><AgainstTheGrid s={s} season={season} event={event} kind={kind} meId={meId} /></details>
+      <details className="against-grid-disclosure" key={`${event.id}-${kind}`}><summary><span>{t("Against the grid")}</span><small>{against.size} {t(against.size === 1 ? "different call" : "different calls")}</small></summary><AgainstTheGrid s={s} season={season} event={event} kind={kind} meId={meId} /></details>
       <div className="weekend-grid-scroll" role="region" aria-label={t("Weekend prediction grid")} tabIndex={0}>
         <table className="weekend-prediction-grid">
           <caption className="sr-only">{event.name} · {kind === "gp" ? "GP" : t("Sprint")} · {t("Submitted predictions only")}</caption>

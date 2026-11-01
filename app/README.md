@@ -319,3 +319,17 @@ All 138 tests and production build pass. Browser verified one table, eight Every
 1 November 2026 - Sidebar label alignment (local preview): navigation buttons inherited centered text, making the wrapped Weekend predictions label appear shifted right. Explicitly left-aligned sidebar navigation text and prevented icons shrinking. Production build passes. Local preview only; no publication.
 
 1 November 2026: unified Weekend predictions, Against the grid, Personal bests, Rival of the weekend and sidebar alignment approved for GitHub publication as 0.8.37. Update the existing Portainer stack using APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.37 with Re-pull image after the release build succeeds; app and calendar-worker update together.
+
+## Unreleased - Submission guidance and majority heading cleanup, 1 November 2026
+
+Your next step now renders only when at least one applicable weekend prediction set is not submitted. It disappears reactively after all own sets are submitted, including locked entries, and remains for missing/draft GP or Sprint sets. Sprint detection also accounts for sprintRace-only calendar metadata. Archived-season behavior is preserved. The outer Against the grid disclosure is now the only heading/count; its expanded content starts with the explanation and highlights. A single difference reads 1 different call.
+
+All 140 tests and production build pass, including render checks for GP/Sprint submission transitions, drafts, standard weekends and absence of duplicate inner headings/counters. Local preview http://localhost:3008/ rebuilt and restarted, session 57091. Documentation and publishing mirror updated. No publication, live data change or VPS installation.
+
+## Unreleased - Prediction Reset button, 1 November 2026
+
+Added Reset to the prediction action bar. It clears finishing order plus pole, fastest lap, retirement and Driver of the Day for the selected GP or Sprint only, using the existing 10/8-position empty form. Draft resets follow normal autosave. Resetting a submitted entry starts unsaved editing and preserves the counted submission until a complete replacement is saved; Cancel changes restores it. Reset is disabled after lock, while saving, for non-members and when already empty. Pending draft-save timers are cleared before reset. No API or scoring change.
+
+All 140 automated tests and final production build pass. Browser verified clearing all GP fields, incomplete Save disabled, Cancel restoring the original submitted selections, and Reset disabled on a locked weekend. Phone action bar now places status above equal-width Reset/Cancel controls and a full-width primary button; measured 44 px button heights and no page overflow at 390 px. Screenshot outputs/prediction-reset/mobile.jpg. Local preview remains http://localhost:3008/, server session 10848, left with unsaved reset fields and the original demo submission intact. Documentation and publishing source mirror updated; no publication or VPS changes.
+
+2 November 2026: prediction Reset, submitted-weekend guidance hiding, duplicate majority heading cleanup and phone action layout approved for GitHub publication as 0.8.38. Update the existing Portainer stack using APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.38 with Re-pull image after the release build succeeds; app and calendar-worker update together.
