@@ -92,6 +92,7 @@ export async function fetchLineup(year: number) {
   return {
     drivers: (drivers.DriverTable?.Drivers || []).map((d: Json) => ({
       id: String(d.driverId),
+      code: typeof d.code === "string" ? d.code : undefined,
       replacementOnly: starters.size > 0 && !starters.has(d.driverId),
       name: `${d.givenName} ${d.familyName}`,
       team: String(teams.get(d.driverId)?.name || ""),

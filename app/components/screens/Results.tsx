@@ -1,12 +1,13 @@
 "use client";
 import { useLocale } from "@/lib/i18n";
-import { Season, State, emptyPicks, predictionsVisible, score, standings } from "@/lib/model";
+import { Season, State, emptyPicks, predictionsVisible, score } from "@/lib/model";
 import { mappedPicks } from "@/lib/enhancements";
-import { Download, Flag, Target, TrendingUp, Trophy } from "lucide-react";
+import { Download, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import DriverLabel from "../DriverLabel";
-import { Empty, Heading, Metric, Pill, driverName } from "./Shared";
+import { Empty, Heading, Pill, driverName } from "./Shared";
+const WeekendAwards = dynamic(() => import("../WeekendAwards"));
 const ResultCorrections = dynamic(() => import("../ResultCorrections"), {
   loading: () => null,
 });
@@ -46,7 +47,6 @@ function Results({
         body="Your organiser will publish scores after the first event."
       />
     );
-  const rows = standings(s, season.id);
   const weekendRows = s.users
     .filter((u) => u.seasonIds.includes(season.id))
     .map((u) => ({
@@ -63,19 +63,6 @@ function Results({
         return (
           total +
           (entry ? score(entry.picks, e[k as "gp"], k as "gp").total : 0)
-        );
-      }, 0),
-      exact: ["gp", "sprint"].reduce((total, k) => {
-        const entry = s.entries.find(
-          (x) =>
-            x.eventId === e.id &&
-            x.kind === k &&
-            x.userId === u.id &&
-            x.submitted,
-        );
-        return (
-          total +
-          (entry ? score(entry.picks, e[k as "gp"], k as "gp").exact : 0)
         );
       }, 0),
     }))
@@ -158,26 +145,9 @@ function Results({
             "—",
       )
       .join(" · ");
-  const before = structuredClone(s);
-  before.events = before.events.filter(
-    (x) => x.id !== e.id && Date.parse(x.race) < Date.parse(e.race),
-  );
-  const prior = standings(before, season.id);
-  const moves = rows
-    .map((x) => ({
-      name: x.name,
-      move: (prior.find((p) => p.id === x.id)?.rank || x.rank) - x.rank,
-    }))
-    .sort((a, b) => b.move - a.move);
-  const podiums = s.entries.filter(
-    (x) =>
-      x.eventId === e.id &&
-      x.kind === "gp" &&
-      x.submitted &&
-      score(x.picks, e.gp, "gp").details.some(
-        (d) => d.label === "Exact podium bonus" && d.points === 5,
-      ),
-  ).length;
+  const published = sessions.some(session => session.published);
+  const winnerPoints = weekendRows[0]?.total || 0;
+  const winners = weekendRows.filter(row => winnerPoints > 0 && row.total === winnerPoints).map(row => row.name);
   return (
     <>
       <Heading
@@ -187,16 +157,36 @@ function Results({
       >
         {tr(
           e.gp?.published && (
-            <button className="primary" onClick={() => setShareOpen(true)}>
+            <button className="secondary" onClick={() => setShareOpen(true)}>
               <Download size={17} />
               {tr("Share results")}
             </button>
           ),
         )}
       </Heading>
-      <Provenance result={r} />
+      <div className="toolbar results-controls">
+        <select
+          value={id}
+          onChange={(ev) => {
+            setId(ev.target.value);
+            setKind("gp");
+          }}
+          aria-label={tr("Results weekend")}
+        >
+          {tr(
+            events.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.name}
+              </option>
+            )),
+          )}
+        </select>
+        <label className="results-player-select"><span>{tr("Player")}</span><select aria-label={tr("Results player")} value={playerId} onChange={ev => setPlayerId(ev.target.value)}>
+          {s.users.filter(user => user.seasonIds.includes(season.id)).map(user => <option key={user.id} value={user.id}>{user.name}</option>)}
+        </select></label>
+      </div>
       <section
-        className="panel weekend-score-summary"
+        className="panel weekend-score-summary results-summary"
         aria-label={tr("Weekend score")}
       >
         <div>
@@ -206,6 +196,7 @@ function Results({
                 ? "Your weekend score"
                 : "Player's weekend score",
             )}
+            <Pill>{tr(r?.published ? "Published" : "Pending confirmation")}</Pill>
           </h2>
           <p>
             {e.name} · {s.users.find((user) => user.id === playerId)?.name}
@@ -223,7 +214,8 @@ function Results({
           </strong>
           <span>{tr("points earned")}</span>
         </div>
-        <div className="weekend-score-sessions">
+        <div className="results-summary-footer">
+          <div className="weekend-score-sessions" aria-label={tr("Select result session")}>
           {sessions.map((session) => (
             <button
               className={`secondary ${kind === session.kind ? "selected" : ""}`}
@@ -236,7 +228,8 @@ function Results({
                 : tr("Pending")}
             </button>
           ))}
-        </div>
+          </div>
+          {published && <div className="results-winner"><Trophy size={15} aria-hidden="true" /><span>{tr(sessions.every(session => session.published) ? "Weekend winner" : "Weekend leader")}<strong>{winners.join(" & ") || tr("No points awarded")}</strong></span>{winnerPoints > 0 && <small>{winnerPoints} {tr("pts")}</small>}</div>}
         {sessions.some((session) => !session.published) && (
           <small>
             {tr(
@@ -244,6 +237,7 @@ function Results({
             )}
           </small>
         )}
+        </div>
       </section>
       {tr(
         shareOpen && (
@@ -256,43 +250,7 @@ function Results({
           />
         ),
       )}
-      <div className="toolbar">
-        <select
-          value={id}
-          onChange={(ev) => {
-            setId(ev.target.value);
-            setKind("gp");
-          }}
-          aria-label={tr("Results weekend")}
-        >
-          {tr(
-            events.map((x) => (
-              <option key={x.id} value={x.id}>
-                {x.name}
-              </option>
-            )),
-          )}
-        </select>
-        <div className="segmented">
-          <button
-            className={kind === "gp" ? "selected" : ""}
-            onClick={() => setKind("gp")}
-          >
-            {tr("Grand Prix")}
-          </button>
-          {tr(
-            e.sprintQualifying && (
-              <button
-                className={kind === "sprint" ? "selected" : ""}
-                onClick={() => setKind("sprint")}
-              >
-                {tr("Sprint")}
-              </button>
-            ),
-          )}
-        </div>
-        <Pill>{tr(r?.published ? "Published" : "Pending confirmation")}</Pill>
-      </div>
+      <WeekendAwards s={s} season={season} event={e} />
       {tr(
         e.practiceRound && (
           <div className="info-bar">
@@ -300,88 +258,31 @@ function Results({
           </div>
         ),
       )}
-      {tr(
-        e.gp?.published && (
-          <div className="metrics results-metrics">
-            <Metric
-              label={tr("WEEKEND WINNER")}
-              value={
-                weekendRows
-                  .filter(
-                    (x) => x.total === weekendRows[0]?.total && x.total > 0,
-                  )
-                  .map((x) => x.name)
-                  .join(" & ") || "No winner"
-              }
-              detail={`${weekendRows[0]?.total || 0} points`}
-              icon={<Trophy />}
-            />
-            <Metric
-              label={tr("BIGGEST CLIMBER")}
-              value={
-                moves[0]?.move > 0
-                  ? moves
-                      .filter((x) => x.move === moves[0].move)
-                      .map((x) => x.name)
-                      .join(" & ")
-                  : "No movement"
-              }
-              detail={
-                moves[0]?.move > 0
-                  ? `Up ${moves[0].move} positions`
-                  : "Standings unchanged"
-              }
-              icon={<TrendingUp />}
-            />
-            <Metric
-              label={tr("EXACT POSITION LEADER")}
-              value={
-                weekendRows
-                  .filter(
-                    (x) =>
-                      x.exact ===
-                        Math.max(...weekendRows.map((x) => x.exact)) &&
-                      x.exact > 0,
-                  )
-                  .map((x) => x.name)
-                  .join(" & ") || "None"
-              }
-              detail="Across this weekend"
-              icon={<Target />}
-            />
-            <Metric
-              label={tr("PERFECT PODIUM PICKS")}
-              value={String(podiums)}
-              detail="Players earning the five-point bonus"
-              icon={<Flag />}
-            />
-          </div>
-        ),
-      )}
-      <div className="two-col">
-        <section className="panel">
-          <div className="section-title">
-            <h2>{tr("Player points breakdown")}</h2>
-            <strong className="accent score-large">
-              {tr(r?.published ? sc.total : "Pending")}
-              {r?.published && <small>{tr("pts")}</small>}
-            </strong>
-          </div>
-          <label>
-            {tr("Player")}
-            <select
-              value={playerId}
-              onChange={(ev) => setPlayerId(ev.target.value)}
-            >
-              {s.users
-                .filter((user) => user.seasonIds.includes(season.id))
-                .map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
-            </select>
-          </label>
+      <section className="panel">
+        <h2>{tr("Weekend standings")}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>{tr("PLAYER")}</th>
+              <th className="right">{tr("POINTS")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tr(
+              weekendRows.map((x) => (
+                <tr className={x.id === meId ? "your-row" : ""} key={x.id}>
+                  <td>{x.name}</td>
+                  <td className="right points">{published ? tr(x.total) : tr("Pending")}</td>
+                </tr>
+              )),
+            )}
+          </tbody>
+        </table>
+      </section>
+      <div className="two-col results-detail-grid">
+        <details className="panel results-disclosure" key={`breakdown-${id}-${kind}`}>
+          <summary><span>{tr("Prediction breakdown")}</span><small>{kind === "gp" ? "GP" : tr("Sprint")} · {r?.published ? `${sc.total} ${tr("pts")}` : tr("Pending")}</small></summary>
+          <div className="results-disclosure-body">
           {tr(
             !entry && (
               <p className="muted">
@@ -462,9 +363,12 @@ function Results({
               </tfoot>
             </table>
           </div>
-        </section>
-        <section className="panel">
-          <h2>{tr("Confirmed outcome")}</h2>
+          </div>
+        </details>
+        <details className="panel results-disclosure" key={`outcome-${id}-${kind}`}>
+          <summary><span>{tr("Confirmed outcome")}</span><small>{tr(r?.published ? "Published" : "Pending")}</small></summary>
+          <div className="results-disclosure-body">
+          <Provenance result={r} />
           {tr(
             !r?.published ? (
               <Empty
@@ -510,30 +414,10 @@ function Results({
               </>
             ),
           )}
-        </section>
+          <details className="results-correction-details"><summary>{tr("Result correction history")}</summary><ResultCorrections s={s} season={season} eventId={e.id} kind={kind} /></details>
+          </div>
+        </details>
       </div>
-      <section className="panel">
-        <h2>{tr("Weekend standings")}</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>{tr("PLAYER")}</th>
-              <th className="right">{tr("POINTS")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tr(
-              weekendRows.map((x) => (
-                <tr className={x.id === meId ? "your-row" : ""} key={x.id}>
-                  <td>{x.name}</td>
-                  <td className="right points">{tr(x.total)}</td>
-                </tr>
-              )),
-            )}
-          </tbody>
-        </table>
-      </section>
-      <ResultCorrections s={s} season={season} eventId={e.id} kind={kind} />
     </>
   );
 }

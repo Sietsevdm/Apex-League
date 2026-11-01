@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.35 - Weekend predictions, awards and Results cleanup, 1 November 2026
+
+Reordered Results & recap into weekend/player controls, one score summary with a single GP/Sprint switch and compact winner/leader context, weekend awards, weekend standings, then two closed-by-default detail sections. Removed the four large highlight metric cards and duplicate session/player controls. Share results is now a subdued secondary action. Selected-session publication status sits inside the score summary.
+
+Prediction breakdown retains every scoring category, original/effective replacement picks, actual outcomes, points and session total. Confirmed outcome retains the full classification and result source, with correction history nested inside. Detail sections reset closed when the weekend/session changes. Pending standings show Pending rather than misleading zero scores. Partially published weekends label the points leader rather than a final winner. No scoring, saved prediction or permission change.
+
+Validation: all 131 existing automated tests pass; final TypeScript/production build passes. Browser verified changing player from Sietse (8 points) to Jordan (23), all 15 GP breakdown rows, opening the full classification, Sprint pending state, closed detail reset, desktop and 390 px phone layouts without page overflow, and no console errors. Screenshots outputs/weekend-social/results-clean-desktop.jpg and results-clean-mobile.jpg. Preview remains http://localhost:3008/, isolated weekend-social-preview.json, server session 89544. Documentation and publishing mirror updated. No GitHub publication or VPS installation.
+
+
+### Weekend prediction grid and weekend awards
+
+Head to head now includes a full submitted-prediction grid with three-letter driver codes, saved team-color backgrounds, local team logos, GP/Sprint categories and horizontally scrolling columns with sticky player names. Existing two-player comparison appears first, with the weekend grid beneath it. Both respect the post-qualifying reveal rule; missing/draft submissions stay neutral. Calendar imports retain provider driver codes when available.
+
+Results & recap now shows non-scoring weekend awards: Boldest correct pick (least popular correct category selection, excluding unanimity), Perfect podium and Biggest comeback (positive championship rank movement from this weekend). Awards wait for every GP/Sprint result, share ties, respect scorer replacements/voids, exclude practice and automatically follow result corrections. Future rounds and championship bonuses do not influence comeback awards. Full behavior and maintenance details: app/WEEKEND_SOCIAL.md.
+
+Validation: all 131 tests, TypeScript and production build pass. Browser verified desktop/390 px phone layouts, eight-player grids, contained scrolling and sticky names, loaded team logos, independent GP/Sprint drafts, hidden/pending/completed states, award explanations and Dutch grid labels; no console errors. Isolated simulated preview: http://localhost:3008/ using weekend-social-preview.json, server session 97459. Screenshots: outputs/weekend-social/. Documentation and publishing source mirror updated. No GitHub publication, release or VPS installation; synced sources untouched.
+
+
 ## 0.8.34 - Head to head current weekend, 1 November 2026
 
 Opening Head to head now selects the same race weekend as the overview banner, using the shared bannerEvent selector. This respects the organiser banner override, keeps a completed race selected until Monday in Europe/Amsterdam, and then advances to the next event. If no non-practice race exists, the first event remains the fallback; an empty calendar retains its existing empty state. Players can still select other weekends manually, and polling does not reset their selection. Included in 0.8.34 for authorised GitHub publication. VPS installation remains separate.
@@ -329,3 +347,7 @@ Newest versions appear first. Versions before 0.8.0 were distributed as local re
 1 November 2026 follow-up: Open badge changed to green (#54e3a2) text/dot with a matching border; dark background retained. Verified CSS selectors and publishing mirror. Included in 0.8.33; VPS installation remains separate.
 
 Head to head verification: TypeScript and all 11 existing scoring/selection tests pass, including Amsterdam Monday rollover and organiser override.
+
+1 November 2026 preview refinement: moved Weekend prediction grid below the Head to head comparison. Shared filters and prediction privacy remain unchanged. Local preview only.
+
+1 November 2026 - Results alignment verification (local preview): removed the player selector's inherited 8 px top margin (both selectors now 45 px high with matching top edges). Scoped zero padding correctly on detail cards to remove double indentation. Equal desktop detail columns, 72 px flex-aligned disclosure headers with explicit arrows/status alignment, consistent 24 px desktop/18 px phone body padding, right-aligned points headings and values, baseline-aligned outcome labels/values, and correctly scoped correction-history padding. Details stack below 1100 px. Browser verified desktop 1506 px, tablet 1024 px, phones 390/320 px, expanded details and pending Sprint labels; equal award-card dimensions and winner baselines, no label overlap, no page overflow or console errors. Production build passes. Screenshots: outputs/weekend-social/results-alignment-desktop.jpg and results-alignment-mobile.jpg. Preview http://localhost:3008/, server session 50437. No publication or VPS installation.

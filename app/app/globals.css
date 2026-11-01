@@ -3118,3 +3118,88 @@ footer {
 /* Keep podium medals; all remaining prediction and standings positions use logo teal. */
 .rank:not(.rank-1):not(.rank-2):not(.rank-3),
 .position-pick > span:not(.podium-number) { color: #22dcc5; }
+
+/* Weekend social features: a compact timing sheet and non-scoring awards. */
+.results-controls { align-items:center; gap:12px; }
+.results-controls > select { flex:1; max-width:440px; }
+.results-player-select { display:flex; align-items:center; gap:10px; margin:0; }
+.results-player-select > span { color:var(--muted); font-size:12px; }
+.results-player-select select { min-width:160px; margin:0; }
+.results-summary h2 { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.results-summary h2 .pill { font-size:10px; font-weight:500; }
+.results-summary-footer { grid-column:1/-1; display:flex; align-items:center; flex-wrap:wrap; gap:16px; border-top:1px solid var(--border); padding-top:18px; }
+.results-summary-footer .weekend-score-sessions { flex:1; }
+.results-summary-footer > small { flex-basis:100%; color:var(--muted); }
+.results-winner { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:11px; }
+.results-winner > svg { color:#f4c76b; }
+.results-winner strong { display:block; color:var(--text); font-size:14px; margin-top:3px; }
+.results-winner > small { color:#22dcc5; font-weight:600; }
+.results-detail-grid { align-items:start; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.app .panel.results-disclosure { min-width:0; padding:0; }
+.results-disclosure > summary { display:flex; align-items:center; gap:12px; padding:20px 24px; cursor:pointer; min-height:72px; color:var(--text); font-weight:600; list-style:none; }
+.results-disclosure > summary::before { content:"›"; display:inline-flex; align-items:center; justify-content:center; flex:0 0 12px; color:var(--accent); font-size:20px; line-height:1; }
+.results-disclosure[open] > summary::before { transform:rotate(90deg); }
+.results-disclosure > summary > span { flex:1; min-width:0; }
+.results-disclosure > summary > small { float:none; max-width:45%; text-align:right; overflow-wrap:anywhere; color:var(--muted); font-size:11px; font-weight:400; margin:0; }
+.results-disclosure-body { padding:20px 24px 24px; border-top:1px solid var(--border); }
+.results-disclosure .score-breakdown-table th:last-child { text-align:right; }
+.results-disclosure .score-breakdown-table caption { margin-top:0; }
+.results-disclosure .score-table-wrap { margin:0; }
+.results-disclosure .result-order { margin-top:20px; }
+.results-disclosure .result-extra { align-items:baseline; gap:16px; }
+.results-disclosure .result-extra > strong { text-align:right; min-width:0; overflow-wrap:anywhere; }
+.results-correction-details { margin-top:22px; border-top:1px solid var(--border); padding-top:16px; }
+.results-correction-details > summary { cursor:pointer; color:var(--muted); font-size:12px; min-height:32px; }
+.app .results-correction-details .correction-history { border:0; padding:12px 0 0; margin:0; background:none; }
+.results-correction-details .correction-history > h2 { display:none; }
+@media(max-width:760px) {
+  .results-controls > select, .results-player-select { width:100%; max-width:none; }
+  .results-player-select select { flex:1; min-width:0; }
+  .results-summary-footer .weekend-score-sessions { flex-basis:100%; }
+  .results-disclosure > summary { padding:18px; }
+  .results-disclosure-body { padding:18px; }
+}
+@media(max-width:1100px) { .results-detail-grid { grid-template-columns:minmax(0,1fr); } }
+.weekend-grid-panel, .weekend-awards { min-width: 0; margin-bottom: 24px; }
+.weekend-social-tag { flex-shrink: 0; border: 1px solid var(--border); border-radius: 6px; color: #22dcc5; background: #070d19; padding: 5px 9px; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.weekend-grid-scroll { max-width: 100%; overflow: auto; border: 1px solid var(--border); border-radius: 10px; margin-top: 20px; }
+.weekend-grid-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.weekend-prediction-grid { width: max-content; min-width: 100%; border-collapse: separate; border-spacing: 0; }
+.weekend-prediction-grid caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.weekend-prediction-grid th, .weekend-prediction-grid td { padding: 10px 7px; text-align: center; white-space: nowrap; }
+.weekend-prediction-grid thead th { background: var(--surface); color: #22dcc5; font-size: 11px; letter-spacing: .06em; }
+.weekend-prediction-grid abbr { text-decoration: none; cursor: help; }
+.weekend-prediction-grid th:first-child { position: sticky; left: 0; z-index: 1; text-align: left; background: var(--surface); border-right: 1px solid var(--border); min-width: 142px; max-width: 220px; padding-left: 14px; }
+.weekend-prediction-grid .your-row th:first-child { box-shadow: inset 3px 0 #22dcc5; }
+.weekend-grid-player { display: block; max-width: 192px; white-space: normal; overflow-wrap: anywhere; }
+.weekend-prediction-grid th small { display: block; color: var(--muted); font-weight: 400; font-size: 10px; }
+.timing-driver { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 75px; height: 30px; padding: 4px 7px; border-radius: 5px; font-size: 12px; font-weight: 800; letter-spacing: .06em; line-height: 1; white-space: nowrap; }
+.timing-driver img { width: 22px; height: 16px; object-fit: contain; flex: 0 0 auto; }
+.timing-driver.neutral { background: color-mix(in srgb, var(--muted) 9%, transparent); color: var(--muted); }
+.timing-team-fallback { height: 14px; width: 3px; background: currentColor; border-radius: 1px; opacity: .65; }
+.weekend-grid-key { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 11px; }
+.weekend-social-empty { margin-top: 18px; padding: 24px; background: color-mix(in srgb, var(--muted) 5%, transparent); border: 1px dashed var(--border); border-radius: 10px; }
+.weekend-social-empty strong { color: var(--text); }
+.weekend-social-empty p { color: var(--muted); margin-bottom: 0; }
+.weekend-award-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 22px; }
+.weekend-award-card { padding: 22px; min-width: 0; background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 7%, transparent), transparent 80%); border: 1px solid var(--border); border-top: 2px solid #22dcc5; border-radius: 10px; }
+.weekend-award-card > svg { color: #22dcc5; margin-bottom: 16px; }
+.weekend-award-card.podium-award { border-top-color: #f4c76b; }
+.weekend-award-card.podium-award > svg { color: #f4c76b; }
+.weekend-award-card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 12px; color: var(--muted); }
+.weekend-award-card > strong { display: block; font-size: 21px; line-height: 1.35; overflow-wrap: anywhere; }
+.weekend-award-card p { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 0; }
+.weekend-award-card details { margin-top: 16px; }
+.weekend-award-card summary { min-height: 44px; cursor: pointer; font-size: 12px; color: #22dcc5; }
+.weekend-award-card ul { list-style: none; padding: 0; margin: 0; }
+.weekend-award-card li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 0; border-top: 1px solid var(--border); font-size: 12px; }
+.weekend-award-card li > span:first-child { flex-basis: 100%; }
+.weekend-award-card li small { color: var(--muted); }
+.weekend-award-value { display: block; margin-top: 12px; color: #22dcc5; font-size: 14px; font-weight: 700; }
+@media (max-width: 900px) { .weekend-award-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .weekend-prediction-grid th:first-child { min-width: 112px; max-width: 132px; }
+  .weekend-grid-player { max-width: 104px; }
+  .weekend-prediction-grid th, .weekend-prediction-grid td { padding: 10px 5px; }
+  .weekend-award-card { padding: 18px; }
+}

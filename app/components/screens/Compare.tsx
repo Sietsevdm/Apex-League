@@ -1,7 +1,9 @@
 "use client";
 import { useLocale } from "@/lib/i18n";
-import { Season, State, bannerEvent, cutoff, locked } from "@/lib/model";
-import { useState } from "react";
+import { Season, State, bannerEvent, predictionsVisible } from "@/lib/model";
+import { useEffect, useState } from "react";
+import WeekendPredictionGrid from "../WeekendPredictionGrid";
+import { startVisibleTicker } from "@/lib/visible-timer";
 import DriverLabel from "../DriverLabel";
 import { Empty, Heading } from "./Shared";
 function Compare({
@@ -14,6 +16,8 @@ function Compare({
   meId: string;
 }) {
   const { t: tr, language, setLanguage, date } = useLocale();
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => startVisibleTicker(() => setNow(Date.now())), []);
   const events = s.events.filter((e) => e.seasonId === season.id),
     [id, setId] = useState(
       () => bannerEvent(s, season.id)?.id || events[0]?.id,
@@ -109,15 +113,9 @@ function Compare({
         </div>
       </div>
       {tr(
-        !locked(e, kind) ? (
-          <Empty
-            title={tr("The grid is still secret")}
-            body={tr(
-              `Everyone’s submitted picks become visible after ${date(cutoff(e, kind))}.`,
-            )}
-          />
-        ) : (
+        !predictionsVisible(e, kind, now) ? null : (
           <section className="panel">
+            <h2>{tr("Head to head")}</h2>
             <div className="table-scroll">
               <table>
                 <thead>
@@ -210,62 +208,11 @@ function Compare({
                 "Highlighted rows are different picks. A dash means no submitted selection.",
               )}
             </p>
-            <details>
-              <summary>{tr("Compare the whole grid")}</summary>
-              <div className="table-scroll">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>{tr("PLAYER")}</th>
-                      {tr(
-                        Array.from(
-                          { length: kind === "gp" ? 10 : 8 },
-                          (_, i) => (
-                            <th key={i}>
-                              {tr("P")}
-                              {tr(i + 1)}
-                            </th>
-                          ),
-                        ),
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tr(
-                      s.users
-                        .filter((u) => u.seasonIds.includes(season.id))
-                        .map((u) => {
-                          const p = s.entries.find(
-                            (x) =>
-                              x.userId === u.id &&
-                              x.eventId === id &&
-                              x.kind === kind &&
-                              x.submitted,
-                          );
-                          return (
-                            <tr key={u.id}>
-                              <td>{u.name}</td>
-                              {tr(
-                                Array.from(
-                                  { length: kind === "gp" ? 10 : 8 },
-                                  (_, i) => (
-                                    <td key={i}>
-                                      {tr(p?.picks.order[i] || "—")}
-                                    </td>
-                                  ),
-                                ),
-                              )}
-                            </tr>
-                          );
-                        }),
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </details>
+
           </section>
         ),
       )}
+      <WeekendPredictionGrid s={s} season={season} event={e} kind={kind} meId={meId} />
     </>
   );
 }

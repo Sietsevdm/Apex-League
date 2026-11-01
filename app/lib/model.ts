@@ -11,6 +11,7 @@ export type Theme = {
   muted: string;
 };
 export type Driver = {
+  code?: string;
   providerDriverId?: string;
   replacementOnly?: boolean;
   id: string;
