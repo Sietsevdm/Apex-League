@@ -39,7 +39,7 @@ function Champions({
             : `Entries close ${date(season.cutoff)}. Your picks stay private until then.`,
         )}
       </div>
-      <div className="two-col">
+      <div className="two-col champion-picks-grid">
         <section className="panel champion-card">
           <Trophy size={40} />
           <Pill>{tr("15 POINTS")}</Pill>
@@ -60,6 +60,7 @@ function Champions({
           <DriverSelect constructors season={season} disabled={closed} value={constructor} onChange={setConstructor} label="Constructor champion" />
         </section>
       </div>
+      <div className="champion-picks-actions">
       <button
         className="primary"
         disabled={closed || !driver || !constructor}
@@ -75,10 +76,12 @@ function Champions({
         {tr("Save season picks")}
         <Check size={17} />
       </button>
+      </div>
       {tr(
         closed && (
           <section className="panel">
             <h2>{tr("The league\u2019s title contenders")}</h2>
+            <div className="table-scroll">
             <table>
               <thead>
                 <tr>
@@ -113,6 +116,7 @@ function Champions({
                 )}
               </tbody>
             </table>
+            </div>
             <p className="tiny">
               {tr(
                 "Championship points are awarded after final official standings are confirmed.",
