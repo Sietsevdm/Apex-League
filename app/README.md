@@ -271,3 +271,9 @@ Validation: all 125 tests pass, including API privacy before/after qualifying an
 
 
 1 November 2026 follow-up: Open badge changed to green (#54e3a2) text/dot with a matching border; dark background retained. Verified CSS selectors and publishing mirror. Included in 0.8.33; VPS installation remains separate.
+
+## 0.8.34 - Head to head current weekend, 1 November 2026
+
+Opening Head to head now selects the same race weekend as the overview banner, using the shared bannerEvent selector. This respects the organiser banner override, keeps a completed race selected until Monday in Europe/Amsterdam, and then advances to the next event. If no non-practice race exists, the first event remains the fallback; an empty calendar retains its existing empty state. Players can still select other weekends manually, and polling does not reset their selection. Included in 0.8.34 for authorised GitHub publication. VPS installation remains separate.
+
+Head to head verification: TypeScript and all 11 existing scoring/selection tests pass, including Amsterdam Monday rollover and organiser override.

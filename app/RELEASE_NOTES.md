@@ -1,9 +1,7 @@
-# Version 0.8.33
+# Version 0.8.34
 
-Submitted GP and Sprint predictions are visible to league members through the Results player selector after their corresponding qualifying session, before race results are published. Reveal time uses scheduled qualifying start plus one hour, matching the calendar estimate; it is not live confirmation of completion and can differ during delays or red flags. Edit deadlines remain unchanged. Published results also permit reveal once locked. Drafts and receipts remain private.
+Head to head now opens on the current race weekend selected by the overview banner, including organiser overrides. It retains the completed weekend until Monday in Europe/Amsterdam, then selects the next race. Players can still choose another weekend manually; background refreshes preserve that selection. Practice-only calendars and empty calendars retain their existing fallbacks.
 
-Predictions Open now uses green text, dot and border on an opaque dark background; Predictions Closed uses red on the same dark background. Deadline labels now read GP predictions deadline / Sprint predictions deadline, including Dutch translations. Standings and finishing-order prediction positions 4 onward use bright logo teal; gold/silver/bronze positions 1-3 are preserved.
+Validation: TypeScript, all 125 automated tests and production build pass. No new browser visual verification.
 
-Validation: all 125 automated tests and production build pass. No new browser visual verification.
-
-Update app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.33` with Re-pull image enabled. Preserve existing secrets and persistent volumes. No database migration or new environment variable is required. GitHub publication does not install this update on your VPS.
+Update app and calendar-worker to `ghcr.io/sietsevdm/apex-league:0.8.34` with Re-pull image enabled. Preserve existing secrets and persistent volumes. No database migration or new environment variable is required. GitHub publication does not install this update on your VPS.

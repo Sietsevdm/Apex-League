@@ -1,6 +1,6 @@
 "use client";
 import { useLocale } from "@/lib/i18n";
-import { Season, State, cutoff, locked } from "@/lib/model";
+import { Season, State, bannerEvent, cutoff, locked } from "@/lib/model";
 import { useState } from "react";
 import DriverLabel from "../DriverLabel";
 import { Empty, Heading } from "./Shared";
@@ -16,7 +16,7 @@ function Compare({
   const { t: tr, language, setLanguage, date } = useLocale();
   const events = s.events.filter((e) => e.seasonId === season.id),
     [id, setId] = useState(
-      events.find((e) => locked(e, "gp"))?.id || events[0]?.id,
+      () => bannerEvent(s, season.id)?.id || events[0]?.id,
     ),
     [kind, setKind] = useState<"gp" | "sprint">("gp"),
     [rival, setRival] = useState(

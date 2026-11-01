@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.34 - Head to head current weekend, 1 November 2026
+
+Opening Head to head now selects the same race weekend as the overview banner, using the shared bannerEvent selector. This respects the organiser banner override, keeps a completed race selected until Monday in Europe/Amsterdam, and then advances to the next event. If no non-practice race exists, the first event remains the fallback; an empty calendar retains its existing empty state. Players can still select other weekends manually, and polling does not reset their selection. Included in 0.8.34 for authorised GitHub publication. VPS installation remains separate.
+
+
 ## 0.8.33 - Prediction reveal and readability, 1 November 2026
 
 Submitted GP and Sprint picks now become visible to authorised league members in Results after their respective qualifying session, using scheduled start plus one hour. Edit deadlines remain unchanged. This is a calendar estimate, not live confirmation of qualifying completion; delays and red flags can differ. Published results also permit reveal once locked. Drafts and submission receipts remain private. The Results player selector works before race results publish and explains when picks are still hidden.
@@ -322,3 +327,5 @@ Newest versions appear first. Versions before 0.8.0 were distributed as local re
 - Initial self-hosted prediction league with GP/Sprint picks, scoring, admin tools, PostgreSQL and Docker deployment.
 
 1 November 2026 follow-up: Open badge changed to green (#54e3a2) text/dot with a matching border; dark background retained. Verified CSS selectors and publishing mirror. Included in 0.8.33; VPS installation remains separate.
+
+Head to head verification: TypeScript and all 11 existing scoring/selection tests pass, including Amsterdam Monday rollover and organiser override.
