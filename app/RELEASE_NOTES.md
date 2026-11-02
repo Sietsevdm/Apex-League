@@ -1,11 +1,11 @@
-# Version 0.8.41
+# Version 0.8.42
 
-OpenF1 now supplies calendars, drivers/teams, GP replacements, GP/Sprint classifications, qualifying, fastest laps and retirement timing. Formula1.com supplies Driver of the Day. No live Jolpica requests remain.
+Added a weekend score notification for players who have enabled push notifications in Profile. It queues when GP and applicable Sprint results are all published, whether automatically or manually. The existing worker checks notification delivery every five minutes. Corrections and repeat checks do not create another notification; historical weekends are not backfilled. See WEEKEND_SCORE_NOTIFICATIONS.md.
 
-Automatic retirement confirmation uses telemetry to distinguish cars retiring on the same lap. Live verification confirms Alonso as first retirement for Mexico GP, plus a complete Singapore Sprint result. Missing or ambiguous data still waits for organiser review. Fastest-lap selection excludes race-control-deleted laps.
+Results & scoring now aligns status text in one column, shows the last automatic attempt and hides stale waiting warnings after publication. Result checks remain hourly, starting three hours after GP start or one hour after Sprint start. Saved organiser drafts and uncertain data require review; Fetch results does not publish.
 
-Existing predictions, event/driver IDs, locked deadlines, organiser drafts and published results are preserved. Manual result imports retain organiser-entered awards, retirements and voids. OpenF1 supports automated imports from 2023 onwards; older seasons remain available with manual setup. Weather forecasts continue through Open-Meteo. See OPENF1.md for details.
+All three podium cards now separate POSITION from the rank and the score from points. Standings explain shared-place ranking without changing scoring or tie-breaks.
 
-All 151 automated tests and the production build pass. No live league data was changed during verification.
+All 156 tests and the production build pass. Browser verification covers alignment and stale-warning suppression. Notification delivery was tested with mocked senders; no real player notifications were sent during testing.
 
-Update the existing Portainer stack to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.41` after the release build succeeds, with Re-pull image enabled. Update both app and calendar-worker. Preserve settings, secrets and volumes; no database migration or new API key is required. GitHub publication does not install this update on the VPS.
+After the release build succeeds, update the existing Portainer stack to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.42` with Re-pull image enabled. Update both app and calendar-worker. Preserve settings, secrets and volumes. No new configuration or database migration is required. GitHub publication does not install the update on the VPS.

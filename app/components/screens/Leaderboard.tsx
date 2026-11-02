@@ -22,7 +22,7 @@ function Leaderboard({
         eyebrow="THE CHAMPIONSHIP"
         title={tr("Every point counts.")}
         description={tr(
-          "Weekend wins and exact positions settle ties. If still equal, share the glory.",
+          "Weekend wins and exact positions settle ties. Shared places use 1, 1, 3 ranking.",
         )}
       />
       <div className="podium-cards">
@@ -30,13 +30,12 @@ function Leaderboard({
           rows.slice(0, 3).map((r) => (
             <div className={`podium-card place-${r.rank}`} key={r.id}>
               <span>
-                {tr("POSITION")}
-                {tr(r.rank)}
+                {tr("POSITION")} {" "}{tr(r.rank)}
               </span>
               <Trophy size={25} />
               <h2>{r.name}</h2>
               <strong>
-                {tr(r.total)}
+                {tr(r.total)}{" "}
                 <small>{tr("points")}</small>
               </strong>
               <p>

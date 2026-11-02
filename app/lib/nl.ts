@@ -1,4 +1,10 @@
 export const dutch: Record<string, string> = {
+  "Weekend wins and exact positions settle ties. Shared places use 1, 1, 3 ranking.": "Weekendzeges en exacte posities beslissen bij gelijke punten. Gedeelde plaatsen gebruiken de rangschikking 1, 1, 3.",
+  "Last automatic attempt": "Laatste automatische poging",
+  "Results are published. The automatic check will not replace them.": "Resultaten zijn gepubliceerd. De automatische controle vervangt deze niet.",
+  "Waiting for the next automatic check.": "Wachten op de volgende automatische controle.",
+  "Checks run hourly, starting three hours after GP start or one hour after Sprint start. Saved organiser drafts and uncertain data need review. Fetch results fills this form without publishing.": "Controles vinden elk uur plaats, vanaf drie uur na de GP-start of een uur na de Sprint-start. Opgeslagen concepten en onzekere gegevens vereisen controle. Resultaten ophalen vult dit formulier zonder te publiceren.",
+  "Get reminders before prediction deadlines if you have not submitted, plus a notification when all weekend scores are published. No email server is needed.": "Ontvang herinneringen voor voorspellingsdeadlines als je nog niet hebt ingediend, plus een melding zodra alle weekendscores zijn gepubliceerd. Een e-mailserver is niet nodig.",
   "Reset": "Wissen",
   "different call": "afwijkende keuze",
   "Weekend predictions": "Weekendvoorspellingen",

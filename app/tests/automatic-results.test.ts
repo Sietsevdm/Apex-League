@@ -158,6 +158,7 @@ test("scheduler catches up, retries failures, avoids duplicate publication and r
       1,
     );
     assert.equal(state.events[0].gp?.published, true);
+    assert.equal(state.events[0].scoresPublishedAt, new Date(now + 7200000).toISOString());
   } finally {
     await fs.unlink(`.data/${process.env.DEMO_DATA_FILE}`).catch(() => {});
   }

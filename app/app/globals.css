@@ -3297,3 +3297,7 @@ footer {
   .weekend-prediction-grid th, .weekend-prediction-grid td { padding: 10px 5px; }
   .weekend-award-card { padding: 18px; }
 }
+
+/* Keep result status, attempt time and explanation aligned at every width. */
+.info-bar.result-sync-info { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: start; }
+.result-sync-info p { margin: 0; overflow-wrap: anywhere; }

@@ -1,3 +1,4 @@
+import { weekendScoresReady } from "./weekend-scores";
 import webpush from "web-push";
 import { randomUUID } from "node:crypto";
 import { cutoff, locked, type State, type User } from "./model";
@@ -108,6 +109,7 @@ export function pushAction(s: State, u: User, body: any) {
 export function dueReminders(s: State, now = Date.now()) {
   if (!s.push) return [];
   const jobs: {
+    type: "reminder";
     key: string;
     subscriptionId: string;
     eventId: string;
@@ -150,6 +152,7 @@ export function dueReminders(s: State, now = Date.now()) {
         )
           continue;
         jobs.push({
+          type: "reminder",
           key,
           subscriptionId: sub.id,
           eventId: event.id,
@@ -159,6 +162,62 @@ export function dueReminders(s: State, now = Date.now()) {
       }
     }
   }
+  return jobs.slice(0, 20);
+}
+function scoreNotificationKey(
+  s: State,
+  subscriptionId: string,
+  eventId: string,
+  now: number,
+) {
+  const sub = s.push?.subscriptions.find((x) => x.id === subscriptionId),
+    event = s.events.find((x) => x.id === eventId);
+  const user = s.users.find((u) => u.id === sub?.userId),
+    season = s.seasons.find((x) => x.id === event?.seasonId);
+  const at = Date.parse(event?.scoresPublishedAt || "");
+  if (
+    !sub ||
+    !event ||
+    !user?.active ||
+    !season ||
+    season.archived ||
+    !user.seasonIds.includes(event.seasonId) ||
+    !weekendScoresReady(event) ||
+    !Number.isFinite(at) ||
+    at > now ||
+    now - at > 48 * 3600000 ||
+    !Number.isFinite(Date.parse(sub.createdAt)) ||
+    Date.parse(sub.createdAt) > at
+  )
+    return undefined;
+  return `${sub.id}:${event.id}:scores:${event.scoresPublishedAt}`;
+}
+/** Only recent, newly published complete weekends notify existing subscribed devices. */
+export function dueScoreNotifications(s: State, now = Date.now()) {
+  if (!s.push) return [];
+  const jobs: {
+    type: "scores";
+    key: string;
+    subscriptionId: string;
+    eventId: string;
+  }[] = [];
+  for (const sub of s.push.subscriptions)
+    for (const event of s.events) {
+      const key = scoreNotificationKey(s, sub.id, event.id, now);
+      if (!key) continue;
+      const delivery = s.push.deliveries[key];
+      if (
+        delivery?.status === "sent" ||
+        (delivery && (delivery.leaseUntil > now || delivery.attempts >= 5))
+      )
+        continue;
+      jobs.push({
+        type: "scores",
+        key,
+        subscriptionId: sub.id,
+        eventId: event.id,
+      });
+    }
   return jobs.slice(0, 20);
 }
 export type PushSender = (
@@ -216,7 +275,10 @@ export async function sendDuePush(
   now = Date.now(),
 ) {
   const jobs = await transaction((s) => {
-    const jobs = dueReminders(s, now);
+    const jobs = [
+      ...dueScoreNotifications(s, now),
+      ...dueReminders(s, now),
+    ].slice(0, 20);
     if (s.push) {
       for (const [key, value] of Object.entries(s.push.deliveries))
         if (value.updatedAt < now - 30 * 86400000)
@@ -238,6 +300,7 @@ export async function sendDuePush(
       jobs.slice(offset, offset + 4).map(async (job) => {
         // Recheck just before external delivery; saves never wait on the push provider.
         const prepared = await transaction((s) => {
+          const deliveryNow = Math.max(now, Date.now());
           const sub = s.push?.subscriptions.find(
             (item) => item.id === job.subscriptionId,
           );
@@ -249,18 +312,25 @@ export async function sendDuePush(
             !user?.active ||
             !user.seasonIds.includes(event.seasonId) ||
             s.seasons.find((item) => item.id === event.seasonId)?.archived ||
-            locked(event, job.kind) ||
-            s.entries.some(
-              (entry) =>
-                entry.userId === user.id &&
-                entry.eventId === event.id &&
-                entry.kind === job.kind &&
-                entry.submitted,
-            )
+            (job.type === "reminder" &&
+              (locked(event, job.kind, deliveryNow) ||
+                s.entries.some(
+                  (entry) =>
+                    entry.userId === user.id &&
+                    entry.eventId === event.id &&
+                    entry.kind === job.kind &&
+                    entry.submitted,
+                )))
           )
             return undefined;
-          if (
-            Date.parse(cutoff(event, job.kind)) - Date.now() >
+          if (job.type === "scores") {
+            // Recheck archive/membership/publication/subscription state just before delivery.
+            if (
+              scoreNotificationKey(s, sub.id, event.id, deliveryNow) !== job.key
+            )
+              return undefined;
+          } else if (
+            Date.parse(cutoff(event, job.kind)) - deliveryNow >
             job.hours * 3600000
           )
             return undefined;
@@ -272,23 +342,38 @@ export async function sendDuePush(
               publicKey: s.push!.publicKey,
               privateKey: s.push!.privateKey,
             },
-            payload: JSON.stringify({
-              title: nl
-                ? "Je voorspelling ontbreekt"
-                : "Your prediction is missing",
-              body: `${event.name} · ${job.kind.toUpperCase()} · ${nl ? `Sluit binnen ${job.hours} uur` : `Closes within ${job.hours} hour${job.hours === 1 ? "" : "s"}`}`,
-              tag: job.key,
-              url: "/",
-            }),
-            ttl: Math.max(
-              0,
-              Math.min(
-                3600,
-                Math.floor(
-                  (Date.parse(cutoff(event, job.kind)) - Date.now()) / 1000,
-                ),
-              ),
+            payload: JSON.stringify(
+              job.type === "scores"
+                ? {
+                    title: nl
+                      ? "De weekendscores zijn bekend"
+                      : "Weekend scores are in",
+                    body: `${s.leagues?.find((l) => l.id === s.seasons.find((x) => x.id === event.seasonId)?.leagueId)?.name || s.settings.name} · ${event.name} · ${nl ? "Bekijk je punten en de bijgewerkte stand." : "See your points and the updated standings."}`,
+                    tag: job.key,
+                    url: "/",
+                  }
+                : {
+                    title: nl
+                      ? "Je voorspelling ontbreekt"
+                      : "Your prediction is missing",
+                    body: `${event.name} · ${job.kind.toUpperCase()} · ${nl ? `Sluit binnen ${job.hours} uur` : `Closes within ${job.hours} hour${job.hours === 1 ? "" : "s"}`}`,
+                    tag: job.key,
+                    url: "/",
+                  },
             ),
+            ttl:
+              job.type === "scores"
+                ? 86400
+                : Math.max(
+                    0,
+                    Math.min(
+                      3600,
+                      Math.floor(
+                        (Date.parse(cutoff(event, job.kind)) - deliveryNow) /
+                          1000,
+                      ),
+                    ),
+                  ),
           };
         });
         if (!prepared || prepared.ttl <= 0) return;

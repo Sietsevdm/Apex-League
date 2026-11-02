@@ -51,6 +51,7 @@ export type Entry = {
   updatedAt: string;
 };
 export type Event = {
+  scoresPublishedAt?: string;
   replacementSync?: { lastAttempt?: string; status?: "waiting" | "checked" | "updated"; message?: string; lease?: string; leaseUntil?: number };
   resultSync?: Partial<
     Record<

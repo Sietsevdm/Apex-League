@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.42 - Result status and weekend score notifications, 2 November 2026
+
+Results & scoring now stacks the automatic status, last provider attempt and hourly-check explanation with consistent alignment. Published results hide stale waiting warnings. Checks remain hourly, starting three hours after GP start or one hour after Sprint start; saved organiser drafts and unresolved replacement checks still block automatic publication. Manual Fetch fills the form without publishing.
+
+Newly published complete weekends now queue a push notification for existing opted-in player devices. GP and applicable Sprint must both be published; automatic and manual publication are supported. The existing push worker checks every five minutes. Corrections and repeated checks do not queue another notification. Practice/archived seasons, inactive/non-member accounts, old results and devices subscribing after publication are excluded. Profile copy explains both deadline reminders and weekend scores. No email service or new configuration is needed.
+
+Podium cards now include explicit spaces between POSITION and the rank, and between the score and points.
+
+Standings clarify competition ranking: four tied players at P3 occupy places 3-6, so the next place is P7. Ties use total points, weekend wins, then exact positions; scoring and ranks are unchanged.
+
+Validation: all 156 tests and production build pass. Browser verified aligned single-column status text and last-attempt timestamp, and that published results suppress a stale retirement warning. Push delivery tested with mocked senders, including concurrency, manual/automatic publication, complete Sprint weekends, eligibility and batches beyond 20 devices. No real player notifications sent. Screenshot: outputs/results-status-aligned.png. Approved for GitHub publication as 0.8.42. No VPS installation performed.
+
 ## 0.8.41 - OpenF1 migration, 2 November 2026
 
 Replaced live Jolpica race-data requests with OpenF1 for calendars, GP/Sprint results, qualifying, fastest laps, race entries and driver/team lists. Formula1.com remains the Driver of the Day source. Added paced requests, identity checks, deleted-lap handling and telemetry-based retirement order. Existing predictions, IDs, deadlines, organiser drafts and published results are preserved. Unsupported or ambiguous data remains available for manual review. Full details: app/OPENF1.md.

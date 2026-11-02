@@ -135,7 +135,7 @@ export default function PushNotifications({
       <h2>{t("Push notifications")}</h2>
       <p>
         {t(
-          "Get a reminder within 24 hours and 1 hour of each prediction deadline, only if you have not submitted. No email server is needed.",
+          "Get reminders before prediction deadlines if you have not submitted, plus a notification when all weekend scores are published. No email server is needed.",
         )}
       </p>
       <p className="tiny">

@@ -1,3 +1,4 @@
+import { weekendScoresReady, recordWeekendScores } from "@/lib/weekend-scores";
 import { scopedState, type ResponseContext } from "@/lib/response-scope";
 import {
   authorizeManagement,
@@ -1220,6 +1221,7 @@ export async function POST(req: NextRequest) {
           providerCircuitId: old?.providerCircuitId,
           providerRound: old?.providerRound,
           openf1MeetingKey: old?.openf1MeetingKey,
+          scoresPublishedAt: old?.scoresPublishedAt,
           raceDate: old?.raceDate,
           hasSprint: Boolean(b.sprintQualifying),
           calendarOverride:
@@ -1354,9 +1356,13 @@ export async function POST(req: NextRequest) {
           u.name,
           text(b.reason || "", 300),
         );
+        const wasReady = weekendScoresReady(e);
         e[r.published ? kind : kind === "gp" ? "gpDraft" : "sprintDraft"] =
           nextResult;
-        if (r.published) delete e[kind === "gp" ? "gpDraft" : "sprintDraft"];
+        if (r.published) {
+          delete e[kind === "gp" ? "gpDraft" : "sprintDraft"];
+          recordWeekendScores(e, wasReady);
+        }
         auditLeague(
           s,
           u,

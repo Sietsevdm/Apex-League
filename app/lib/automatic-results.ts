@@ -1,3 +1,4 @@
+import { weekendScoresReady, recordWeekendScores } from "./weekend-scores";
 import { fetchOpenF1Result } from "./openf1-results";
 import { randomUUID } from "node:crypto";
 import { leagueSettings } from "./leagues";
@@ -237,6 +238,7 @@ export async function syncDueResults(
         return "waiting";
       }
       const at = new Date(now).toISOString();
+      const wasReady = weekendScoresReady(event);
       event[job.kind] = {
         ...result,
         replacements: event.replacements?.filter((r) => r.kind === job.kind),
@@ -248,6 +250,7 @@ export async function syncDueResults(
         },
       };
       delete event[job.kind === "gp" ? "gpDraft" : "sprintDraft"];
+      recordWeekendScores(event, wasReady, now);
       sync.status = "published";
       s.audit.unshift({
         id: randomUUID(),

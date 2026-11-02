@@ -146,11 +146,12 @@ function ResultAdmin({
           {tr(busy ? "Fetching…" : "Fetch results")}
         </button>
       </div>
-      <div className="info-bar">
-        {e.resultSync?.[kind]?.message && <p>{tr("Automatic results")}: {tr(e.resultSync[kind]!.message!)}</p>}
-        {tr(
-          "The worker automatically confirms and publishes complete GP and Sprint results. Missing sources retry hourly. Saved organiser drafts and ambiguous retirements need review. Manual fetching fills this form without publishing.",
-        )}
+      <div className="info-bar result-sync-info" role="status">
+        <p><strong>{tr("Automatic results")}: </strong>{e[kind]?.published
+          ? tr("Results are published. The automatic check will not replace them.")
+          : tr(e.resultSync?.[kind]?.message || "Waiting for the next automatic check.")}</p>
+        {e.resultSync?.[kind]?.lastAttempt && <p className="tiny">{tr("Last automatic attempt")}: {date(e.resultSync[kind]!.lastAttempt!)}</p>}
+        <p>{tr("Checks run hourly, starting three hours after GP start or one hour after Sprint start. Saved organiser drafts and uncertain data need review. Fetch results fills this form without publishing.")}</p>
       </div>
       <CorrectionPreview s={s} event={e} kind={kind} result={r} />
       <div className="two-col">
