@@ -337,3 +337,9 @@ All 140 automated tests and final production build pass. Browser verified cleari
 ## 0.8.39 - Stable driver field height, 2 November 2026
 
 Driver/constructor picker triggers now keep the empty field height of 44 px in both empty and selected states. Removed vertical trigger padding so the existing 30 px team logo fits within that height instead of increasing it to 52 px. Horizontal padding, team-color background, logo, label truncation and keyboard behavior remain unchanged. Production build passes. Local preview restarted on port 3008; no publication or VPS changes.
+
+## 0.8.40 - Results weekend and provider identity, 2 November 2026
+
+Results & recap follows the shared current weekend and organiser override. Sidebar navigation clears stale race context; explicit links and history retain their event. Archived seasons select the latest dated published GP or Sprint. Automatic results and replacement requests now identify the installed app to Jolpica, matching its documented requirement. Existing publication checks remain in place; no source migration or scoring change.
+
+Validation: all 142 tests and TypeScript pass. Live API access could not be verified due to development hostname resolution. Update both app and calendar-worker using image ghcr.io/sietsevdm/apex-league:0.8.40 after the GitHub build succeeds. No VPS installation performed.

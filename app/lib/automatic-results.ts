@@ -1,3 +1,4 @@
+import { providerHeaders } from "./provider-http";
 import { randomUUID } from "node:crypto";
 import { leagueSettings } from "./leagues";
 import {
@@ -36,6 +37,7 @@ function driverId(driver: Json, season: Season) {
 async function provider(path: string) {
   await waitForProviderSlot();
   const response = await fetch(`https://api.jolpi.ca/f1/alpha/${path}`, {
+    headers: providerHeaders,
     cache: "no-store",
     signal: AbortSignal.timeout(15000),
   });

@@ -372,6 +372,7 @@ function LeagueContent({
       void loadScope({ ...contextRef.current, scope }, p);
     else setPage(p);
     if (id) setEventId(id);
+    else if (p === "results") setEventId("");
     if (p === "predict") setEventKind(kind);
     setMenu(false);
     window.scrollTo({

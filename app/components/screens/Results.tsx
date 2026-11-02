@@ -1,6 +1,7 @@
 "use client";
 import { useLocale } from "@/lib/i18n";
 import { Season, State, emptyPicks, predictionsVisible, score } from "@/lib/model";
+import { resultsEvent } from "@/lib/results-event";
 import { mappedPicks } from "@/lib/enhancements";
 import { Download, Trophy } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -34,9 +35,7 @@ function Results({
   const [playerId, setPlayerId] = useState(meId);
   const events = s.events.filter((e) => e.seasonId === season.id);
   const [id, setId] = useState(
-      initialId ||
-        events.filter((e) => e.gp?.published).at(-1)?.id ||
-        events[0]?.id,
+      resultsEvent(s, season, initialId)?.id,
     ),
     [kind, setKind] = useState<"gp" | "sprint">("gp");
   const e = events.find((e) => e.id === id);

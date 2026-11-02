@@ -1,3 +1,4 @@
+import { providerHeaders } from "./provider-http";
 type Json = Record<string, any>;
 const providerClock = globalThis as unknown as { apexProviderNextRequest?: number };
 export async function waitForProviderSlot() {
@@ -12,7 +13,7 @@ async function fetchData(route: string): Promise<Json> {
   const response = await fetch(
     `https://api.jolpi.ca/ergast/f1/${route}?limit=100`,
     {
-      headers: { "User-Agent": "ApexPredictionLeague/0.1.0" },
+      headers: providerHeaders,
       signal: AbortSignal.timeout(15000),
       cache: "no-store",
     },

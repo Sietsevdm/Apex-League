@@ -1,3 +1,4 @@
+import { providerHeaders } from "./provider-http";
 import { randomUUID } from "node:crypto";
 import type { Driver, Event, Season } from "./model";
 import type { Replacement } from "./enhancements";
@@ -32,6 +33,7 @@ export async function fetchReplacementLineups(
   const response = await fetch(
     `https://api.jolpi.ca/f1/alpha/schedules/${season.year}/`,
     {
+      headers: providerHeaders,
       cache: "no-store",
       signal: AbortSignal.timeout(15000),
     },
@@ -56,6 +58,7 @@ export async function fetchReplacementLineups(
       const r = await fetch(
         `https://api.jolpi.ca/f1/alpha/core/session-entries/?year=${season.year}&round_id=${encodeURIComponent(id)}&session_type=R&page=${page}`,
         {
+          headers: providerHeaders,
           cache: "no-store",
           signal: AbortSignal.timeout(15000),
         },
