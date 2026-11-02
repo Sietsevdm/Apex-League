@@ -4,6 +4,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { importSnapshot, validateImportSnapshot } from "../lib/manual-imports";
+import { providerFixture } from "./openf1-fixture";
 import { seed } from "../lib/seed";
 
 process.env.DEMO_MODE = "true";
@@ -78,29 +79,7 @@ test("provider wait does not hold the league lock; concurrent changes prevent st
     globalThis.fetch = async (input) => {
       started();
       await gate;
-      const qualifying = String(input).includes("qualifying");
-      return Response.json({
-        MRData: {
-          RaceTable: {
-            Races: [
-              qualifying
-                ? {
-                    QualifyingResults: [
-                      { position: "1", Driver: { driverId: "VER" } },
-                    ],
-                  }
-                : {
-                    Results: [
-                      {
-                        Driver: { driverId: "VER" },
-                        FastestLap: { rank: "1" },
-                      },
-                    ],
-                  },
-            ],
-          },
-        },
-      });
+      return providerFixture().respond(input);
     };
     const importing = POST(
       new NextRequest("http://127.0.0.1:3000/api/league", {
@@ -174,19 +153,11 @@ test("manual lineup and calendar imports commit successfully and reject players 
       s.seasons[0].drivers = [];
       s.seasons[0].constructors = [];
     });
-    globalThis.fetch = async () => {
+    globalThis.fetch = async input => {
       calls++;
-      return Response.json({
-        MRData: {
-          DriverTable: {
-            Drivers: [
-              { driverId: "VER", givenName: "Max", familyName: "Verstappen" },
-            ],
-          },
-          ConstructorTable: { Constructors: [{ name: "Red Bull" }] },
-          RaceTable: { Races: [] },
-        },
-      });
+      const url=new URL(String(input));
+      if(url.searchParams.get("year")==="2027") return Response.json([]);
+      return providerFixture(2026,"2026-03-01T00:00:00Z").respond(input);
     };
     const denied = await post("previousYearLineup", "demo-1");
     assert.equal(denied.status, 403);
@@ -194,7 +165,7 @@ test("manual lineup and calendar imports commit successfully and reject players 
     const lineup = await post("previousYearLineup");
     assert.equal(lineup.status, 200);
     const data = await lineup.json();
-    assert.equal(data.state.seasons[0].drivers[0].id, "VER");
+    assert.equal(data.state.seasons[0].drivers[0].id, "openf1-maxverstappen");
     const calendar = await post("calendarImport");
     assert.equal(calendar.status, 200);
     assert.equal(

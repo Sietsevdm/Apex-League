@@ -19,7 +19,8 @@ export function mergeCalendar(
       (e) =>
         e.seasonId === season.id &&
         !e.practiceRound &&
-        ((e.providerCircuitId &&
+        ((e.openf1MeetingKey && e.openf1MeetingKey === source.openf1MeetingKey) ||
+          (e.providerCircuitId &&
           e.providerCircuitId === source.providerCircuitId) ||
           (!e.providerCircuitId && e.circuit === source.circuit)),
     );
@@ -57,10 +58,13 @@ export function mergeCalendar(
       continue;
     }
     seen.add(old.id);
+    old.openf1MeetingKey = source.openf1MeetingKey;
+    // Retain legacy circuit names/IDs used by existing artwork and facts.
     old.providerCircuitId = source.providerCircuitId;
     if (source.location) old.location = source.location;
     const review = old.calendarReview;
     delete old.calendarReview;
+    if (source.calendarReview) old.calendarReview = source.calendarReview;
     if (old.calendarOverride) {
       old.providerRound = source.providerRound;
       if (review)

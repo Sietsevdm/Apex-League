@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { providerFixture } from "./openf1-fixture";
 import { seed } from "../lib/seed";
 import { registrationOpen, migrateRegistration, predictionDrivers, classifyImportedDrivers, seasonNameMatches, mergeImportedLineup } from "../lib/season-controls";
 test("Registration preserves upgrade status then changes only through manual state", () => {
@@ -32,10 +33,13 @@ test("Replacement drivers appear only in the confirmed race and session", () => 
 test("Calendar imports distinguish opening-round drivers from later substitutes", async () => {
   const original = globalThis.fetch;
   try {
-    globalThis.fetch = async (input) => {
-      const url = String(input);
-      const drivers = url.includes("/1/drivers/") ? [{ driverId: "starter", givenName: "Start", familyName: "Driver" }] : [{ driverId: "starter", givenName: "Start", familyName: "Driver" }, { driverId: "sub", givenName: "Sub", familyName: "Driver" }];
-      return Response.json({ MRData: { RaceTable: { Races: [] }, DriverTable: { Drivers: drivers }, ConstructorTable: { Constructors: [] } } });
+    const f=providerFixture(2026,"2026-03-01T00:00:00Z");
+    const second={...f.race,session_key:103,meeting_key:2,date_start:"2026-04-01T00:00:00Z"};
+    globalThis.fetch = async input => {
+      const u=new URL(String(input));
+      if(u.pathname.endsWith("/sessions") && u.searchParams.get("session_name")==="Race") return Response.json([f.race,second]);
+      if(u.pathname.endsWith("/drivers")) return Response.json(u.searchParams.get("session_key")==="103"?[{...f.drivers[0],session_key:103,meeting_key:2},{...f.drivers[1],session_key:103,meeting_key:2,first_name:"Reserve",last_name:"Driver"}]:[f.drivers[0]]);
+      return f.respond(input);
     };
     const { importCalendar } = await import("../lib/provider");
     const result = await importCalendar(2026);
@@ -79,14 +83,9 @@ test("An empty lineup imports after the pick deadline while saved IDs and manual
 test("Lineup imports attach constructor names and team colors to drivers", async () => {
   const original = globalThis.fetch;
   try {
-    globalThis.fetch = async input => {
-      const url = String(input);
-      const driver = { driverId: "norris", givenName: "Lando", familyName: "Norris" };
-      return Response.json({ MRData: {
-        DriverTable: { Drivers: [driver] }, ConstructorTable: { Constructors: [{ name: "McLaren" }] },
-        RaceTable: { Races: url.includes("results") ? [{ Results: [{ Driver: driver, Constructor: { constructorId: "mclaren", name: "McLaren" } }] }] : [] }
-      } });
-    };
+    const f=providerFixture(2026,"2026-03-01T00:00:00Z");
+    f.drivers[0].team_name="McLaren";f.drivers[0].team_colour="FF8700";
+    globalThis.fetch = async input => f.respond(input);
     const { fetchLineup } = await import("../lib/provider");
     const imported = await fetchLineup(2026);
     assert.equal(imported.drivers[0].team, "McLaren");

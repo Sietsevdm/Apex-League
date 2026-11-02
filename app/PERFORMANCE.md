@@ -104,7 +104,7 @@ This is a synthetic fixture with six copied historical seasons. Production savin
 
 ### Imports without a network wait under lock
 
-Manual calendar, previous-year lineup and result imports now have three phases: authenticate and snapshot the target in a short transaction; fetch Jolpica data with no league write lock held; authenticate again and validate the saved target before applying/returning the result. Schedule, lineup, archive, results-publication or actor-version changes invalidate the operation. Calendar error reporting remains available. Concurrent prediction saves do not invalidate a target that otherwise stays unchanged. Imported results remain a preview requiring explicit confirmation/publication.
+Manual calendar, previous-year lineup and result imports now have three phases: authenticate and snapshot the target in a short transaction; fetch OpenF1 data with no league write lock held; authenticate again and validate the saved target before applying/returning the result. Schedule, lineup, archive, results-publication or actor-version changes invalidate the operation. Calendar error reporting remains available. Concurrent prediction saves do not invalidate a target that otherwise stays unchanged. Imported results remain a preview requiring explicit confirmation/publication.
 
 A regression test holds the provider response pending while a player's league read completes, then edits the target and confirms the stale import is rejected. This tests the local serial transaction path; production PostgreSQL timing and lock contention still need measurement after deployment. The existing daily worker remains separate and unchanged.
 

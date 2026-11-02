@@ -8,7 +8,7 @@ async function run() {
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { Authorization: `Bearer ${secret}` },
-      signal: AbortSignal.timeout(180000),
+      signal: AbortSignal.timeout(540000),
     });
     if (!response.ok)
       throw new Error(`Calendar scheduler returned ${response.status}`);

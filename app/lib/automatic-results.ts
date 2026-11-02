@@ -1,4 +1,4 @@
-import { providerHeaders } from "./provider-http";
+import { fetchOpenF1Result } from "./openf1-results";
 import { randomUUID } from "node:crypto";
 import { leagueSettings } from "./leagues";
 import {
@@ -9,7 +9,6 @@ import {
   type Season,
 } from "./model";
 import { transaction } from "./store";
-import { waitForProviderSlot } from "./provider";
 
 type Json = Record<string, any>;
 const normal = (s: string) =>
@@ -34,20 +33,6 @@ function driverId(driver: Json, season: Season) {
     );
   return matches[0].id;
 }
-async function provider(path: string) {
-  await waitForProviderSlot();
-  const response = await fetch(`https://api.jolpi.ca/f1/alpha/${path}`, {
-    headers: providerHeaders,
-    cache: "no-store",
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!response.ok)
-    throw new Error(
-      `Automatic results provider returned ${response.status}. Retrying next hour.`,
-    );
-  return (await response.json()).data as Json;
-}
-
 /** Fail closed when an award row or its driver cannot be matched uniquely. */
 export function awardWinner(html: string, country: string, season: Season) {
   const text = (s: string) =>
@@ -75,6 +60,7 @@ export function confirmedResult(
   season: Season,
   kind: "gp" | "sprint",
   dotd = "",
+  confirmedRetirements?: string[],
 ): Result {
   if (
     race.season?.year !== season.year ||
@@ -113,7 +99,7 @@ export function confirmedResult(
   const first = retired.filter(
     (r) => r.laps === Math.min(...retired.map((r) => r.laps)),
   );
-  if (first.length > 1)
+  if (first.length > 1 && !confirmedRetirements)
     throw new Error(
       "First retirement is ambiguous on the same lap; organiser review required.",
     );
@@ -124,7 +110,7 @@ export function confirmedResult(
     order: order.map((r) => driverId(r[0].driver, season)),
     pole: driverId(pole[0].driver, season),
     fastest: driverId(fastest[0].driver, season),
-    retirements: first.length ? [driverId(first[0].driver, season)] : ["none"],
+    retirements: confirmedRetirements || (first.length ? [driverId(first[0].driver, season)] : ["none"]),
     dotd: kind === "gp" ? dotd : "",
     published: true,
   };
@@ -136,74 +122,8 @@ export function confirmedResult(
   return result;
 }
 
-export async function fetchAutomaticResult(
-  season: Season,
-  event: Event,
-  kind: "gp" | "sprint",
-) {
-  const schedule = await provider(`schedules/${season.year}/`);
-  const round = schedule.events?.find(
-    (e: Json) => e.round.number === event.providerRound,
-  );
-  if (
-    !round ||
-    round.round.is_cancelled ||
-    normal(round.circuit.name) !== normal(event.circuit)
-  )
-    throw new Error("Provider event matching needs review.");
-  const raceCode = kind === "gp" ? "R" : "SR";
-  const qualiCode = kind === "gp" ? "Q" : "SQ";
-  const race = await provider(
-    `results/${encodeURIComponent(round.round.id)}/${raceCode}/`,
-  );
-  const qualifying = await provider(
-    `results/${encodeURIComponent(round.round.id)}/${qualiCode}/`,
-  );
-  if (
-    race.round?.id !== round.round.id ||
-    race.round?.number !== event.providerRound
-  )
-    throw new Error("Provider returned results for a different weekend.");
-  let dotd = "";
-  if (kind === "gp") {
-    const winners = (race.results || []).filter(
-      (r: Json) => r.driver_of_the_day_winner === true,
-    );
-    if (winners.length === 1) dotd = driverId(winners[0].driver, season);
-    if (!dotd) {
-      const response = await fetch(
-        `https://www.formula1.com/en/results/${season.year}/awards/driver-of-the-day`,
-        { cache: "no-store", signal: AbortSignal.timeout(15000) },
-      );
-      if (!response.ok)
-        throw new Error("Official Driver of the Day source is unavailable.");
-      const aliases: Record<string, string> = {
-        australian: "Australia",
-        chinese: "China",
-        japanese: "Japan",
-        canadian: "Canada",
-        austrian: "Austria",
-        british: "Great Britain",
-        belgian: "Belgium",
-        hungarian: "Hungary",
-        dutch: "Netherlands",
-        italian: "Italy",
-        spanish: "Spain",
-        "mexico city": "Mexico",
-        "sao paulo": "Brazil",
-        "abu dhabi": "Abu Dhabi",
-        "saudi arabian": "Saudi Arabia",
-      };
-      const name = String(round.round.name)
-        .replace(/\s+Grand Prix$/i, "")
-        .toLowerCase();
-      const alias = Object.entries(aliases).find(
-        ([key]) => normal(key) === normal(name),
-      )?.[1];
-      dotd = awardWinner(await response.text(), alias || name, season);
-    }
-  }
-  return confirmedResult(race, qualifying, season, kind, dotd);
+export async function fetchAutomaticResult(season: Season, event: Event, kind: "gp" | "sprint") {
+  return fetchOpenF1Result(season, event, kind, true);
 }
 
 function fingerprint(season: Season, event: Event) {
@@ -321,7 +241,7 @@ export async function syncDueResults(
         ...result,
         replacements: event.replacements?.filter((r) => r.kind === job.kind),
         provenance: {
-          source: "Jolpica session results / Formula1.com Driver of the Day",
+          source: job.kind === "gp" ? "OpenF1 results and retirement telemetry / Formula1.com Driver of the Day" : "OpenF1 results and retirement telemetry",
           fetchedAt: at,
           confirmedAt: at,
           confirmedBy: "Automatic results",

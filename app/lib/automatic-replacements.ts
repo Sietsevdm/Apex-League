@@ -1,10 +1,9 @@
-import { providerHeaders } from "./provider-http";
+import { openf1, checkedRows, eventSessions, raceSessions, normal as normalize, type Row } from "./openf1";
 import { randomUUID } from "node:crypto";
 import type { Driver, Event, Season } from "./model";
 import type { Replacement } from "./enhancements";
 import { transaction } from "./store";
 import { leagueSettings } from "./leagues";
-import { waitForProviderSlot } from "./provider";
 
 type Entry = {
   session: { id: string; type: string; is_cancelled: boolean };
@@ -28,63 +27,19 @@ export async function fetchReplacementLineups(
   season: Season,
   event: Event,
 ): Promise<Lineups> {
-  // Filter by round identity first so pagination never scans the whole season.
-  await waitForProviderSlot();
-  const response = await fetch(
-    `https://api.jolpi.ca/f1/alpha/schedules/${season.year}/`,
-    {
-      headers: providerHeaders,
-      cache: "no-store",
-      signal: AbortSignal.timeout(15000),
-    },
-  );
-  if (!response.ok) throw new Error("GP schedule provider is unavailable.");
-  const schedule = (await response.json()).data;
-  const current = schedule?.events?.filter(
-    (r: any) => r.round?.number === event.providerRound,
-  );
-  const opening = schedule?.events?.filter((r: any) => r.round?.number === 1);
-  if (
-    current?.length !== 1 ||
-    opening?.length !== 1 ||
-    current[0].round.is_cancelled ||
-    normal(current[0].circuit?.name || "") !== normal(event.circuit)
-  )
-    throw new Error("GP event matching needs organiser review.");
-  const read = async (id: string, round: number) => {
-    const rows: Entry[] = [];
-    for (let page = 1; page <= 5; page++) {
-      await waitForProviderSlot();
-      const r = await fetch(
-        `https://api.jolpi.ca/f1/alpha/core/session-entries/?year=${season.year}&round_id=${encodeURIComponent(id)}&session_type=R&page=${page}`,
-        {
-          headers: providerHeaders,
-          cache: "no-store",
-          signal: AbortSignal.timeout(15000),
-        },
-      );
-      if (!r.ok)
-        throw new Error(
-          `GP entry provider returned ${r.status}. Retrying next hour.`,
-        );
-      const body = await r.json();
-      if (
-        !Array.isArray(body.data) ||
-        !Number.isInteger(body.metadata?.total_pages) ||
-        body.data.some(
-          (e: Entry) => e.round?.id !== id || e.round?.number !== round,
-        )
-      )
-        throw new Error("GP entry response identity needs review.");
-      rows.push(...body.data);
-      if (page >= body.metadata.total_pages) return rows;
-    }
-    throw new Error("GP entry response needs organiser review.");
+  const { race } = await eventSessions(season, event, "gp", false);
+  const opening = (await raceSessions(season.year)).find(r => !r.is_cancelled);
+  if (!opening) throw new Error("Opening GP schedule is unavailable.");
+  const read = async (session: Row, round: number): Promise<Entry[]> => {
+    const rows = checkedRows(await openf1("drivers", { session_key: session.session_key }), session);
+    return rows.map(row => ({
+      session: { id: String(session.session_key), type: "R", is_cancelled: false },
+      round: { id: String(session.meeting_key), number: round, is_cancelled: false },
+      driver: { id: `openf1-${normalize(`${row.first_name} ${row.last_name}`)}`, given_name: row.first_name, family_name: row.last_name, abbreviation: row.name_acronym },
+      team: { id: normalize(row.team_name || ""), name: row.team_name, primary_color: `#${row.team_colour}` },
+    }));
   };
-  return {
-    opening: await read(opening[0].round.id, 1),
-    current: await read(current[0].round.id, event.providerRound!),
-  };
+  return { opening: await read(opening, 1), current: await read(race, event.providerRound!) };
 }
 
 function match(season: Season, row: Entry): Driver | undefined {
@@ -175,7 +130,7 @@ export function planReplacements(season: Season, event: Event, data: Lineups) {
       );
     const row = added[0],
       known = match(season, row);
-    const to = known?.id || `jolpica-${row.driver.id}`;
+    const to = known?.id || row.driver.id;
     const manual = event.replacements?.filter((r) => r.kind === "gp") || [];
     // Manual policies and already confirmed seats always take priority.
     if (
@@ -206,7 +161,7 @@ export function planReplacements(season: Season, event: Event, data: Lineups) {
       to,
       kind: "gp",
       policy: "carry",
-      note: "Automatically confirmed from Jolpica GP race entries.",
+      note: "Automatically confirmed from OpenF1 GP race entries.",
     });
   }
   if (

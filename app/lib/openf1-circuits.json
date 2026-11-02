@@ -1,0 +1,158 @@
+{
+  "15": {
+    "id": "catalunya",
+    "longitude": 2.26111,
+    "latitude": 41.57,
+    "name": "Circuit de Barcelona-Catalunya"
+  },
+  "10": {
+    "id": "albert_park",
+    "longitude": 144.968,
+    "latitude": -37.8497,
+    "name": "Albert Park Grand Prix Circuit"
+  },
+  "7": {
+    "id": "spa",
+    "longitude": 5.97139,
+    "latitude": 50.4372,
+    "name": "Circuit de Spa-Francorchamps"
+  },
+  "150": {
+    "id": "losail",
+    "longitude": 51.4542,
+    "latitude": 25.49,
+    "name": "Lusail International Circuit"
+  },
+  "39": {
+    "id": "monza",
+    "longitude": 9.28111,
+    "latitude": 45.6156,
+    "name": "Autodromo Nazionale di Monza"
+  },
+  "22": {
+    "id": "monaco",
+    "longitude": 7.42056,
+    "latitude": 43.7347,
+    "name": "Circuit de Monaco"
+  },
+  "49": {
+    "id": "shanghai",
+    "longitude": 121.22,
+    "latitude": 31.3389,
+    "name": "Shanghai International Circuit"
+  },
+  "2": {
+    "id": "silverstone",
+    "longitude": -1.01694,
+    "latitude": 52.0786,
+    "name": "Silverstone Circuit"
+  },
+  "70": {
+    "id": "yas_marina",
+    "longitude": 54.6031,
+    "latitude": 24.4672,
+    "name": "Yas Marina Circuit"
+  },
+  "19": {
+    "id": "red_bull_ring",
+    "longitude": 14.7647,
+    "latitude": 47.2197,
+    "name": "Red Bull Ring"
+  },
+  "12": {
+    "id": "sepang",
+    "longitude": 101.738,
+    "latitude": 2.76083,
+    "name": "Sepang International Circuit"
+  },
+  "61": {
+    "id": "marina_bay",
+    "longitude": 103.864,
+    "latitude": 1.2914,
+    "name": "Marina Bay Street Circuit"
+  },
+  "153": {
+    "id": "madring",
+    "longitude": -3.61528,
+    "latitude": 40.46528,
+    "name": "Madring"
+  },
+  "152": {
+    "id": "vegas",
+    "longitude": -115.173,
+    "latitude": 36.1147,
+    "name": "Las Vegas Strip Street Circuit"
+  },
+  "23": {
+    "id": "villeneuve",
+    "longitude": -73.5228,
+    "latitude": 45.5,
+    "name": "Circuit Gilles Villeneuve"
+  },
+  "4": {
+    "id": "hungaroring",
+    "longitude": 19.2486,
+    "latitude": 47.5789,
+    "name": "Hungaroring"
+  },
+  "65": {
+    "id": "rodriguez",
+    "longitude": -99.0907,
+    "latitude": 19.4042,
+    "name": "Autódromo Hermanos Rodríguez"
+  },
+  "46": {
+    "id": "suzuka",
+    "longitude": 136.541,
+    "latitude": 34.8431,
+    "name": "Suzuka Circuit"
+  },
+  "151": {
+    "id": "miami",
+    "longitude": -80.2389,
+    "latitude": 25.9581,
+    "name": "Miami International Autodrome"
+  },
+  "144": {
+    "id": "baku",
+    "longitude": 49.8533,
+    "latitude": 40.3725,
+    "name": "Baku City Circuit"
+  },
+  "55": {
+    "id": "zandvoort",
+    "longitude": 4.54092,
+    "latitude": 52.3888,
+    "name": "Circuit Park Zandvoort"
+  },
+  "14": {
+    "id": "interlagos",
+    "longitude": -46.6997,
+    "latitude": -23.7036,
+    "name": "Autódromo José Carlos Pace"
+  },
+  "9": {
+    "id": "americas",
+    "longitude": -97.6411,
+    "latitude": 30.1328,
+    "name": "Circuit of the Americas"
+  },
+  "63": {
+    "id": "bahrain",
+    "name": "Bahrain International Circuit",
+    "latitude": 26.0325,
+    "longitude": 50.5106
+  },
+  "149": {
+    "id": "jeddah",
+    "name": "Jeddah Corniche Circuit",
+    "latitude": 21.6319,
+    "longitude": 39.1044
+  },
+  "59": {
+    "id": "istanbul",
+    "name": "Istanbul Park",
+    "latitude": 40.9517,
+    "longitude": 29.405
+  }
+}

@@ -30,7 +30,7 @@ Calendar imports retain validated latitude/longitude and update existing events.
 
 No API key is required for Open-Meteo's non-commercial endpoint. Optional `OPEN_METEO_API_KEY` selects its customer endpoint. `BANNER_WEATHER_ENABLED=false` disables automatic weather globally; organiser image previews remain available. Compose forwards both options. Existing stacks use the defaults once this updated app is installed. An Open-Meteo attribution link appears beside the weather label.
 
-Sources: [Open-Meteo documentation and weather codes](https://open-meteo.com/en/docs), [Open-Meteo terms](https://open-meteo.com/en/terms), [Jolpi F1 API](https://api.jolpi.ca/ergast/).
+Sources: [Open-Meteo documentation and weather codes](https://open-meteo.com/en/docs), [Open-Meteo terms](https://open-meteo.com/en/terms), [OpenF1 integration and bundled circuit compatibility metadata](OPENF1.md).
 
 ## Artwork provenance and validation
 

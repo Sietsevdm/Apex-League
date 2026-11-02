@@ -1,4 +1,5 @@
 import type { State, Season, Event } from "./model";
+const identity = (name: string) => name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 export function registrationOpen(season: Season) {
   return !season.archived && !(season.registrationClosed ?? (Date.now() >= Date.parse(season.cutoff)));
 }
@@ -15,6 +16,11 @@ export function predictionDrivers(s: State, season: Season, event: Event, kind: 
 
 export function classifyImportedDrivers(season: Season, starters: string[]) {
   const known = new Set(starters);
+  for (const d of season.drivers) {
+    const surname=identity(d.name.split(/\s+/).at(-1) || "!");
+    const family=starters.filter(id=>id.startsWith("openf1-") && id.endsWith(surname));
+    if (known.has(`openf1-${identity(d.name)}`) || (family.length===1 && season.drivers.filter(other=>identity(other.name.split(/\s+/).at(-1)||"!")===surname).length===1)) known.add(d.id);
+  }
   if (season.drivers.filter(d => known.has(d.id)).length < 10) return false;
   for (const driver of season.drivers) if (driver.replacementOnly === undefined)
     driver.replacementOnly = !known.has(driver.id);
@@ -30,7 +36,8 @@ export function mergeImportedLineup(season: Season, imported: { drivers: Season[
   // Fill missing records even after the pick deadline; never replace saved IDs or manual lineups.
   if (!season.drivers.length) season.drivers = imported.drivers;
   else for (const driver of season.drivers) {
-    const match = imported.drivers.find(d => d.id === driver.id);
+    const matches = imported.drivers.filter(d => d.id === driver.id || identity(d.name) === identity(driver.name));
+    const match = matches.length === 1 ? matches[0] : undefined;
     if (!match) continue;
     if (!driver.team && match.team) driver.team = match.team;
     if (!driver.color || driver.color === "#8BA7BD") driver.color = match.color;

@@ -1,3 +1,4 @@
+import circuits from "./openf1-circuits.json";
 import type { Event } from "./model";
 import { matchedBanner } from "./banner-images";
 
@@ -77,13 +78,8 @@ export function createWeatherService(fetcher: typeof fetch = fetch, clock = Date
     const id = weatherCircuitId(event);
     if (!id) return null;
     return cached(locations, id, 24 * 60 * 60_000, async () => {
-      const response = await fetcher(`https://api.jolpi.ca/ergast/f1/circuits/${encodeURIComponent(id)}/?limit=1`, {
-        signal: AbortSignal.timeout(5000), cache: "no-store",
-      });
-      if (!response.ok) return null;
-      const raw = (await response.json())?.MRData?.CircuitTable?.Circuits?.[0]?.Location;
-      if (!raw || raw.lat == null || raw.long == null || raw.lat === "" || raw.long === "") return null;
-      const value = { latitude: Number(raw.lat), longitude: Number(raw.long) };
+      const info = Object.values(circuits).find(c => c.id === id);
+      const value = info ? { latitude: info.latitude, longitude: info.longitude } : null;
       return validLocation(value) ? value : null;
     });
   }

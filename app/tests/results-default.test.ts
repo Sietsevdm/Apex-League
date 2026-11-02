@@ -32,7 +32,7 @@ test("automatic results and replacement requests send the required provider iden
   };
   try {
     await assert.rejects(fetchAutomaticResult(season, event, "gp"), /503/);
-    await assert.rejects(fetchReplacementLineups(season, event), /unavailable/);
+    await assert.rejects(fetchReplacementLineups(season, event), /503/);
     assert.equal(calls, 2);
   } finally { globalThis.fetch = original; }
 });

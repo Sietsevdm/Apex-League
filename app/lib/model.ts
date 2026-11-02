@@ -96,6 +96,7 @@ export type Event = {
   sprintDeadline?: string;
   providerCircuitId?: string;
   providerRound?: number;
+  openf1MeetingKey?: number;
   raceDate?: string;
   hasSprint?: boolean;
   calendarOverride?: boolean;

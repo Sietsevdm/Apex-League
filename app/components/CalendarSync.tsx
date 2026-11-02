@@ -38,7 +38,7 @@ export default function CalendarSync({
           " calendar as it is released. Dates can appear before session times; predictions stay closed until qualifying times are known.",
         )}
       </p>
-      {!season.drivers.length && <p className="muted">{tr("No driver lineup yet. Check now imports available drivers and teams. If Jolpica has not published this season, copy a lineup or enter it in Seasons & lineup.")}</p>}
+      {!season.drivers.length && <p className="muted">{tr("No driver lineup yet. Check now imports available drivers and teams. If OpenF1 has not published this season, copy a lineup or enter it in Seasons & lineup.")}</p>}
       {!season.drivers.length && !season.archived && <>
         <button className="secondary" disabled={busy} onClick={async () => {
           setBusy(true); setError("");

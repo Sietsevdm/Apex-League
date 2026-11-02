@@ -80,7 +80,7 @@ function EventAdmin({
             }}
           >
             <RefreshCw size={16} />
-            {tr(busy ? "Importing…" : "Import Jolpica calendar")}
+            {tr(busy ? "Importing…" : "Import OpenF1 calendar")}
           </button>
         </div>
         <p className="tiny">

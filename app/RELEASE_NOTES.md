@@ -1,11 +1,11 @@
-# Version 0.8.40
+# Version 0.8.41
 
-Results & recap now follows the current race weekend and organiser override. Sidebar navigation clears stale race selections; explicit race links and browser history retain their requested weekend. Archived seasons use the latest dated published GP or Sprint.
+OpenF1 now supplies calendars, drivers/teams, GP replacements, GP/Sprint classifications, qualifying, fastest laps and retirement timing. Formula1.com supplies Driver of the Day. No live Jolpica requests remain.
 
-Automatic results and driver-replacement checks now send the identifying app header required by Jolpica. This fixes a request compatibility issue; missing awards, ambiguous retirements, organiser drafts and unresolved replacement checks still wait for review. No provider migration or scoring change.
+Automatic retirement confirmation uses telemetry to distinguish cars retiring on the same lap. Live verification confirms Alonso as first retirement for Mexico GP, plus a complete Singapore Sprint result. Missing or ambiguous data still waits for organiser review. Fastest-lap selection excludes race-control-deleted laps.
 
-All 142 automated tests and TypeScript pass. Live provider verification was unavailable due to hostname resolution in the development environment, so live automatic confirmation remains unverified.
+Existing predictions, event/driver IDs, locked deadlines, organiser drafts and published results are preserved. Manual result imports retain organiser-entered awards, retirements and voids. OpenF1 supports automated imports from 2023 onwards; older seasons remain available with manual setup. Weather forecasts continue through Open-Meteo. See OPENF1.md for details.
 
-Update the existing Portainer stack to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.40` after the release build succeeds, with Re-pull image enabled. Both app and calendar-worker must update. Keep settings, secrets and volumes. No database migration or new environment variable is required. GitHub publication does not install the update on the VPS.
+All 151 automated tests and the production build pass. No live league data was changed during verification.
 
-Provider reference: https://github.com/jolpica/jolpica-f1/blob/main/docs/README.md
+Update the existing Portainer stack to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.41` after the release build succeeds, with Re-pull image enabled. Update both app and calendar-worker. Preserve settings, secrets and volumes; no database migration or new API key is required. GitHub publication does not install this update on the VPS.

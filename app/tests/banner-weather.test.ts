@@ -81,8 +81,8 @@ test("Old calendars resolve circuit coordinates once and never geocode a city na
   const service=createWeatherService((async input=>{const url=String(input);urls.push(url);return Response.json(url.includes("jolpi")?{MRData:{CircuitTable:{Circuits:[{Location:{lat:"50.4372",long:"5.97139"}}]}}}:current(0,0));}) as typeof fetch,()=>now);
   const e={...seed(true).events[0],providerCircuitId:"spa",location:undefined};
   assert.equal((await service.current(e))?.condition,"night");
-  await service.current(e);assert.equal(urls.length,2);
-  assert.match(urls[0],/circuits\/spa\//);assert.match(urls[1],/latitude=50.4372/);
+  await service.current(e);assert.equal(urls.length,1);
+  assert.match(urls[0],/latitude=50.4372/);assert.ok(!urls[0].includes("jolpi"));
   assert.equal(await service.current({...e,providerCircuitId:"../private",name:"Unknown",circuit:"Unknown"}),null);
 });
 

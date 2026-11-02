@@ -104,46 +104,26 @@ test("incomplete, duplicate, practice-only, wrong-event, cancelled and ambiguous
   data.current[0].driver = data.opening[0].driver;
   assert.equal(planReplacements(season, event, data).rules.length, 0);
 });
-test("entry fetch uses exact GP round, validates circuit and follows pagination", async () => {
-  const { season, event, data } = fixture(),
-    original = globalThis.fetch,
-    urls: string[] = [];
+test("OpenF1 GP entry fetch matches the calendar and excludes practice participants", async () => {
+  const {season,event}=fixture(), original=globalThis.fetch;
+  event.openf1MeetingKey=2;
+  const race=(meeting:number)=>({session_key:meeting*10,meeting_key:meeting,year:season.year,session_name:"Race",date_start:"2026-03-01T00:00:00Z",date_end:"2026-03-01T02:00:00Z",is_cancelled:false});
   try {
-    globalThis.fetch = async (input) => {
-      const url = String(input);
-      urls.push(url);
-      if (url.includes("/schedules/"))
-        return Response.json({
-          data: {
-            events: [1, 2].map((i) => ({
-              round: { number: i, id: `round_${i}`, is_cancelled: false },
-              circuit: { name: "Test Circuit" },
-            })),
-          },
-        });
-      const u = new URL(url),
-        rows =
-          u.searchParams.get("round_id") === "round_1"
-            ? data.opening
-            : data.current,
-        page = Number(u.searchParams.get("page"));
-      assert.equal(u.searchParams.get("session_type"), "R");
-      return Response.json({
-        metadata: { total_pages: 2 },
-        data: rows.slice((page - 1) * 10, page * 10),
-      });
+    globalThis.fetch=async input=>{
+      const u=new URL(String(input));
+      if(u.pathname.endsWith("/sessions")) return Response.json(u.searchParams.has("meeting_key")?[race(2),{...race(2),session_key:21,session_name:"Qualifying"}]:[race(1),race(2)]);
+      assert.equal(u.pathname,"/v1/drivers");
+      const key=Number(u.searchParams.get("session_key"));
+      return Response.json(Array.from({length:20},(_,i)=>({session_key:key,meeting_key:key/10,driver_number:i+1,first_name:"Driver",last_name:`Person${i}`,team_name:`Team${Math.floor(i/2)}`,team_colour:"123456"})));
     };
-    assert.deepEqual(await fetchReplacementLineups(season, event), data);
-    assert.equal(urls.length, 5);
-    event.circuit = "Wrong Circuit";
-    await assert.rejects(
-      () => fetchReplacementLineups(season, event),
-      /matching/,
-    );
-  } finally {
-    globalThis.fetch = original;
-  }
+    const result=await fetchReplacementLineups(season,event);
+    assert.equal(result.current.length,20);
+    assert.equal(planReplacements(season,event,result).rules.length,0);
+    event.openf1MeetingKey=999;
+    await assert.rejects(fetchReplacementLineups(season,event),/matching/);
+  } finally {globalThis.fetch=original;}
 });
+
 test("scheduler retries, applies once, preserves Sprint/picks and rejects concurrent organiser edits", async () => {
   const { transaction } = await import("../lib/store");
   const now = Date.parse("2030-06-01T12:00:00Z"),

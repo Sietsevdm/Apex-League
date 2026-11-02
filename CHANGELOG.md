@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.41 - OpenF1 migration, 2 November 2026
+
+Replaced live Jolpica race-data requests with OpenF1 for calendars, GP/Sprint results, qualifying, fastest laps, race entries and driver/team lists. Formula1.com remains the Driver of the Day source. Added paced requests, identity checks, deleted-lap handling and telemetry-based retirement order. Existing predictions, IDs, deadlines, organiser drafts and published results are preserved. Unsupported or ambiguous data remains available for manual review. Full details: app/OPENF1.md.
+
+All 151 automated tests and the production build pass. Read-only live verification confirms Mexico GP with Alonso first retirement and Verstappen Driver of the Day, plus a complete Singapore Sprint result. No league records were changed. Approved for GitHub publication as 0.8.41. No VPS installation performed.
+
+
 ## 0.8.40 - Results weekend and provider identity, 2 November 2026
 
 Results & recap follows the shared current weekend and organiser override. Sidebar navigation clears stale race context; explicit links and history retain their event. Archived seasons select the latest dated published GP or Sprint. Automatic results and replacement requests now identify the installed app to Jolpica, matching its documented requirement. Existing publication checks remain in place; no source migration or scoring change.

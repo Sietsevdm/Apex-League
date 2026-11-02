@@ -1,4 +1,4 @@
 import { version } from "../package.json";
 
-/** Required by Jolpica on both its Ergast and session APIs. */
+/** Identify the installed app when requesting external race data. */
 export const providerHeaders = { "User-Agent": `ApexPredictionLeague/${version}` };

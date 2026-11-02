@@ -434,7 +434,8 @@ async function prepareManualImport(req: NextRequest, body: any) {
       body,
       req.headers.get("x-apex-league") || undefined,
     );
-    return importSnapshot(s, user, body);
+    const snapshot = importSnapshot(s, user, body);
+    return { ...snapshot, season: structuredClone(s.seasons.find(x => x.id === snapshot.seasonId)!), event: structuredClone(s.events.find(x => x.id === body.eventId)) };
   });
   // No transaction or league write lock is held during these network requests.
   try {
@@ -445,8 +446,8 @@ async function prepareManualImport(req: NextRequest, body: any) {
     return {
       snapshot,
       results: await importResults(
-        snapshot.year,
-        snapshot.round!,
+        snapshot.season,
+        snapshot.event!,
         body.kind === "sprint" ? "sprint" : "gp",
       ),
     };
@@ -1151,7 +1152,7 @@ export async function POST(req: NextRequest) {
           recordCalendarSync(s, season, imported.events, u.name);
           if (!season.drivers.length)
             season.calendarSync!.message +=
-              " Driver lineup is not published by Jolpica yet. Copy a lineup from another season or enter it manually.";
+              " Driver lineup is not published by OpenF1 yet. Copy a lineup from another season or enter it manually.";
         } catch (error) {
           season.calendarSync ??= { enabled: false };
           season.calendarSync.lastAttempt = new Date().toISOString();
@@ -1218,6 +1219,7 @@ export async function POST(req: NextRequest) {
               : undefined,
           providerCircuitId: old?.providerCircuitId,
           providerRound: old?.providerRound,
+          openf1MeetingKey: old?.openf1MeetingKey,
           raceDate: old?.raceDate,
           hasSprint: Boolean(b.sprintQualifying),
           calendarOverride:
@@ -1263,7 +1265,7 @@ export async function POST(req: NextRequest) {
           imported: {
             ...imported,
             provenance: {
-              source: "Jolpica F1 API",
+              source: "OpenF1",
               fetchedAt: new Date().toISOString(),
             },
           },

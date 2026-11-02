@@ -275,7 +275,7 @@ export const dutch: Record<string, string> = {
 
   "Registration is open. Your organiser closes it manually.": "De inschrijving is open. Je organisator sluit deze handmatig.",
   "Registration is closed. Ask your organiser to reopen it.": "De inschrijving is gesloten. Vraag je organisator deze opnieuw te openen.",
-  "No driver lineup yet. Check now imports available drivers and teams. If Jolpica has not published this season, copy a lineup or enter it in Seasons & lineup.": "Nog geen coureurslijst. Nu controleren importeert beschikbare coureurs en teams. Als Jolpica dit seizoen nog niet heeft gepubliceerd, kopieer dan een lijst of voer deze in bij Seizoenen en deelnemers.",
+  "No driver lineup yet. Check now imports available drivers and teams. If OpenF1 has not published this season, copy a lineup or enter it in Seasons & lineup.": "Nog geen coureurslijst. Nu controleren importeert beschikbare coureurs en teams. Als OpenF1 dit seizoen nog niet heeft gepubliceerd, kopieer dan een lijst of voer deze in bij Seizoenen en deelnemers.",
 
   "Player registration": "Spelersinschrijving",
   "Registration open": "Inschrijving open",
@@ -429,7 +429,7 @@ export const dutch: Record<string, string> = {
   "Each event can have its own circuit photograph.":
     "Elk evenement kan een eigen circuitfoto hebben.",
   "Importing…": "Importeren…",
-  "Import Jolpica calendar": "Jolpica-kalender importeren",
+  "Import OpenF1 calendar": "OpenF1-kalender importeren",
   "Add a calendar or a practice round first.":
     "Voeg eerst een kalender of oefenronde toe.",
   "Registration is closed. New players must wait for the next season.":
@@ -1108,7 +1108,7 @@ export const dutch: Record<string, string> = {
   "GP replacements confirmed automatically; picks follow the replacement driver.": "GP-vervangingen automatisch bevestigd; keuzes volgen de vervanger.",
   "GP race entries checked; no new replacements.": "GP-race-inschrijvingen gecontroleerd; geen nieuwe vervangingen.",
   "Waiting for a complete, unambiguous GP race entry list.": "Wachten op een volledige, eenduidige GP-race-inschrijflijst.",
-  "Automatically confirmed from Jolpica GP race entries.": "Automatisch bevestigd op basis van Jolpica GP-race-inschrijvingen.",
+  "Automatically confirmed from OpenF1 GP race entries.": "Automatisch bevestigd op basis van OpenF1 GP-race-inschrijvingen.",
   Explanation: "Toelichting",
   "Affected entries": "Betrokken inzendingen",
   "Review the policy with your league. Choosing carry applies equally to all picks for the original driver, without reopening the deadline.":
