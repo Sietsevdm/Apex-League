@@ -1,3 +1,11 @@
+## 0.8.46 - All-team weekend driver checks, 8 November 2026
+
+Every team is now checked hourly against the FIA's official entry list for the matched GP and OpenF1. The shared FIA source covers all 11 current teams, recognises their sponsor-name differences, excludes practice-only drivers and reads actual car numbers without superscript footnotes. Explicit weekend/year/meeting checks, local race timezones and latest-document selection prevent applying another event's roster. The earlier Haas announcement check remains supplemental.
+
+Confirmed GP replacements carry existing picks and save a link to the FIA proof. Complete FIA entries can confirm replacements before qualifying even when OpenF1's future race roster is empty; completed qualifying must corroborate the driver and car number. The results importer uses that identity. Current-weekend checks take priority over old unfinished races. Existing manual policies, submissions, receipts, Sprint/championship picks and published results are preserved.
+
+Source outages remain visible and retry hourly; contradictory evidence and newer driver-change decisions require updated official entries or organiser review. Updates depend on official publication, so instant availability cannot be guaranteed. PDF reading and its runtime are included in the app; no new service, key or migration is required. Live read-only verification checked 22 drivers across 11 teams and confirmed Ocon → Câmara with FIA proof. All 183 tests, TypeScript and the production build pass; the packaged PDF runtime also passed. Included in 0.8.46. Details: docs/all-team-driver-checks-2026-11-08.md.
+
 ## 0.8.45 - Calendar API recovery, 8 November 2026
 
 Failed calendar checks retry hourly instead of daily. Temporary OpenF1 connection/timeout/server/rate-limit failures get bounded retries with Retry-After support and endpoint-specific errors. Calendar updates survive separate driver refresh failures, keeping the saved lineup and showing a warning. Error capture now covers blank/non-Error failures, the panel shows a visible fallback, and worker logs include failure reasons.

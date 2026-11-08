@@ -2,6 +2,7 @@ import { State, Event, Result, Picks, locked, standings, score } from "./model";
 
 export type Replacement = {
   source?: "automatic";
+  official?: import("./official-driver-updates").OfficialDriverUpdate;
   from: string;
   to: string;
   kind: "gp" | "sprint";

@@ -9,6 +9,7 @@ import {
 } from "./openf1";
 import { awardWinner, confirmedResult } from "./automatic-results";
 import { emptyResult, type Event, type Result, type Season } from "./model";
+import { applyOfficialDriverUpdates } from "./official-driver-updates";
 
 /** A retirement is bracketed by observed movement and sustained stationary telemetry. */
 export function stopInterval(rows: Row[]): { from: number; to: number } {
@@ -100,7 +101,7 @@ export async function fetchOpenF1Result(
   automatic: boolean,
 ): Promise<Result> {
   const { race, qualifying } = await eventSessions(season, event, kind);
-  const drivers = checkedRows(
+  let drivers = checkedRows(
     await openf1("drivers", { session_key: race.session_key }),
     race,
   );
@@ -116,6 +117,25 @@ export async function fetchOpenF1Result(
     await openf1("laps", { session_key: race.session_key }),
     race,
   );
+  const official = (event.replacements || [])
+    .filter((r) => r.kind === kind && r.official)
+    .map((r) => r.official!);
+  if (kind === "gp" && official.length) {
+    const qualified = checkedRows(
+      await openf1("drivers", { session_key: qualifying.session_key }),
+      qualifying,
+    );
+    uniqueDrivers(qualified);
+    if (qualified.length < 20 || qualified.length > 24)
+      throw new Error("Waiting for complete qualifying driver identities.");
+    drivers = applyOfficialDriverUpdates(
+      drivers,
+      official,
+      season.year,
+      race.date_start,
+      qualified,
+    );
+  }
   uniqueDrivers(drivers);
   uniqueDrivers(rows);
   uniqueDrivers(q);

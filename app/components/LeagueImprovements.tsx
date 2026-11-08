@@ -84,6 +84,7 @@ export function ReplacementNotice({
               : "Original picks remain with the original driver for this session.",
           )}{" "}
           {t(r.note)}
+          {r.official && <> <a href={r.official.url} target="_blank" rel="noreferrer">{t("Official announcement")}</a></>}
           {picks &&
             [
               ...picks.order,
@@ -139,7 +140,7 @@ export function ReplacementAdmin({
           "Set a session policy before publishing results. Original predictions and receipts are preserved; championship picks stay unchanged.",
         )}
       </p>
-      <p className="muted">{t("GP replacements are checked hourly against provider race entries. Existing GP picks follow automatically confirmed replacements; Sprint and championship picks stay unchanged.")}</p>
+      <p className="muted">{t("Every team is checked hourly using the FIA weekend entry list and OpenF1. Confirmed GP replacements carry existing picks; Sprint and championship picks stay unchanged.")}</p>
       {event?.replacementSync?.message && <p role="status">{t(event.replacementSync.message)}</p>}
       {open && <form
         onSubmit={async (e) => {

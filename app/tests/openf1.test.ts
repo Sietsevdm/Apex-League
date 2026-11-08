@@ -248,6 +248,118 @@ test("unmatched meetings never fall back to a round number", async () => {
   }
 });
 
+test("officially confirmed GP replacement uses the qualifying identity and car number throughout automatic results", async () => {
+  const original = globalThis.fetch,
+    at = "2026-11-06T17:00:00Z";
+  const f = providerFixture(2026, at),
+    state = structuredClone(seed(true)),
+    season = state.seasons[0];
+  season.year = 2026;
+  season.drivers.push({
+    id: "CAM",
+    name: "Rafael Câmara",
+    team: "Haas F1 Team",
+    color: "#123456",
+    replacementOnly: true,
+  });
+  Object.assign(f.drivers[13], {
+    first_name: "Esteban",
+    last_name: "Ocon",
+    driver_number: 31,
+    team_name: "Haas F1 Team",
+  });
+  f.drivers[14].team_name = "Haas F1 Team";
+  f.results[13].driver_number = 51;
+  f.results[13].position = 1;
+  f.results[0].position = 14;
+  f.laps[13].driver_number = 51;
+  f.laps[13].lap_duration = 79;
+  const official = {
+    url: "https://www.haasf1team.com/news/team-statement-driver-update-0",
+    team: "Haas F1 Team",
+    fromName: "Esteban Ocon",
+    toName: "Rafael Câmara",
+    year: 2026,
+    startsOn: "2026-11-06",
+    endsOn: "2026-11-08",
+  };
+  const event = {
+    ...state.events[0],
+    race: at,
+    openf1MeetingKey: 1,
+    replacements: [
+      {
+        from: "OCO",
+        to: "CAM",
+        kind: "gp" as const,
+        source: "automatic" as const,
+        policy: "carry" as const,
+        official,
+        note: "Officially confirmed",
+      },
+    ],
+  };
+  let conflict = false;
+  globalThis.fetch = async (input) => {
+    (globalThis as any).apexOpenF1Next = 0;
+    const url = new URL(String(input));
+    if (url.hostname === "www.formula1.com")
+      return new Response(
+        "<table><tr><td>Bahrain</td><td>Rafael Câmara</td></tr></table>",
+      );
+    if (
+      url.pathname.endsWith("/drivers") &&
+      url.searchParams.get("session_key") === "102"
+    )
+      return Response.json(
+        f.drivers.map((d, i) => ({
+          ...d,
+          session_key: 102,
+          ...(i === 13 && !conflict
+            ? { first_name: "Rafael", last_name: "Câmara", driver_number: 51 }
+            : {}),
+        })),
+      );
+    return f.respond(input);
+  };
+  try {
+    const result = await fetchOpenF1Result(season, event, "gp", true);
+    assert.equal(result.published, true);
+    assert.equal(result.order[0], "CAM");
+    assert.equal(result.pole, "CAM");
+    assert.equal(result.fastest, "CAM");
+    assert.equal(result.dotd, "CAM");
+    assert.deepEqual(result.retirements, ["none"]);
+    assert.ok(!result.order.includes("OCO"));
+    const fiaProof = {
+      ...official,
+      source: "fia" as const,
+      url: "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_entry_list.pdf",
+      driverNumber: 51,
+      meetingKey: 1,
+      code: "CAM",
+    };
+    event.replacements[0].official = fiaProof;
+    const fiaResult = await fetchOpenF1Result(season, event, "gp", true);
+    assert.equal(fiaResult.order[0], "CAM");
+    assert.equal(fiaResult.pole, "CAM");
+    assert.equal(fiaResult.fastest, "CAM");
+    delete (event.replacements[0] as import("../lib/enhancements").Replacement)
+      .source;
+    assert.equal(
+      (await fetchOpenF1Result(season, event, "gp", true)).order[0],
+      "CAM",
+    );
+    conflict = true;
+    await assert.rejects(
+      fetchOpenF1Result(season, event, "gp", true),
+      /disagree/,
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
 test("fastest lap excludes deleted laps, handles reinstatement and ignores another session's earlier messages", () => {
   const laps = [
     { driver_number: 14, lap_number: 5 },
