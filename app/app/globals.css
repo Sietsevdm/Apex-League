@@ -3301,3 +3301,27 @@ footer {
 /* Keep result status, attempt time and explanation aligned at every width. */
 .info-bar.result-sync-info { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; align-items: start; }
 .result-sync-info p { margin: 0; overflow-wrap: anywhere; }
+
+/* Reopenable new-player walkthrough. Native dialog supplies focus trapping and inert background. */
+.player-guide { width:min(760px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); padding:0; border:1px solid #344157; border-radius:20px; background:#111a2c; color:#edf2fc; box-shadow:0 30px 100px #0009; overflow:auto; }
+.player-guide::backdrop { background:#050915bd; backdrop-filter:blur(5px); }
+.guide-top,.guide-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 24px; }
+.guide-top { border-bottom:1px solid #2a3549; }
+.guide-top>span { display:flex; align-items:center; gap:10px; font-size:11px; letter-spacing:.15em; color:#b5c4db; font-weight:800; }
+.guide-layout { display:grid; grid-template-columns:190px 1fr; }
+.guide-topics { padding:22px 12px; background:#0c1424; display:flex; flex-direction:column; gap:6px; }
+.guide-topics button { border:0; background:transparent; text-align:left; display:flex; align-items:center; justify-content:flex-start; gap:10px; padding:12px 10px; border-radius:9px; font-size:13px; color:#b5c4db; }
+.guide-topics button span { border:1px solid #43506a; border-radius:50%; width:23px; height:23px; display:grid; place-items:center; flex-shrink:0; font-size:11px; }
+.guide-topics button[aria-current] { background:#23344c; color:white; }
+.guide-topics button[aria-current] span { background:var(--accent,#e54444); color:white; border-color:transparent; }
+.guide-content { padding:28px; min-height:375px; }
+.guide-icon { width:58px; height:58px; display:grid; place-items:center; border-radius:15px; background:#26354c; color:#fff; margin-bottom:20px; }
+.guide-count { font-size:10px; letter-spacing:.14em; color:#a6b9d5; margin-bottom:8px; font-weight:800; }
+.guide-content h2 { font-size:26px; line-height:1.15; margin-bottom:14px; }
+.guide-content>p:not(.guide-count) { font-size:14px; line-height:1.75; color:#c4cee0; }
+.guide-tip { border-left:3px solid var(--accent,#e54444); background:#1b273b; padding:13px 15px; font-size:12px; line-height:1.7; color:#d2def0; }
+.guide-destination { border:0; background:none; padding:16px 0 0; display:flex; align-items:center; gap:7px; color:#fff; font-size:13px; text-decoration:underline; text-underline-offset:4px; }
+.guide-footer { border-top:1px solid #2a3549; }
+.guide-footer .primary,.guide-footer .secondary { display:flex; align-items:center; gap:6px; }
+.guide-later { border:0; background:transparent; color:#b5c4db; font-size:12px; }
+@media(max-width:600px) { .guide-layout{grid-template-columns:1fr}.guide-topics{flex-direction:row;overflow:auto;padding:10px;gap:4px}.guide-topics button{flex:0 0 auto;padding:8px;font-size:12px}.guide-content{padding:20px;min-height:340px}.guide-top,.guide-footer{padding:14px}.guide-later{max-width:90px}.guide-content h2{font-size:24px}.player-guide-trigger{flex-shrink:0} }

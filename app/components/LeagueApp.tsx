@@ -32,6 +32,7 @@ import {
 import dynamic from "next/dynamic";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Auth from "./Auth";
+import PlayerGuide from "./PlayerGuide";
 import { Heading } from "./screens/Shared";
 const Home = dynamic(() => import("./screens/Home"), {
   loading: () => (
@@ -168,6 +169,7 @@ function LeagueContent({
   const [page, setPage] = useState(initialPage);
   const [eventId, setEventId] = useState("");
   const [menu, setMenu] = useState(false);
+  const [guideRequest, setGuideRequest] = useState(0);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [preview, setPreview] = useState(false);
@@ -523,6 +525,7 @@ function LeagueContent({
           ),
         )}
         <div className="sidebar-bottom">
+          <button className="sidebar-signout" onClick={() => { setMenu(false); setGuideRequest(value => value + 1); }}><Info size={17} />{language === "nl" ? "Spelersgids" : "Player guide"}</button>
           <button className="sidebar-signout" onClick={async () => { setMenu(false); await call({ action: "logout" }); }}><LogOut size={17} />{tr("Sign out")}</button>
           <span className="live-dot" />
           {tr("YOUR GRID. YOUR RULES.")}
@@ -555,6 +558,7 @@ function LeagueContent({
             </strong>
           </div>
           <div className="topbar-actions">
+            <PlayerGuide userId={me.id} request={guideRequest} onNavigate={go} />
             <select
               className="season-select"
               value={season?.id || ""}

@@ -1,11 +1,9 @@
-# Version 0.8.42
+# Version 0.8.43
 
-Added a weekend score notification for players who have enabled push notifications in Profile. It queues when GP and applicable Sprint results are all published, whether automatically or manually. The existing worker checks notification delivery every five minutes. Corrections and repeat checks do not create another notification; historical weekends are not backfilled. See WEEKEND_SCORE_NOTIFICATIONS.md.
+Added an English/Dutch new-player walkthrough covering predictions and submission, separate GP/Sprint deadlines, push reminders, calendar subscriptions, season picks and scores. It opens on the first authenticated visit per account/browser and can always be reopened using Player guide in the menu or the book button in the top bar. All six topics can be selected directly. Topic numbers and labels are consistently left-aligned.
 
-Results & scoring now aligns status text in one column, shows the last automatic attempt and hides stale waiting warnings after publication. Result checks remain hourly, starting three hours after GP start or one hour after Sprint start. Saved organiser drafts and uncertain data require review; Fetch results does not publish.
+The walkthrough does not enable notifications or change predictions. Dismissal is stored in this browser; another device or cleared site storage may show it again. See PLAYER_GUIDE.md for details.
 
-All three podium cards now separate POSITION from the rank and the score from points. Standings explain shared-place ranking without changing scoring or tie-breaks.
+TypeScript and all 156 automated tests pass. The user reviewed the local preview; the reported topic alignment was corrected in CSS. Automated visual verification remains unavailable in this session. Production build verification is pending GitHub Actions because local Google Fonts downloads are restricted.
 
-All 156 tests and the production build pass. Browser verification covers alignment and stale-warning suppression. Notification delivery was tested with mocked senders; no real player notifications were sent during testing.
-
-After the release build succeeds, update the existing Portainer stack to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.42` with Re-pull image enabled. Update both app and calendar-worker. Preserve settings, secrets and volumes. No new configuration or database migration is required. GitHub publication does not install the update on the VPS.
+After the GitHub release build succeeds, update the existing Portainer stack to APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.43 with Re-pull image enabled. Update both app and calendar-worker, preserving settings, secrets and volumes. No new configuration or database migration is required. GitHub publication does not update the VPS automatically.

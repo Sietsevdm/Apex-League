@@ -361,3 +361,8 @@ Podium cards now include explicit spaces between POSITION and the rank, and betw
 Standings clarify competition ranking: four tied players at P3 occupy places 3-6, so the next place is P7. Ties use total points, weekend wins, then exact positions; scoring and ranks are unchanged.
 
 Validation: all 156 tests and production build pass. Browser verified aligned single-column status text and last-attempt timestamp, and that published results suppress a stale retirement warning. Push delivery tested with mocked senders, including concurrency, manual/automatic publication, complete Sprint weekends, eligibility and batches beyond 20 devices. No real player notifications sent. Screenshot: outputs/results-status-aligned.png. Approved for GitHub publication as 0.8.42. No VPS installation performed.
+
+## Player walkthrough
+
+New players receive a six-topic welcome guide covering submissions, reminders, calendar tools, season picks and scores. Reopen it any time using Player guide in the menu or the top-bar book button. See [PLAYER_GUIDE.md](PLAYER_GUIDE.md) for behavior and local preview instructions.
+

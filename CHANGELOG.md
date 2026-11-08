@@ -1,3 +1,15 @@
+## 0.8.43 - Reopenable player walkthrough, 8 November 2026
+
+Added the six-topic English/Dutch guide with automatic first-visit display, permanent menu/top-bar entry points, topic shortcuts and consistent left alignment. Covers submission, GP/Sprint deadlines, reminders, calendars, season picks and scores. Browser-local dismissal; no new server configuration or data migration. TypeScript and all 156 tests pass. User reviewed local preview; automated browser and local production build verification remain restricted. GitHub Actions verifies the release build.
+
+## Player-guide alignment - 8 November 2026
+
+Left-aligned walkthrough topic button contents so number badges and labels line up consistently, including the selected topic. CSS-only change; mobile navigation retains its horizontal layout.
+
+## Local player-guide preview - 6 November 2026
+
+Added a six-topic English/Dutch walkthrough with first-visit display per account/browser, permanent sidebar/top-bar entry points, direct topic selection and relevant-screen shortcuts. Covers actual submission vs drafts, GP/Sprint deadlines, push reminders, iOS installation, calendar subscription vs download, season picks and results privacy. Native modal keyboard behavior; responsive layout. Details: app/PLAYER_GUIDE.md. TypeScript and all 156 tests pass. Browser verification blocked by loopback restrictions and failed preview-panel handoff. Local-only; no publication or VPS changes.
+
 # Changelog
 
 ## 0.8.42 - Result status and weekend score notifications, 2 November 2026
@@ -429,3 +441,7 @@ All 140 automated tests and final production build pass. Browser verified cleari
 ## 0.8.39 - Stable driver field height, 2 November 2026
 
 Driver/constructor picker triggers now keep the empty field height of 44 px in both empty and selected states. Removed vertical trigger padding so the existing 30 px team logo fits within that height instead of increasing it to 52 px. Horizontal padding, team-color background, logo, label truncation and keyboard behavior remain unchanged. Production build passes. Local preview restarted on port 3008; no publication or VPS changes.
+
+
+Player-guide validation: production build unverified due to junction permissions and Google Fonts network access.
+
