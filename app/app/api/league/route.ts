@@ -1,3 +1,4 @@
+import { calendarErrorMessage } from "@/lib/calendar-error";
 import { weekendScoresReady, recordWeekendScores } from "@/lib/weekend-scores";
 import { scopedState, type ResponseContext } from "@/lib/response-scope";
 import {
@@ -1151,14 +1152,15 @@ export async function POST(req: NextRequest) {
           const imported = preparedImport!.calendar!;
           mergeImportedLineup(season, imported);
           recordCalendarSync(s, season, imported.events, u.name);
-          if (!season.drivers.length)
+          if (imported.lineupWarning) season.calendarSync!.message += ` Driver lineup refresh failed: ${imported.lineupWarning} Saved lineup retained.`;
+          else if (!season.drivers.length)
             season.calendarSync!.message +=
               " Driver lineup is not published by OpenF1 yet. Copy a lineup from another season or enter it manually.";
         } catch (error) {
           season.calendarSync ??= { enabled: false };
           season.calendarSync.lastAttempt = new Date().toISOString();
           season.calendarSync.status = "error";
-          season.calendarSync.message = (error as Error).message.slice(0, 400);
+          season.calendarSync.message = calendarErrorMessage(error);
         }
       } else if (b.action === "event") {
         const season = s.seasons.find((x) => x.id === b.seasonId);

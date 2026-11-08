@@ -1,8 +1,9 @@
+import { calendarErrorMessage } from "./calendar-error";
 import { mergeImportedLineup } from "./season-controls";
 import { leagueSettings } from "./leagues";
 import { randomUUID } from "node:crypto";
 import { State, Season, Event, cutoff, locked } from "./model";
-import { fetchCalendar, fetchLineup } from "./provider";
+import { fetchCalendar, fetchCalendarLineup } from "./provider";
 import { transaction } from "./store";
 export type IncomingEvent = Omit<Event, "seasonId">;
 export function mergeCalendar(
@@ -220,7 +221,8 @@ export async function syncDueCalendars(
           (!season.calendarSync.leaseUntil ||
             season.calendarSync.leaseUntil < now) &&
           (!season.calendarSync.lastAttempt ||
-            now - Date.parse(season.calendarSync.lastAttempt) >= 86400000),
+            now - Date.parse(season.calendarSync.lastAttempt) >=
+              (season.calendarSync.status === "error" ? 3600000 : 86400000)),
       )
       .map((season) => {
         const lease = randomUUID();
@@ -235,7 +237,7 @@ export async function syncDueCalendars(
       const [incoming, lineup] = await Promise.all([
         fetcher(job.year),
         fetcher === fetchCalendar
-          ? fetchLineup(job.year).catch(() => undefined)
+          ? fetchCalendarLineup(job.year)
           : Promise.resolve(undefined),
       ]);
       const result = await transaction((s) => {
@@ -245,7 +247,8 @@ export async function syncDueCalendars(
         if (season.calendarSync.enabled && !season.archived) {
           if (lineup) mergeImportedLineup(season, lineup);
           recordCalendarSync(s, season, incoming, "Calendar scheduler", now);
-          if (!season.drivers.length)
+          if (lineup?.lineupWarning) season.calendarSync.message += ` Driver lineup refresh failed: ${lineup.lineupWarning} Saved lineup retained.`;
+          else if (!season.drivers.length)
             season.calendarSync.message +=
               " Driver lineup unavailable; retrying on the next check.";
         }
@@ -260,11 +263,11 @@ export async function syncDueCalendars(
         if (!season || season.calendarSync?.lease !== job.lease) return;
         season.calendarSync.lastAttempt = new Date(now).toISOString();
         season.calendarSync.status = "error";
-        season.calendarSync.message = (e as Error).message.slice(0, 400);
+        season.calendarSync.message = calendarErrorMessage(e);
         delete season.calendarSync.lease;
         delete season.calendarSync.leaseUntil;
       });
-      outcomes.push({ seasonId: job.id, status: "error" });
+      outcomes.push({ seasonId: job.id, status: "error", message: calendarErrorMessage(e) });
     }
   }
   return outcomes;

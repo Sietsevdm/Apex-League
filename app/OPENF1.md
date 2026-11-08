@@ -8,7 +8,7 @@ Historical OpenF1 data from 2023 onwards needs no API key. The app checks comple
 
 ## Identity and compatibility
 
-`openf1.ts` owns request pacing (at least 2.2 seconds per request per server process), a bounded retry on HTTP 429 and response validation. OpenF1's exact 404 `No results found.` response is treated as empty data, not a successful classification. Other HTTP/format errors remain visible and retryable.
+`openf1.ts` owns request pacing (at least 2.2 seconds per request per server process), up to three attempts for connection failures, 20-second timeouts and HTTP 429/500/502/503/504, with Retry-After cooldowns and response validation. OpenF1's exact 404 `No results found.` response is treated as empty data, not a successful classification. Other HTTP/format errors remain visible and retryable.
 
 `provider.ts` imports meetings and named sessions; test meetings without a Race session are excluded. Cancelled meetings are retained with a review message. New records store `openf1MeetingKey`; existing events match through legacy circuit IDs and retain their event IDs, entries, receipts, published results, photos, deadlines and manual overrides. Round numbers are informational and may differ when a provider includes cancelled rounds; result matching never trusts the round number alone. Before calendar refresh has stored the meeting key, legacy results match a unique circuit and race date within three days. Larger manual date changes require calendar refresh/organiser review.
 
@@ -33,3 +33,9 @@ All 151 automated tests and the production build pass. Live read-only verificati
 - https://openf1.org/docs/
 - https://www.formula1.com/en/results/2026/awards/driver-of-the-day
 - `../docs/results-investigation-2026-11-02.md` for the original same-lap failure.
+
+## Calendar recovery - 8 November 2026
+
+Successful calendar checks remain daily. Failed checks are eligible on the next hourly worker pass. Permanent HTTP failures are reported without immediate retries. Temporary errors have at most three request attempts; cooldowns longer than one minute are reported rather than holding a request open, and subsequent requests respect the learned cooldown. Manual Check now retains a valid calendar when the separate driver refresh fails. Both manual and automatic checks preserve the existing driver list in that case and record a warning. Empty or non-Error failures receive a fallback message; worker calendar-error outcomes include the saved reason. A legacy Check failed state without a reason displays guidance to retry for a fresh diagnostic.
+
+Verified the live 2026 importer and full background check on 8 November: 25 events and 24 drivers in isolated demo storage. No access to the deployed league's private error state or worker logs was available, so this does not establish the precise cause of its historical failed check.

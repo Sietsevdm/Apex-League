@@ -1,3 +1,4 @@
+import { calendarErrorMessage } from "./calendar-error";
 import {
   openf1,
   checkedRows,
@@ -188,10 +189,14 @@ export async function fetchLineup(year: number) {
     constructors: [...new Set(drivers.map((d) => d.team).filter(Boolean))],
   };
 }
+export async function fetchCalendarLineup(year: number) {
+  try { return {...await fetchLineup(year),lineupWarning:""}; }
+  catch(error) { return {drivers:[],constructors:[],lineupWarning:calendarErrorMessage(error)}; }
+}
 export async function importCalendar(year: number) {
   // Sequence provider requests to respect the public rate limit.
   const events = await fetchCalendar(year),
-    lineup = await fetchLineup(year);
+    lineup = await fetchCalendarLineup(year);
   return { ...lineup, events };
 }
 export async function importResults(

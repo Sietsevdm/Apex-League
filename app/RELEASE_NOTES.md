@@ -1,9 +1,11 @@
-# Version 0.8.43
+# Version 0.8.45
 
-Added an English/Dutch new-player walkthrough covering predictions and submission, separate GP/Sprint deadlines, push reminders, calendar subscriptions, season picks and scores. It opens on the first authenticated visit per account/browser and can always be reopened using Player guide in the menu or the book button in the top bar. All six topics can be selected directly. Topic numbers and labels are consistently left-aligned.
+Fixed calendar-sync recovery: failed checks now retry hourly while successful checks stay daily. OpenF1 requests retry temporary connection failures, timeouts and HTTP 429/500/502/503/504, respect provider cooldowns and report which endpoint failed.
 
-The walkthrough does not enable notifications or change predictions. Dismissal is stored in this browser; another device or cleared site storage may show it again. See PLAYER_GUIDE.md for details.
+A successful calendar fetch is retained even if the separate driver-list refresh fails; the saved lineup stays available and a warning explains the failure. Calendar errors now show a visible reason or recovery message, including when older failures have no saved detail. Failed background outcomes include the reason in worker logs.
 
-TypeScript and all 156 automated tests pass. The user reviewed the local preview; the reported topic alignment was corrected in CSS. Automated visual verification remains unavailable in this session. Production build verification is pending GitHub Actions because local Google Fonts downloads are restricted.
+All 162 automated tests and the production build pass. A full live OpenF1 background check into isolated test storage imported 25 events and 24 drivers. No real league data was changed. The original deployed failure remains unidentified because no error detail was available.
 
-After the GitHub release build succeeds, update the existing Portainer stack to APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.43 with Re-pull image enabled. Update both app and calendar-worker, preserving settings, secrets and volumes. No new configuration or database migration is required. GitHub publication does not update the VPS automatically.
+This release retains the previously published player walkthrough and score-notification features. Existing predictions, results, manual overrides and locked deadlines remain intact.
+
+Update the existing Portainer stack to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.45` after the release build succeeds, with Re-pull image enabled. Update both app and calendar-worker; preserve existing settings, secrets and volumes. No new API key, environment variable or database migration is required. GitHub publication does not install the update on your VPS.

@@ -1,3 +1,9 @@
+## 0.8.45 - Calendar API recovery, 8 November 2026
+
+Failed calendar checks retry hourly instead of daily. Temporary OpenF1 connection/timeout/server/rate-limit failures get bounded retries with Retry-After support and endpoint-specific errors. Calendar updates survive separate driver refresh failures, keeping the saved lineup and showing a warning. Error capture now covers blank/non-Error failures, the panel shows a visible fallback, and worker logs include failure reasons.
+
+Validation: all 162 tests and production build pass; live isolated background sync imported 25 events and 24 drivers. Existing player walkthrough and score notifications retained. Update both app and calendar-worker to ghcr.io/sietsevdm/apex-league:0.8.45 with Re-pull image enabled after the build succeeds. No VPS installation performed.
+
 ## 0.8.43 - Reopenable player walkthrough, 8 November 2026
 
 Added the six-topic English/Dutch guide with automatic first-visit display, permanent menu/top-bar entry points, topic shortcuts and consistent left alignment. Covers submission, GP/Sprint deadlines, reminders, calendars, season picks and scores. Browser-local dismissal; no new server configuration or data migration. TypeScript and all 156 tests pass. User reviewed local preview; automated browser and local production build verification remain restricted. GitHub Actions verifies the release build.

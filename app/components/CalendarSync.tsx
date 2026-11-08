@@ -1,4 +1,5 @@
 "use client";
+import { CALENDAR_FAILURE_FALLBACK } from "@/lib/calendar-error";
 import { useLocale } from "@/lib/i18n";
 import { useState } from "react";
 import { RefreshCw, Clock, CheckCircle2 } from "lucide-react";
@@ -91,12 +92,13 @@ export default function CalendarSync({
           </strong>
         </div>
       </div>
-      <p className="tiny">
+      <p className={sync?.status === "error" ? "form-error" : "tiny"} role={sync?.status === "error" ? "alert" : undefined}>
         {tr(
-          sync?.message ||
-            "Create the season, enable syncing, and the VPS calendar worker will watch for publication.",
+          sync?.message?.trim() || (sync?.status === "error" ? CALENDAR_FAILURE_FALLBACK :
+            "Create the season, enable syncing, and the VPS calendar worker will watch for publication."),
         )}
       </p>
+      {sync?.status === "error" && <p className="tiny">{tr("Failed checks retry hourly while daily checks are enabled. Your saved calendar and predictions are kept. You can also use Check now to retry.")}</p>}
       <p className="tiny">
         {tr(
           "Background checks run through the calendar-worker service included in the Portainer stack. The local preview supports Check now; it does not start that service.",

@@ -366,3 +366,8 @@ Validation: all 156 tests and production build pass. Browser verified aligned si
 
 New players receive a six-topic welcome guide covering submissions, reminders, calendar tools, season picks and scores. Reopen it any time using Player guide in the menu or the top-bar book button. See [PLAYER_GUIDE.md](PLAYER_GUIDE.md) for behavior and local preview instructions.
 
+## 0.8.45 - Calendar API recovery, 8 November 2026
+
+Failed calendar checks retry hourly instead of daily. Temporary OpenF1 connection/timeout/server/rate-limit failures get bounded retries with Retry-After support and endpoint-specific errors. Calendar updates survive separate driver refresh failures, keeping the saved lineup and showing a warning. Error capture now covers blank/non-Error failures, the panel shows a visible fallback, and worker logs include failure reasons.
+
+Validation: all 162 tests and production build pass; live isolated background sync imported 25 events and 24 drivers. Existing player walkthrough and score notifications retained. Update both app and calendar-worker to ghcr.io/sietsevdm/apex-league:0.8.45 with Re-pull image enabled after the build succeeds. No VPS installation performed.

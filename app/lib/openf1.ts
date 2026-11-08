@@ -8,50 +8,133 @@ export const normal = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
-const state = globalThis as unknown as { apexOpenF1Next?: number };
-export async function openf1(
-  endpoint: string,
-  params: Record<string, string | number> = {},
-): Promise<Row[]> {
-  const url = new URL(`https://api.openf1.org/v1/${endpoint}`);
-  for (const [key, value] of Object.entries(params))
-    url.searchParams.set(key, String(value));
-  for (let attempt = 0; attempt < 2; attempt++) {
-    const start = Math.max(Date.now(), state.apexOpenF1Next || 0);
-    state.apexOpenF1Next = start + 2200;
-    if (start > Date.now())
-      await new Promise((r) => setTimeout(r, start - Date.now()));
-    const response = await fetch(url, {
-      headers: providerHeaders,
-      cache: "no-store",
-      signal: AbortSignal.timeout(15000),
-    });
-    if (response.status === 429 && attempt === 0) {
-      const delay = Math.min(
-        15000,
-        Math.max(
-          2000,
-          Number(response.headers.get("retry-after")) * 1000 || 2000,
-        ),
+type ProviderClock = {
+  apexOpenF1Next?: number;
+  apexOpenF1CooldownUntil?: number;
+};
+const state = globalThis as unknown as ProviderClock;
+type ClientOptions = {
+  fetcher?: typeof fetch;
+  clock?: () => number;
+  wait?: (ms: number) => Promise<void>;
+  limiter?: ProviderClock;
+};
+/** Retry temporary failures without ignoring the provider's rate-limit cooldown. */
+export function createOpenF1Client(options: ClientOptions = {}) {
+  const fetcher =
+    options.fetcher || ((...args: Parameters<typeof fetch>) => fetch(...args));
+  const clock = options.clock || Date.now;
+  const wait =
+    options.wait ||
+    ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const limiter = options.limiter || {};
+  return async function request(
+    endpoint: string,
+    params: Record<string, string | number> = {},
+  ): Promise<Row[]> {
+    const url = new URL(`https://api.openf1.org/v1/${endpoint}`);
+    for (const [key, value] of Object.entries(params))
+      url.searchParams.set(key, String(value));
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const start = Math.max(
+        clock(),
+        limiter.apexOpenF1Next || 0,
+        limiter.apexOpenF1CooldownUntil || 0,
       );
-      await new Promise((r) => setTimeout(r, delay));
-      continue;
+      if (start - clock() > 60000)
+        throw new Error(
+          `OpenF1 ${endpoint} is rate limited. Please retry later.`,
+        );
+      limiter.apexOpenF1Next = start + 2200;
+      if (start > clock()) await wait(start - clock());
+      // A concurrent request may have learned of a cooldown after our slot was reserved.
+      while ((limiter.apexOpenF1CooldownUntil || 0) > clock()) {
+        const retryStart = Math.max(
+          clock(),
+          limiter.apexOpenF1Next || 0,
+          limiter.apexOpenF1CooldownUntil || 0,
+        );
+        if (retryStart - clock() > 60000)
+          throw new Error(
+            `OpenF1 ${endpoint} is rate limited. Please retry later.`,
+          );
+        limiter.apexOpenF1Next = retryStart + 2200;
+        await wait(retryStart - clock());
+      }
+      let response: Response;
+      try {
+        response = await fetcher(url, {
+          headers: providerHeaders,
+          cache: "no-store",
+          signal: AbortSignal.timeout(20000),
+        });
+      } catch (error) {
+        if (attempt < 2) {
+          await wait((attempt + 1) * 2000);
+          continue;
+        }
+        const name = (error as Error)?.name;
+        throw new Error(
+          `OpenF1 ${endpoint} ${name === "TimeoutError" || name === "AbortError" ? "request timed out" : "connection failed"}. Existing data is retained.`,
+        );
+      }
+      if (
+        response.status === 429 ||
+        [500, 502, 503, 504].includes(response.status)
+      ) {
+        const retry = response.headers.get("retry-after");
+        const seconds =
+          retry !== null && /^\d+(?:\.\d+)?$/.test(retry.trim())
+            ? Number(retry) * 1000
+            : NaN;
+        const headerDelay = Number.isFinite(seconds)
+          ? seconds
+          : retry
+            ? Date.parse(retry) - clock()
+            : NaN;
+        const delay = Math.max(
+          (attempt + 1) * 2000,
+          Number.isFinite(headerDelay)
+            ? headerDelay
+            : response.status === 429
+              ? 60000
+              : 0,
+        );
+        if (response.status === 429)
+          limiter.apexOpenF1CooldownUntil = Math.max(
+            limiter.apexOpenF1CooldownUntil || 0,
+            clock() + delay,
+          );
+        if (attempt < 2 && delay <= 60000) {
+          await response.body?.cancel();
+          if (response.status !== 429) await wait(delay);
+          continue;
+        }
+      }
+      if (response.status === 404) {
+        const body = await response.json().catch(() => null);
+        if (body?.detail === "No results found.") return [];
+      }
+      if (!response.ok)
+        throw new Error(
+          `OpenF1 ${endpoint} returned HTTP ${response.status}. Existing data is retained.`,
+        );
+      let rows: unknown;
+      try {
+        rows = await response.json();
+      } catch {
+        throw new Error(
+          `OpenF1 ${endpoint} returned invalid JSON. Existing data is retained.`,
+        );
+      }
+      if (!Array.isArray(rows))
+        throw new Error(`OpenF1 ${endpoint} returned an invalid response.`);
+      return rows;
     }
-    if (response.status === 404) {
-      const body = await response.json().catch(() => null);
-      if (body?.detail === "No results found.") return [];
-    }
-    if (!response.ok)
-      throw new Error(
-        `OpenF1 returned ${response.status}. Retrying next hour; manual results remain available.`,
-      );
-    const rows = await response.json();
-    if (!Array.isArray(rows))
-      throw new Error("OpenF1 returned an invalid response.");
-    return rows;
-  }
-  throw new Error("OpenF1 rate limit; retry later.");
+    throw new Error(`OpenF1 ${endpoint} is temporarily unavailable.`);
+  };
 }
+export const openf1 = createOpenF1Client({ limiter: state });
 export function circuitInfo(key: number | string) {
   return (
     circuits as Record<

@@ -1,4 +1,6 @@
 export const dutch: Record<string, string> = {
+  "The calendar check failed without an error detail. Use Check now to retry.": "De kalendercontrole is mislukt zonder opgeslagen foutmelding. Gebruik Nu controleren om opnieuw te proberen.",
+  "Failed checks retry hourly while daily checks are enabled. Your saved calendar and predictions are kept. You can also use Check now to retry.": "Mislukte controles worden elk uur opnieuw geprobeerd zolang dagelijkse controles zijn ingeschakeld. Je opgeslagen kalender en voorspellingen blijven behouden. Met Nu controleren kun je direct opnieuw proberen.",
   "Weekend wins and exact positions settle ties. Shared places use 1, 1, 3 ranking.": "Weekendzeges en exacte posities beslissen bij gelijke punten. Gedeelde plaatsen gebruiken de rangschikking 1, 1, 3.",
   "Last automatic attempt": "Laatste automatische poging",
   "Results are published. The automatic check will not replace them.": "Resultaten zijn gepubliceerd. De automatische controle vervangt deze niet.",

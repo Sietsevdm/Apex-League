@@ -28,11 +28,11 @@ test("automatic results and replacement requests send the required provider iden
   globalThis.fetch = async (_url, init) => {
     calls++;
     assert.equal(new Headers(init?.headers).get("User-Agent"), providerHeaders["User-Agent"]);
-    return new Response("unavailable", { status: 503 });
+    return new Response("unavailable", { status: 400 });
   };
   try {
-    await assert.rejects(fetchAutomaticResult(season, event, "gp"), /503/);
-    await assert.rejects(fetchReplacementLineups(season, event), /503/);
+    await assert.rejects(fetchAutomaticResult(season, event, "gp"), /400/);
+    await assert.rejects(fetchReplacementLineups(season, event), /400/);
     assert.equal(calls, 2);
   } finally { globalThis.fetch = original; }
 });
