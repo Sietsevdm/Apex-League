@@ -1,3 +1,7 @@
+## 0.8.47 — Unified results and points
+
+Merged the repeated outcome into the prediction comparison. Added driver team markers, earned-point numbers and matching-row highlights. Source confirmation and correction history remain expandable. Scoring and stored picks are preserved.
+
 ## 0.8.46 - All-team weekend driver checks, 8 November 2026
 
 Every team is now checked hourly against the FIA's official entry list for the matched GP and OpenF1. The shared FIA source covers all 11 current teams, recognises their sponsor-name differences, excludes practice-only drivers and reads actual car numbers without superscript footnotes. Explicit weekend/year/meeting checks, local race timezones and latest-document selection prevent applying another event's roster. The earlier Haas announcement check remains supplemental.

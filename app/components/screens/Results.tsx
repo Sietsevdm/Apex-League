@@ -144,6 +144,17 @@ function Results({
             "—",
       )
       .join(" · ");
+  const driverLabels = (ids: string[]) => (
+    <span className="results-driver-list">
+      {(ids.length ? ids : [""]).map((id, index) => (
+        <span key={`${index}-${id}`}>
+          {season.drivers.some(driver => driver.id === id) || id === "none"
+            ? <DriverLabel season={season} id={id} />
+            : names([id])}
+        </span>
+      ))}
+    </span>
+  );
   const published = sessions.some(session => session.published);
   const winnerPoints = weekendRows[0]?.total || 0;
   const winners = weekendRows.filter(row => winnerPoints > 0 && row.total === winnerPoints).map(row => row.name);
@@ -278,9 +289,9 @@ function Results({
           </tbody>
         </table>
       </section>
-      <div className="two-col results-detail-grid">
-        <details className="panel results-disclosure" key={`breakdown-${id}-${kind}`}>
-          <summary><span>{tr("Prediction breakdown")}</span><small>{kind === "gp" ? "GP" : tr("Sprint")} · {r?.published ? `${sc.total} ${tr("pts")}` : tr("Pending")}</small></summary>
+      <div className="results-detail-grid">
+        <details className="panel results-disclosure" open key={`breakdown-${id}-${kind}`}>
+          <summary><span>{tr("Results & points")}</span><small>{tr(r?.published ? "Published" : "Pending")} · {kind === "gp" ? "GP" : tr("Sprint")} · {r?.published ? `${sc.total} ${tr("pts")}` : tr("Pending")}</small></summary>
           <div className="results-disclosure-body">
           {tr(
             !entry && (
@@ -312,14 +323,14 @@ function Results({
               <tbody>
                 {tr(
                   sc.details.map((d) => (
-                    <tr key={d.label}>
+                    <tr key={d.label} className={d.status === "correct" ? "results-match-row" : undefined}>
                       <th scope="row">{tr(d.label)}</th>
                       <td>
-                        <span>{names(pickFor(d.label))}</span>
+                        {driverLabels(pickFor(d.label))}
                         {names(pickFor(d.label)) !==
                           names(pickFor(d.label, mapped)) && (
                           <small>
-                            {tr("Scored as")}: {names(pickFor(d.label, mapped))}
+                            {tr("Scored as")}: {driverLabels(pickFor(d.label, mapped))}
                           </small>
                         )}
                       </td>
@@ -327,7 +338,7 @@ function Results({
                         {d.status === "void"
                           ? tr("Void")
                           : r?.published
-                            ? names(outcomeFor(d.label))
+                            ? driverLabels(outcomeFor(d.label))
                             : tr("Pending")}
                       </td>
                       <td>
@@ -344,7 +355,7 @@ function Results({
                               ? "Pending"
                               : d.status === "void"
                                 ? "Void"
-                                : `${d.points} / ${d.possible}`,
+                                : String(d.points),
                           )}
                         </Pill>
                       </td>
@@ -362,57 +373,11 @@ function Results({
               </tfoot>
             </table>
           </div>
-          </div>
-        </details>
-        <details className="panel results-disclosure" key={`outcome-${id}-${kind}`}>
-          <summary><span>{tr("Confirmed outcome")}</span><small>{tr(r?.published ? "Published" : "Pending")}</small></summary>
-          <div className="results-disclosure-body">
-          <Provenance result={r} />
-          {tr(
-            !r?.published ? (
-              <Empty
-                title={tr("Awaiting results")}
-                body="Results will appear after the race once official data is available. Your submitted predictions are kept safe while scores are being confirmed."
-              />
-            ) : (
-              <>
-                <ol className="result-order">
-                  {tr(
-                    r.order.map((id, i) => (
-                      <li key={i}>
-                        <span>{tr(i + 1)}</span>
-                        {<DriverLabel season={season} id={id} />}
-                      </li>
-                    )),
-                  )}
-                </ol>
-                {tr(
-                  [
-                    ["Pole", r.pole],
-                    ["Fastest lap", r.fastest],
-                    [
-                      "First retirement",
-                      r.retirements
-                        .map((x) => driverName(season, x))
-                        .join(" / "),
-                    ],
-                    ...(kind === "gp" ? [["Driver of the Day", r.dotd]] : []),
-                  ].map(([label, id]) => (
-                    <div className="result-extra" key={label}>
-                      <span>{tr(label)}</span>
-                      <strong>
-                        {tr(
-                          label === "First retirement"
-                            ? id
-                            : driverName(season, id),
-                        )}
-                      </strong>
-                    </div>
-                  )),
-                )}
-              </>
-            ),
-          )}
+          <details className="results-source-details">
+            <summary>{tr("Result source & confirmation")}</summary>
+            <Provenance result={r} />
+            {!r?.published && <p className="muted">{tr("Awaiting results")}</p>}
+          </details>
           <details className="results-correction-details"><summary>{tr("Result correction history")}</summary><ResultCorrections s={s} season={season} eventId={e.id} kind={kind} /></details>
           </div>
         </details>
