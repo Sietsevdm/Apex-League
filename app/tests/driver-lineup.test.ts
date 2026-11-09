@@ -183,3 +183,39 @@ test("FIA network waits do not block player reads and concurrent organiser edits
     await rm(new URL(`../.data/${process.env.DEMO_DATA_FILE}`, import.meta.url), { force: true });
   }
 });
+
+test("an upcoming Las Vegas refresh reports waiting and preserves every saved lineup and pick", async () => {
+  const { POST } = await import("../app/api/league/route");
+  const { transaction, readState } = await import("../lib/store");
+  const f = await fixture(), originalFetch = globalThis.fetch;
+  (globalThis as any).apexLimits?.clear();
+  Object.assign(f.event, { name: "Las Vegas Grand Prix", race: "2026-11-22T06:00:00Z", raceGmtOffset: "-08:00" });
+  f.event.driverLineups = { gp: { ids: f.season.drivers.map(d => d.id), source: source.replace("sao_paulo", "las_vegas"), refreshedAt: "2026-11-01T00:00:00Z" } };
+  try {
+    await transaction(s => { s.seasons[0] = f.season; s.events[0] = f.event; });
+    const before = await readState();
+    let downloads = 0;
+    globalThis.fetch = async input => {
+      const path = String(input);
+      if (path.endsWith(".pdf")) downloads++;
+      return new Response(path.endsWith("/2026")
+        ? '<option value="/documents/championships/110/2026/event/Las%20Vegas%20Grand%20Prix">Las Vegas Grand Prix</option>'
+        : `<a href="${source}">Doc 13 - Entry List</a>`);
+    };
+    const result = await POST(new NextRequest("http://127.0.0.1:3000/api/league", {
+      method: "POST", headers: { origin: process.env.APP_URL!, cookie: "apex_demo=demo-admin", "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "driverLineupRefresh", eventId: f.event.id, kind: "gp" }),
+    }));
+    assert.equal(result.status, 200);
+    const after = await readState();
+    assert.equal(after.events[0].lineupSync!.status, "waiting");
+    assert.match(after.events[0].lineupSync!.message, /No verified FIA entry list/);
+    assert.deepEqual(after.events[0].driverLineups, before.events[0].driverLineups);
+    assert.deepEqual(after.seasons[0].drivers, before.seasons[0].drivers);
+    assert.deepEqual(after.entries, before.entries);
+    assert.equal(downloads, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+    await rm(new URL(`../.data/${process.env.DEMO_DATA_FILE}`, import.meta.url), { force: true });
+  }
+});

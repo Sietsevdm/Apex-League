@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
+  FIAEntryListUnavailable,
   extractFIAPDF,
   parseFIAEntryList,
   fetchFIAEntryList,
@@ -272,8 +273,72 @@ test("FIA fetch is event-scoped and source outages or unpublished lists are retr
       fetcher: async (input) =>
         new Response(String(input).endsWith("/2026") ? index : "Not published"),
     }),
-    /not published/,
+    /No verified FIA entry list/,
   );
+});
+
+test("entry document discovery scopes revisions and driver-change decisions to the requested event and year", () => {
+  const vegas = url.replace("sao_paulo", "las_vegas");
+  const priorYear = vegas.replace("2026", "2025");
+  const link = (n: number, title: string, href: string) => `<a href="${href}">Doc ${n} - ${title}</a>`;
+  const html = link(90, "Entry List", url) + link(99, "Entry List", priorYear) +
+    link(3, "Entry List", vegas) + link(4, "Revised Entry List", vegas.replace(".pdf", "_v2.pdf")) +
+    link(100, "Change of Driver", url.replace("entry_list", "change_of_driver"));
+  const weekend = { year: 2026, eventName: "Las Vegas Grand Prix" };
+  assert.equal(discoverFIAEntryDocument(html, weekend), vegas.replace(".pdf", "_v2.pdf"));
+  assert.equal(discoverFIAEntryDocument(link(90, "Entry List", url) + link(99, "Entry List", priorYear), weekend), undefined);
+  assert.throws(() => discoverFIAEntryDocument(html + link(5, "Change of Driver", vegas.replace("entry_list", "change_of_driver")), weekend), /newer FIA/);
+});
+
+test("upcoming Vegas fallback pages do not download another race or season PDF", async () => {
+  const calls: string[] = [];
+  let extracted = false;
+  await assert.rejects(fetchFIAEntryList(2026, "Las Vegas Grand Prix", "2026-11-22T06:00:00Z", {
+    gmtOffset: "-08:00",
+    fetcher: async input => {
+      const path = String(input); calls.push(path);
+      if (path.endsWith("/2026")) return new Response('<option value="/documents/championships/110/2026/event/Las%20Vegas%20Grand%20Prix">Las Vegas Grand Prix</option>');
+      // FIA can return the latest available documents even for an upcoming weekend filter.
+      return new Response(`<a href="${url}">Doc 13 - Entry List</a><a href="${url.replace("2026_sao_paulo", "2025_las_vegas")}">Doc 99 - Entry List</a>`);
+    },
+    extract: async () => { extracted = true; return []; },
+  }), error => error instanceof FIAEntryListUnavailable && /saved lineup is unchanged/.test(error.message));
+  assert.equal(calls.length, 2);
+  assert.ok(!calls.some(path => path.endsWith(".pdf")));
+  assert.equal(extracted, false);
+});
+
+test("a matching Vegas document on a mixed page uses the correct season and night-race local date", async () => {
+  const { words } = fixture();
+  words.find(w => w.str === "2026 SÃO PAULO GRAND PRIX")!.str = "2026 LAS VEGAS GRAND PRIX";
+  words.find(w => w.str.endsWith("08 November 2026"))!.str = "19 - 21 November 2026";
+  const vegas = url.replace("sao_paulo", "las_vegas");
+  const calls: string[] = [];
+  const list = await fetchFIAEntryList(2026, "Las Vegas Grand Prix", "2026-11-22T06:00:00Z", {
+    gmtOffset: "-08:00", extract: async () => [words],
+    fetcher: async input => {
+      const path = String(input); calls.push(path);
+      if (path.endsWith("/2026")) return new Response('<option value="/documents/championships/fia-formula-one-world-championship-14/season/season-2026-2072/event/Las%20Vegas%20Grand%20Prix">Las Vegas Grand Prix</option>');
+      if (path.endsWith(".pdf")) return new Response("%PDF-fixture");
+      return new Response(`<a href="${url}">Doc 99 - Entry List</a><a href="${vegas}">Doc 3 - Entry List</a>`);
+    },
+  });
+  assert.equal(list.url, vegas);
+  assert.equal(list.endsOn, "2026-11-21");
+  assert.equal(list.drivers.length, 22);
+  assert.ok(calls.includes(vegas));
+  assert.ok(!calls.includes(url));
+});
+
+test("matching document filenames never bypass PDF event and season verification", async () => {
+  const vegas = url.replace("sao_paulo", "las_vegas");
+  const { words } = fixture();
+  await assert.rejects(fetchFIAEntryList(2026, "Las Vegas Grand Prix", "2026-11-22T06:00:00Z", {
+    gmtOffset: "-08:00", extract: async () => [words],
+    fetcher: async input => new Response(String(input).endsWith("/2026")
+      ? '<option value="/documents/championships/110/2026/event/Las%20Vegas%20Grand%20Prix">Las Vegas Grand Prix</option>'
+      : String(input).endsWith(".pdf") ? "%PDF-fixture" : `<a href="${vegas}">Doc 3 - Entry List</a>`),
+  }), /event or season does not match/);
 });
 test("real FIA PDF extracts all race entries, actual car numbers and replacement identity", async () => {
   const data = await readFile(

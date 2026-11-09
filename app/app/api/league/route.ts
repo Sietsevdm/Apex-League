@@ -1,3 +1,4 @@
+import { FIAEntryListUnavailable } from "@/lib/fia-entry-list";
 import { fetchOfficialLineup, planOfficialLineup, applyOfficialLineup } from "@/lib/driver-lineup";
 import { calendarErrorMessage } from "@/lib/calendar-error";
 import { weekendScoresReady, recordWeekendScores } from "@/lib/weekend-scores";
@@ -459,7 +460,7 @@ async function prepareManualImport(req: NextRequest, body: any) {
     };
   } catch (error) {
     if (body.action === "driverLineupRefresh")
-      return { snapshot, lineupError: (error as Error)?.message || "The FIA lineup could not be refreshed. Try again later." };
+      return { snapshot, lineupWaiting: error instanceof FIAEntryListUnavailable, lineupError: (error as Error)?.message || "The FIA lineup could not be refreshed. Try again later." };
     if (body.action === "calendarImport")
       return { snapshot, error: error as Error };
     throw error;
@@ -830,7 +831,7 @@ export async function POST(req: NextRequest) {
             message = (error as Error)?.message || "The FIA lineup could not be refreshed. Try again later.";
           }
         }
-        if (message) event.lineupSync = { kind, lastAttempt: new Date().toISOString(), status: "error", message: message.slice(0, 500) };
+        if (message) event.lineupSync = { kind, lastAttempt: new Date().toISOString(), status: preparedImport!.lineupWaiting ? "waiting" : "error", message: message.slice(0, 500) };
         return view(s, u, req, event.seasonId);
       } else if (b.action === "backupCreate") {
         try {

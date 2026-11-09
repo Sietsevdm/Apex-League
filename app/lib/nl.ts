@@ -1,4 +1,5 @@
 export const dutch: Record<string, string> = {
+  "No verified FIA entry list is available for this weekend yet. The saved lineup is unchanged.": "Er is nog geen geverifieerde FIA-deelnemerslijst beschikbaar voor dit weekend. De opgeslagen coureurslijst is ongewijzigd.",
   "Refresh driver lineup from FIA": "Coureurslijst vernieuwen via FIA",
   "Refreshing lineup...": "Coureurslijst vernieuwen...",
   "View official FIA entry list": "Officiële FIA-deelnemerslijst bekijken",

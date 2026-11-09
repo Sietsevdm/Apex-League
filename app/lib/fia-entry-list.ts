@@ -20,6 +20,13 @@ export type FIAEntryList = {
   drivers: FIAEntry[];
 };
 export class FIAConflict extends Error {}
+export class FIAEntryListUnavailable extends Error {
+  constructor() {
+    super("No verified FIA entry list is available for this weekend yet. The saved lineup is unchanged.");
+    this.name = "FIAEntryListUnavailable";
+  }
+}
+
 const origin = "https://www.fia.com";
 export function fiaDocumentURL(value: string) {
   const url = new URL(value, origin);
@@ -264,7 +271,11 @@ const plain = (html: string) =>
     .replace(/&nbsp;|&#160;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-export function discoverFIAEntryDocument(html: string) {
+function documentBelongsToWeekend(url: string, weekend: { year: number; eventName: string }) {
+  const filename = new URL(url).pathname.split("/").at(-1)!.replace(/\.pdf$/i, "");
+  return normal(filename).startsWith(normal(`${weekend.year} ${weekend.eventName}`));
+}
+export function discoverFIAEntryDocument(html: string, weekend?: { year: number; eventName: string }) {
   const documents = [
     ...html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi),
   ]
@@ -273,7 +284,9 @@ export function discoverFIAEntryDocument(html: string) {
         /\bDoc\s+(\d+)\s*[-–]\s*((?:Revised\s+)?Entry List(?:\s+V\d+)?)/i,
       );
       if (!title) return [];
-      return [{ url: fiaDocumentURL(m[1]), number: Number(title[1]) }];
+      const url = fiaDocumentURL(m[1]);
+      if (weekend && !documentBelongsToWeekend(url, weekend)) return [];
+      return [{ url, number: Number(title[1]) }];
     })
     .sort((a, b) => b.number - a.number);
   if (!documents.length) return;
@@ -288,11 +301,11 @@ export function discoverFIAEntryDocument(html: string) {
       "FIA has conflicting entry list versions; organiser review required.",
     );
   // A later driver-change decision means the original entry list may no longer be current.
-  for (const m of html.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)) {
-    const change = plain(m[1]).match(
+  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
+    const change = plain(m[2]).match(
       /\bDoc\s+(\d+)\s*[-–].*\bchange of driver\b/i,
     );
-    if (change && Number(change[1]) > documents[0].number)
+    if (change && (!weekend || documentBelongsToWeekend(fiaDocumentURL(m[1]), weekend)) && Number(change[1]) > documents[0].number)
       throw new FIAConflict(
         "A newer FIA driver-change decision needs an updated entry list or organiser review.",
       );
@@ -327,23 +340,21 @@ export async function fetchFIAEntryList(
     ...index.matchAll(
       /<option\b[^>]*value=["']([^"']+)["'][^>]*>([^<]+)<\/option>/gi,
     ),
-  ].filter(
-    (m) =>
-      normal(m[2]) === normal(eventName) &&
-      m[1].startsWith(`/documents/championships/110/${year}/event/`),
-  );
+  ].filter((m) => {
+    if (normal(plain(m[2])) !== normal(eventName)) return false;
+    const url = new URL(m[1], origin);
+    if (url.origin !== origin || url.username || url.password || url.search || url.hash) return false;
+    return url.pathname.startsWith(`/documents/championships/110/${year}/event/`) ||
+      new RegExp(`^/documents/championships/fia-formula-one-world-championship-\\d+/season/season-${year}-\\d+/event/`).test(url.pathname);
+  });
   if (new Set(choices.map((m) => m[1])).size !== 1)
-    throw new Error(
-      "FIA weekend document page is not available yet; retrying hourly.",
-    );
+    throw new FIAEntryListUnavailable();
   const page = await (
     await read(new URL(choices[0][1], origin).href, fetcher)
   ).text();
-  const url = discoverFIAEntryDocument(page);
+  const url = discoverFIAEntryDocument(page, { year, eventName });
   if (!url)
-    throw new Error(
-      "FIA weekend entry list is not published yet; retrying hourly.",
-    );
+    throw new FIAEntryListUnavailable();
   const bytes = new Uint8Array(await (await read(url, fetcher)).arrayBuffer());
   return parseFIAEntryList(
     await (options.extract || extractFIAPDF)(bytes),

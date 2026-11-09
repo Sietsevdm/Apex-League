@@ -1,3 +1,7 @@
+## 0.8.50 — Event-scoped FIA entry-list discovery
+
+Fixed mixed/fallback FIA pages selecting a different GP/year PDF. Document revisions and driver-change decisions are scoped to the requested event before download; missing verified entry lists produce a waiting state and preserve saved lineups. Existing PDF identity, night-race date and roster validation remain. See docs/fia-entry-list-discovery.md.
+
 ## 0.8.49 — Production FIA PDF runtime fix
 
 Fixed DOMMatrix import failures by extracting PDFs in a separate native Node process with explicit graphics initialization and runtime dependency packaging. Both production image architectures now run an official FIA PDF fixture check as the application user before publication. Existing lineup data and submissions are preserved. See docs/fia-pdf-runtime.md.

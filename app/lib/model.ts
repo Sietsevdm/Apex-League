@@ -57,7 +57,7 @@ export type Event = {
     source: string;
     refreshedAt: string;
   }>>;
-  lineupSync?: { kind: "gp" | "sprint"; lastAttempt: string; status: "updated" | "error"; message: string };
+  lineupSync?: { kind: "gp" | "sprint"; lastAttempt: string; status: "updated" | "waiting" | "error"; message: string };
 
   scoresPublishedAt?: string;
   replacementSync?: { lastAttempt?: string; status?: "waiting" | "checked" | "updated"; message?: string; lease?: string; leaseUntil?: number };

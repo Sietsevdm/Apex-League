@@ -1,11 +1,9 @@
-# Version 0.8.49
+# Version 0.8.50
 
-Fixes FIA lineup refresh failing with DOMMatrix is not defined in the production container. PDF extraction now runs in an isolated native Node process, with DOMMatrix/ImageData/Path2D loaded before PDF.js. Its PDF.js module, ESM worker, canvas package and architecture-specific native binding are packaged explicitly; Next.js no longer wraps these imports.
+Fixes Las Vegas lineup refresh selecting an entry-list PDF for a different event or season. FIA document discovery now scopes the selected entry list, revisions and later driver-change decisions to the requested GP and year before downloading a PDF. Higher document numbers from other races and older-season documents cannot displace the correct list. Both numeric and current descriptive FIA event-filter URLs are supported.
 
-Each finished AMD64/ARM64 image must read the official FIA São Paulo PDF fixture as the non-root application user before it can publish. This catches missing native libraries, omitted packages, worker import errors and graphics bootstrap failures in the actual runtime image. The fixture is mounted only during the build check, not retained as application data.
+When no verified entry list is available for the selected weekend, the refresh reports Waiting with a clear explanation and preserves the saved lineup and original picks. Matching filenames still must pass the PDF's own event, season, date and complete-roster checks; those safeguards have not been relaxed. Night-race local-date checks, existing organiser policies and the production PDF runtime repair remain intact.
 
-PDF size/page checks, disabled evaluation, process timeout, memory limit and validated output remain in place. The saved lineup and original predictions are unchanged when a provider or PDF fails. No database migration or new settings are required.
+Update both app and calendar-worker to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.50` with Re-pull image enabled, then retry the FIA lineup refresh. A verified FIA list for that exact weekend is still required; this patch does not infer future entries from another race. No migration or new setting is required.
 
-Update both app and calendar-worker to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.49` with Re-pull image enabled, then retry Administration > Race weekends > Driver replacements > Refresh driver lineup from FIA.
-
-Validation: all 189 automated tests and TypeScript pass, including isolated production dependency packaging and a fresh-process FIA PDF extraction. Both container architectures must also pass the final-image smoke check before publication.
+Validation: all 194 tests and TypeScript pass. Both production image architectures retain the official FIA PDF runtime smoke check.
