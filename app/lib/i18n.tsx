@@ -44,6 +44,7 @@ export function translate<T>(value: T, language: Language): T {
   const translated = dutch[trimmed];
   if (translated) return value.replace(trimmed, translated) as T;
   const patterns: [RegExp, string][] = [
+    [/^FIA lineup refreshed: (\d+) drivers\. New replacements: (\d+)\.$/, "FIA-coureurslijst vernieuwd: $1 coureurs. Nieuwe vervangers: $2."],
     [/^Let’s race, (.+)\.$/, "Tijd om te racen, $1."],
     [/^(\d+) points$/, "$1 punten"],
     [/^(\d+) players on the grid$/, "$1 spelers op de grid"],

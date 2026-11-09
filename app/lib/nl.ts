@@ -1,4 +1,14 @@
 export const dutch: Record<string, string> = {
+  "Refresh driver lineup from FIA": "Coureurslijst vernieuwen via FIA",
+  "Refreshing lineup...": "Coureurslijst vernieuwen...",
+  "View official FIA entry list": "Officiële FIA-deelnemerslijst bekijken",
+  "Published session lineups cannot be refreshed.": "Coureurslijsten van gepubliceerde sessies kunnen niet worden vernieuwd.",
+  "Sprint has started; use the session replacement editor for changes.": "De Sprint is gestart; gebruik de vervangingseditor voor wijzigingen.",
+  "Refresh the selected session from the official FIA weekend entry list. New replacements carry existing picks; original submissions and championship picks are preserved. Other weekends and sessions stay unchanged.": "Vernieuw de geselecteerde sessie via de officiële FIA-deelnemerslijst voor dit weekend. Nieuwe vervangers nemen bestaande voorspellingen over; originele inzendingen en kampioenschapsvoorspellingen blijven bewaard. Andere weekenden en sessies blijven ongewijzigd.",
+  "The lineup changed. Replace unavailable drivers before saving.": "De coureurslijst is gewijzigd. Vervang niet-beschikbare coureurs voordat je opslaat.",
+  "Choose an active race weekend.": "Kies een actief raceweekend.",
+  "The FIA lineup could not be refreshed. Try again later.": "De FIA-coureurslijst kon niet worden vernieuwd. Probeer het later opnieuw.",
+
   "Results & points": "Uitslag & punten",
   "Result source & confirmation": "Uitslagbron & bevestiging",
   "The calendar check failed without an error detail. Use Check now to retry.": "De kalendercontrole is mislukt zonder opgeslagen foutmelding. Gebruik Nu controleren om opnieuw te proberen.",

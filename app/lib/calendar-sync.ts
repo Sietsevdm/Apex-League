@@ -60,6 +60,7 @@ export function mergeCalendar(
     }
     seen.add(old.id);
     old.openf1MeetingKey = source.openf1MeetingKey;
+    if (source.raceGmtOffset) old.raceGmtOffset = source.raceGmtOffset;
     // Retain legacy circuit names/IDs used by existing artwork and facts.
     old.providerCircuitId = source.providerCircuitId;
     if (source.location) old.location = source.location;

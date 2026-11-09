@@ -1,3 +1,4 @@
+import { fetchOfficialLineup, planOfficialLineup, applyOfficialLineup } from "@/lib/driver-lineup";
 import { calendarErrorMessage } from "@/lib/calendar-error";
 import { weekendScoresReady, recordWeekendScores } from "@/lib/weekend-scores";
 import { scopedState, type ResponseContext } from "@/lib/response-scope";
@@ -419,7 +420,7 @@ function error(e: unknown) {
 }
 async function prepareManualImport(req: NextRequest, body: any) {
   if (
-    !["calendarImport", "previousYearLineup", "resultsImport"].includes(
+    !["calendarImport", "previousYearLineup", "resultsImport", "driverLineupRefresh"].includes(
       body.action,
     )
   )
@@ -436,11 +437,14 @@ async function prepareManualImport(req: NextRequest, body: any) {
       body,
       req.headers.get("x-apex-league") || undefined,
     );
+    if (body.action === "driverLineupRefresh") limit(`${user.id}:driver-lineup`, 3);
     const snapshot = importSnapshot(s, user, body);
     return { ...snapshot, season: structuredClone(s.seasons.find(x => x.id === snapshot.seasonId)!), event: structuredClone(s.events.find(x => x.id === body.eventId)) };
   });
   // No transaction or league write lock is held during these network requests.
   try {
+    if (body.action === "driverLineupRefresh")
+      return { snapshot, officialLineup: await fetchOfficialLineup(snapshot.season, snapshot.event!) };
     if (body.action === "calendarImport")
       return { snapshot, calendar: await importCalendar(snapshot.year) };
     if (body.action === "previousYearLineup")
@@ -454,6 +458,8 @@ async function prepareManualImport(req: NextRequest, body: any) {
       ),
     };
   } catch (error) {
+    if (body.action === "driverLineupRefresh")
+      return { snapshot, lineupError: (error as Error)?.message || "The FIA lineup could not be refreshed. Try again later." };
     if (body.action === "calendarImport")
       return { snapshot, error: error as Error };
     throw error;
@@ -810,7 +816,23 @@ export async function POST(req: NextRequest) {
       const auditLeague = (state: State, user: User, action: string) =>
         audit(state, user, action, managedLeague.id);
       if (preparedImport) validateImportSnapshot(s, u, preparedImport.snapshot);
-      if (b.action === "backupCreate") {
+      if (b.action === "driverLineupRefresh") {
+        const event = s.events.find(e => e.id === b.eventId)!;
+        const season = s.seasons.find(x => x.id === event.seasonId)!;
+        const kind = b.kind as "gp" | "sprint";
+        let message = preparedImport!.lineupError;
+        if (!message) {
+          try {
+            const plan = planOfficialLineup(s, season, event, kind, preparedImport!.officialLineup!);
+            applyOfficialLineup(season, event, kind, plan);
+            auditLeague(s, u, `Refreshed ${event.name} ${kind} lineup from FIA: ${plan.drivers.length} drivers; ${plan.rules.map(r => `${season.drivers.find(d => d.id === r.from)?.name} -> ${season.drivers.find(d => d.id === r.to)?.name}`).join(", ") || "no new replacements"}; ${plan.source}`);
+          } catch (error) {
+            message = (error as Error)?.message || "The FIA lineup could not be refreshed. Try again later.";
+          }
+        }
+        if (message) event.lineupSync = { kind, lastAttempt: new Date().toISOString(), status: "error", message: message.slice(0, 500) };
+        return view(s, u, req, event.seasonId);
+      } else if (b.action === "backupCreate") {
         try {
           const result = await createBackup(s);
           auditLeague(s, u, "Created encrypted league backup");
@@ -908,6 +930,8 @@ export async function POST(req: NextRequest) {
           ),
           rule,
         ];
+        if (event.driverLineups) delete event.driverLineups[kind];
+        if (event.lineupSync?.kind === kind) delete event.lineupSync;
         for (const key of ["gpDraft", "sprintDraft"] as const)
           if (event[key])
             event[key]!.replacements = (event.replacements || []).filter(
@@ -1202,6 +1226,12 @@ export async function POST(req: NextRequest) {
           focal: old?.focal ?? 50,
           gp: old?.gp,
           sprint: old?.sprint,
+          replacements: old?.replacements,
+          replacementSync: old?.replacementSync,
+          resultSync: old?.resultSync,
+          raceGmtOffset: old && Date.parse(old.race) === Date.parse(timestamp(b.race)) ? old.raceGmtOffset : undefined,
+          driverLineups: old && Date.parse(old.race) === Date.parse(timestamp(b.race)) && old.name === text(b.name, 100) ? old.driverLineups : undefined,
+          lineupSync: old && Date.parse(old.race) === Date.parse(timestamp(b.race)) && old.name === text(b.name, 100) ? old.lineupSync : undefined,
           gpDraft: old?.gpDraft,
           sprintDraft: old?.sprintDraft,
           lockedGp: old

@@ -125,12 +125,16 @@ function Predictions({
         body="Your organiser will add the race calendar."
       />
     );
-  const predictionSeason = {
-    ...season,
-    drivers: predictionDrivers(s, season, e, kind),
-  };
   const isLocked = locked(e, kind, now);
   const readOnly = isLocked || Boolean(entry?.submitted && !editing);
+  const availableDrivers = predictionDrivers(s, season, e, kind);
+  const pickedIds = [...p.order, p.pole, p.fastest, p.retirement, p.dotd];
+  const unavailableDrivers = season.drivers.filter(d => pickedIds.includes(d.id) && !availableDrivers.some(a => a.id === d.id));
+  const predictionSeason = {
+    ...season,
+    // Historical submissions retain their original names; new edits use only the confirmed lineup.
+    drivers: readOnly ? [...availableDrivers, ...unavailableDrivers] : availableDrivers,
+  };
   const member = s.users
     .find((u) => u.id === meId)
     ?.seasonIds.includes(season.id);
@@ -204,6 +208,7 @@ function Predictions({
           disabled={readOnly || !member || saving}
         />
       </div>
+      {!readOnly && unavailableDrivers.length > 0 && <p className="info-bar" role="status">{tr("The lineup changed. Replace unavailable drivers before saving.")} {unavailableDrivers.map(d => d.name).join(", ")}</p>}
       <ReplacementNotice event={e} season={season} kind={kind} picks={p} />
       <DeadlineTime value={cutoff(e, kind)} timezone={s.users.find(user => user.id === meId)?.timezone} label={kind === "gp" ? "GP predictions deadline" : "Sprint predictions deadline"} />
       <section className="prediction-guide" aria-label={tr("Prediction status")}>

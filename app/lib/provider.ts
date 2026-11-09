@@ -134,6 +134,7 @@ export async function fetchCalendar(
       qualifying: stamp(["Qualifying"]),
       race: raceTime,
       raceDate: raceTime.slice(0, 10),
+      raceGmtOffset: race.gmt_offset,
       hasSprint: sessions.some(
         (s) =>
           s.meeting_key === race.meeting_key && s.session_name === "Sprint",

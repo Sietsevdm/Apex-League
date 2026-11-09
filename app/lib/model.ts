@@ -51,6 +51,14 @@ export type Entry = {
   updatedAt: string;
 };
 export type Event = {
+  raceGmtOffset?: string;
+  driverLineups?: Partial<Record<"gp" | "sprint", {
+    ids: string[];
+    source: string;
+    refreshedAt: string;
+  }>>;
+  lineupSync?: { kind: "gp" | "sprint"; lastAttempt: string; status: "updated" | "error"; message: string };
+
   scoresPublishedAt?: string;
   replacementSync?: { lastAttempt?: string; status?: "waiting" | "checked" | "updated"; message?: string; lease?: string; leaseUntil?: number };
   resultSync?: Partial<

@@ -24,6 +24,7 @@ test("Replacement drivers appear only in the confirmed race and session", () => 
   assert.ok(!predictionDrivers(s, season, event, "gp").some(d => d.id === "reserve"));
   event.replacements = [{ from: season.drivers[0].id, to: "reserve", kind: "gp", policy: "keep", note: "Confirmed" }];
   assert.ok(predictionDrivers(s, season, event, "gp").some(d => d.id === "reserve"));
+  assert.ok(!predictionDrivers(s, season, event, "gp").some(d => d.id === season.drivers[0].id));
   assert.ok(!predictionDrivers(s, season, event, "sprint").some(d => d.id === "reserve"));
   assert.ok(!predictionDrivers(s, season, s.events[1], "gp").some(d => d.id === "reserve"));
   delete season.drivers.at(-1)!.replacementOnly;

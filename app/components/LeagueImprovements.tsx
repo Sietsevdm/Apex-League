@@ -109,11 +109,11 @@ export function ReplacementAdmin({
   season: Season;
   call: Call;
 }) {
-  const { t } = useLocale();
+  const { t, date } = useLocale();
   const [open, setOpen] = useState(false);
   const events = s.events.filter((e) => e.seasonId === season.id);
   const [id, setId] = useState(
-      events.find((e) => !e.practiceRound && Date.parse(e.race) > Date.now())
+      events.filter((e) => !e.practiceRound && !e.gp?.published).sort((a, b) => Date.parse(a.race) - Date.parse(b.race)).find((e) => Date.parse(e.race) > Date.now())
         ?.id ||
         events[0]?.id ||
         "",
@@ -142,6 +142,32 @@ export function ReplacementAdmin({
       </p>
       <p className="muted">{t("Every team is checked hourly using the FIA weekend entry list and OpenF1. Confirmed GP replacements carry existing picks; Sprint and championship picks stay unchanged.")}</p>
       {event?.replacementSync?.message && <p role="status">{t(event.replacementSync.message)}</p>}
+      <div className="form-grid">
+        <label>{t("Race weekend")}
+          <select value={id} disabled={busy} onChange={e => { setId(e.target.value); setKind("gp"); setError(""); }}>
+            {events.filter(e => !e.practiceRound).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+          </select>
+        </label>
+        <label>{t("Session")}
+          <select value={kind} disabled={busy} onChange={e => { setKind(e.target.value as "gp" | "sprint"); setError(""); }}>
+            <option value="gp">GP</option>
+            {event?.sprintQualifying && <option value="sprint">{t("Sprint")}</option>}
+          </select>
+        </label>
+      </div>
+      <p className="muted">{t("Refresh the selected session from the official FIA weekend entry list. New replacements carry existing picks; original submissions and championship picks are preserved. Other weekends and sessions stay unchanged.")}</p>
+      <button type="button" className="primary" disabled={busy || !event || season.archived || event.practiceRound || event[kind]?.published || (kind === "sprint" && Date.now() >= Date.parse(event.sprintQualifying || ""))} onClick={async () => {
+        setBusy(true); setError("");
+        try { await call({ action: "driverLineupRefresh", eventId: id, kind }); }
+        catch (e) { setError((e as Error).message); }
+        finally { setBusy(false); }
+      }}>{t(busy ? "Refreshing lineup..." : "Refresh driver lineup from FIA")}</button>
+      {event?.[kind]?.published && <p className="muted">{t("Published session lineups cannot be refreshed.")}</p>}
+      {kind === "sprint" && event?.sprintQualifying && Date.now() >= Date.parse(event.sprintQualifying) && <p className="muted">{t("Sprint has started; use the session replacement editor for changes.")}</p>}
+      {event?.lineupSync?.kind === kind && <p role={event.lineupSync.status === "error" ? "alert" : "status"}>{date(event.lineupSync.lastAttempt)} · {t(event.lineupSync.message)}</p>}
+      {event?.driverLineups?.[kind] && <p className="tiny"><a href={event.driverLineups[kind]!.source} target="_blank" rel="noreferrer">{t("View official FIA entry list")}</a> · {event.driverLineups[kind]!.ids.length} {t("drivers")}</p>}
+      {error && <p role="alert">{t(error)}</p>}
+
       {open && <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -166,34 +192,6 @@ export function ReplacementAdmin({
         }}
       >
         <div className="form-grid">
-          <label>
-            {t("Race weekend")}
-            <select
-              value={id}
-              onChange={(e) => {
-                setId(e.target.value);
-                setKind("gp");
-              }}
-            >
-              {events.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("Session")}
-            <select
-              value={kind}
-              onChange={(e) => setKind(e.target.value as "gp" | "sprint")}
-            >
-              <option value="gp">GP</option>
-              {event?.sprintQualifying && (
-                <option value="sprint">Sprint</option>
-              )}
-            </select>
-          </label>
           <label>
             {t("Original driver")}
             <DriverPicker value={from} onChange={setFrom} season={season} label="Original driver" />
@@ -248,7 +246,6 @@ export function ReplacementAdmin({
             "Review the policy with your league. Choosing carry applies equally to all picks for the original driver, without reopening the deadline.",
           )}
         </p>
-        {error && <p role="alert">{t(error)}</p>}
         <button
           className="primary"
           disabled={busy || !event || !from || !to || event[kind]?.published}

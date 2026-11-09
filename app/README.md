@@ -1,3 +1,7 @@
+## 0.8.48 — Official FIA lineup refresh
+
+Added a per-weekend/session FIA refresh in Administration > Race weekends > Driver replacements. Verified outgoing drivers leave the prediction options while historical records, existing organiser policies and original submissions remain intact. Saves the official source link and displays timestamped failures without replacing the saved roster. Event editing preserves replacement state. Includes the unified results comparison from 0.8.47. See docs/driver-lineup-refresh.md for use and validation.
+
 ## 0.8.47 — Unified results and points
 
 Merged the repeated outcome into the prediction comparison. Added driver team markers, earned-point numbers and matching-row highlights. Source confirmation and correction history remain expandable. Scoring and stored picks are preserved.
