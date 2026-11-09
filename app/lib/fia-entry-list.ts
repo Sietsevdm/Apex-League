@@ -1,5 +1,5 @@
-import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
+import { execFile } from "node:child_process";
+import { join } from "node:path";
 import { normal, type Row } from "./openf1";
 import type { OfficialDriverUpdate } from "./official-driver-updates";
 
@@ -233,40 +233,31 @@ export async function extractFIAPDF(data: Uint8Array): Promise<PDFWord[][]> {
     Buffer.from(data.subarray(0, 5)).toString() !== "%PDF-"
   )
     throw new Error("FIA entry list is not a supported PDF.");
-  const pdf = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const require = createRequire(
-    new URL("package.json", pathToFileURL(process.cwd() + "/")),
-  );
-  // Resolve at runtime: the ESM worker must be imported by PDF.js, never required by Next.
-  const workerModule = ["pdfjs-dist", "legacy", "build", "pdf.worker.mjs"].join(
-    "/",
-  );
-  pdf.GlobalWorkerOptions.workerSrc = pathToFileURL(
-    require.resolve(workerModule),
-  ).href;
-  const task = pdf.getDocument({
-    data: new Uint8Array(data),
-    isEvalSupported: false,
-    disableFontFace: true,
-    useSystemFonts: false,
+  return new Promise<PDFWord[][]>((resolve, reject) => {
+    const child = execFile(process.execPath, ["--max-old-space-size=256", join(process.cwd(), "scripts", "fia-pdf-runtime.mjs")], {
+      timeout: 30000, maxBuffer: 8_000_000, windowsHide: true,
+    }, (error, stdout, stderr) => {
+      if (error) {
+        console.error("FIA PDF runtime failed:", stderr.slice(-1000) || error.message);
+        reject(new Error("The FIA PDF reader could not load the entry list. Please retry or update the app image."));
+        return;
+      }
+      try {
+        const pages = JSON.parse(stdout) as PDFWord[][];
+        if (!Array.isArray(pages) || !pages.length || pages.length > 8 || pages.some(page => !Array.isArray(page) || page.some(word =>
+          typeof word.str !== "string" || !Array.isArray(word.transform) || word.transform.length < 6 ||
+          !word.transform.every(Number.isFinite) || !Number.isFinite(word.height))))
+          throw new Error("Invalid FIA PDF text output.");
+        resolve(pages);
+      } catch {
+        reject(new Error("The FIA PDF reader returned invalid text data."));
+      }
+    });
+    child.stdin?.on("error", () => { /* The process callback reports startup/reader failures. */ });
+    child.stdin?.end(Buffer.from(data));
   });
-  try {
-    const document = await task.promise;
-    if (document.numPages > 8)
-      throw new Error("FIA entry list PDF is too long.");
-    const pages: PDFWord[][] = [];
-    for (let i = 1; i <= document.numPages; i++) {
-      const page = await document.getPage(i),
-        content = await page.getTextContent();
-      pages.push(
-        content.items.filter((w): w is typeof w & PDFWord => "str" in w),
-      );
-    }
-    return pages;
-  } finally {
-    await task.destroy();
-  }
 }
+
 const plain = (html: string) =>
   html
     .replace(/<[^>]+>/g, " ")

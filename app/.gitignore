@@ -4,3 +4,6 @@ node_modules/
 !.env.example
 .data/
 *.tsbuildinfo
+
+vendor/
+.preview/

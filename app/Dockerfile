@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM node:24-bookworm-slim AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -10,6 +11,7 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN node scripts/prepare-fia-pdf-runtime.mjs
 RUN pnpm build
 
 FROM node:24-bookworm-slim AS runner
@@ -20,7 +22,9 @@ COPY --from=builder --chown=apex:apex /app/.next/standalone ./
 COPY --from=builder --chown=apex:apex /app/.next/static ./.next/static
 COPY --from=builder --chown=apex:apex /app/public ./public
 COPY --from=builder --chown=apex:apex /app/scripts ./scripts
+COPY --from=builder --chown=apex:apex /app/vendor/fia-pdf ./vendor/fia-pdf
 USER apex
+RUN --mount=type=bind,from=builder,source=/app/tests/fixtures/fia-2026-brazil-entry-list.pdf,target=/tmp/fia-entry-list.pdf node scripts/verify-fia-pdf-runtime.mjs /tmp/fia-entry-list.pdf
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node","server.js"]

@@ -1,13 +1,11 @@
-# Version 0.8.48
+# Version 0.8.49
 
-Added Refresh driver lineup from FIA under Administration > Race weekends > Driver replacements. Choose a weekend and GP or Sprint, then refresh to use the official FIA entry list for that event. The app checks the year, weekend dates, driver identities and complete team seats, excludes practice-only participants, preserves saved driver IDs and team colors, and stores a link to the official PDF.
+Fixes FIA lineup refresh failing with DOMMatrix is not defined in the production container. PDF extraction now runs in an isolated native Node process, with DOMMatrix/ImageData/Path2D loaded before PDF.js. Its PDF.js module, ESM worker, canvas package and architecture-specific native binding are packaged explicitly; Next.js no longer wraps these imports.
 
-Confirmed replacements now remove outgoing drivers from new prediction options. New FIA-confirmed replacements use the existing carry policy; original submissions and receipts remain unchanged. Existing organiser policies, championship picks, other weekends/sessions and published results are preserved. Locked/unpublished GP lineups can be checked; Sprint refresh is available before Sprint qualifying begins. Published sessions are protected. Existing read-only predictions retain the original driver names.
+Each finished AMD64/ARM64 image must read the official FIA São Paulo PDF fixture as the non-root application user before it can publish. This catches missing native libraries, omitted packages, worker import errors and graphics bootstrap failures in the actual runtime image. The fixture is mounted only during the build check, not retained as application data.
 
-Source outages and conflicts leave the saved lineup intact and show a timestamped error. Network requests happen outside the league write lock, with permission and concurrency checks before committing. Repeat refresh requests are limited. Editing an existing event now preserves replacement rules and verified lineup data when its identity/date is unchanged.
+PDF size/page checks, disabled evaluation, process timeout, memory limit and validated output remain in place. The saved lineup and original predictions are unchanged when a provider or PDF fails. No database migration or new settings are required.
 
-Includes 0.8.47: unified Results & points comparison, driver team-color markers, earned-point numbers and matching-row highlights.
+Update both app and calendar-worker to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.49` with Re-pull image enabled, then retry Administration > Race weekends > Driver replacements > Refresh driver lineup from FIA.
 
-No database migration, new service or API key. Update both app and calendar-worker to `APEX_IMAGE=ghcr.io/sietsevdm/apex-league:0.8.48` with Re-pull image enabled after the release workflow succeeds. Keep settings, secrets and volumes. Publication does not install the update on your VPS.
-
-Validation: all 188 automated tests and TypeScript pass. The local production build is blocked by Windows junction permissions; the release workflow builds and verifies the production container.
+Validation: all 189 automated tests and TypeScript pass, including isolated production dependency packaging and a fresh-process FIA PDF extraction. Both container architectures must also pass the final-image smoke check before publication.

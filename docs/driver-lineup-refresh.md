@@ -2,7 +2,7 @@
 
 ## Use it
 
-1. Install 0.8.48 for both app and calendar-worker using the existing Portainer stack. Set APEX_IMAGE to ghcr.io/sietsevdm/apex-league:0.8.48 and deploy with Re-pull image enabled. Preserve the database, volumes, networks and secrets. No migration or new configuration is needed.
+1. Install 0.8.49 for both app and calendar-worker using the existing Portainer stack. Set APEX_IMAGE to ghcr.io/sietsevdm/apex-league:0.8.49 and deploy with Re-pull image enabled. Preserve the database, volumes, networks and secrets. No migration or new configuration is needed.
 2. Sign in as site owner or league organiser and open Administration > Race weekends.
 3. Under Driver replacements, select the race weekend and GP or Sprint.
 4. Click Refresh driver lineup from FIA. The timestamped status reports completion or an error. View official FIA entry list opens the exact source PDF.
@@ -23,3 +23,5 @@ Permissions and event/season snapshots are checked before fetching and again bef
 The official FIA São Paulo PDF fixture verifies all 22 entries, Rafael Câmara and car 51; practice-only drivers are excluded by the existing parser. Tests cover Ocon leaving the options, Camara entering, raw picks and other sessions staying intact, idempotence, manual-policy preservation, invalid/mismatched/incomplete/conflicting sources, session/publication protection, permissions before network work, source outages, repeat-request limiting, nonblocking reads, concurrent edits, and event-edit preservation. Browser visual verification and a fresh live import cannot be performed with the current local browser/network restrictions. GitHub Actions verifies the production image build.
 
 Validation: all 188 automated tests and TypeScript pass. The local production build is blocked by Windows junction permissions; the release workflow builds and verifies the production container.
+
+For the DOMMatrix production PDF error and its container-level regression check, see docs/fia-pdf-runtime.md.

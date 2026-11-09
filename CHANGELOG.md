@@ -1,3 +1,7 @@
+## 0.8.49 — Production FIA PDF runtime fix
+
+Fixed DOMMatrix import failures by extracting PDFs in a separate native Node process with explicit graphics initialization and runtime dependency packaging. Both production image architectures now run an official FIA PDF fixture check as the application user before publication. Existing lineup data and submissions are preserved. See docs/fia-pdf-runtime.md.
+
 ## 0.8.48 — Official FIA lineup refresh
 
 Added a per-weekend/session FIA refresh in Administration > Race weekends > Driver replacements. Verified outgoing drivers leave the prediction options while historical records, existing organiser policies and original submissions remain intact. Saves the official source link and displays timestamped failures without replacing the saved roster. Event editing preserves replacement state. Includes the unified results comparison from 0.8.47. See docs/driver-lineup-refresh.md for use and validation.

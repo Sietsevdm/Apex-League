@@ -1,13 +1,6 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
-  serverExternalPackages: ["pdfjs-dist"],
-  outputFileTracingIncludes: {
-    "/*": [
-      "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
-      "./node_modules/.pnpm/@napi-rs+canvas*/node_modules/@napi-rs/**/*",
-    ],
-  },
   experimental: { agentUpgrade: "security" },
   outputFileTracingExcludes: { "/*": ["./.data/**/*"] },
   poweredByHeader: false,
