@@ -1,3 +1,7 @@
+## 0.8.51 — Formula 1 roster fallback
+
+Upcoming-session lineup refresh can use Formula 1’s current driver roster while the verified FIA weekend list is pending. The admin status shows the source and replacements. See docs/driver-lineup-refresh.md.
+
 ## 0.8.50 — Event-scoped FIA entry-list discovery
 
 Fixed mixed/fallback FIA pages selecting a different GP/year PDF. Document revisions and driver-change decisions are scoped to the requested event before download; missing verified entry lists produce a waiting state and preserve saved lineups. Existing PDF identity, night-race date and roster validation remain. See docs/fia-entry-list-discovery.md.

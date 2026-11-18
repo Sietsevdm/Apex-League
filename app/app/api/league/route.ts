@@ -445,7 +445,7 @@ async function prepareManualImport(req: NextRequest, body: any) {
   // No transaction or league write lock is held during these network requests.
   try {
     if (body.action === "driverLineupRefresh")
-      return { snapshot, officialLineup: await fetchOfficialLineup(snapshot.season, snapshot.event!) };
+      return { snapshot, officialLineup: await fetchOfficialLineup(snapshot.season, snapshot.event!, body.kind) };
     if (body.action === "calendarImport")
       return { snapshot, calendar: await importCalendar(snapshot.year) };
     if (body.action === "previousYearLineup")
@@ -826,7 +826,7 @@ export async function POST(req: NextRequest) {
           try {
             const plan = planOfficialLineup(s, season, event, kind, preparedImport!.officialLineup!);
             applyOfficialLineup(season, event, kind, plan);
-            auditLeague(s, u, `Refreshed ${event.name} ${kind} lineup from FIA: ${plan.drivers.length} drivers; ${plan.rules.map(r => `${season.drivers.find(d => d.id === r.from)?.name} -> ${season.drivers.find(d => d.id === r.to)?.name}`).join(", ") || "no new replacements"}; ${plan.source}`);
+            auditLeague(s, u, `Refreshed ${event.name} ${kind} lineup from ${plan.sourceName}: ${plan.drivers.length} drivers; ${plan.rules.map(r => `${season.drivers.find(d => d.id === r.from)?.name} -> ${season.drivers.find(d => d.id === r.to)?.name}`).join(", ") || "no new replacements"}; ${plan.source}`);
           } catch (error) {
             message = (error as Error)?.message || "The FIA lineup could not be refreshed. Try again later.";
           }

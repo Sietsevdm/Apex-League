@@ -155,17 +155,17 @@ export function ReplacementAdmin({
           </select>
         </label>
       </div>
-      <p className="muted">{t("Refresh the selected session from the official FIA weekend entry list. New replacements carry existing picks; original submissions and championship picks are preserved. Other weekends and sessions stay unchanged.")}</p>
+          <p className="muted">{t("Refresh the selected session from the FIA entry list. While the list is pending, upcoming sessions can use Formula 1’s current roster. Existing picks follow the replacement driver.")}</p>
       <button type="button" className="primary" disabled={busy || !event || season.archived || event.practiceRound || event[kind]?.published || (kind === "sprint" && Date.now() >= Date.parse(event.sprintQualifying || ""))} onClick={async () => {
         setBusy(true); setError("");
         try { await call({ action: "driverLineupRefresh", eventId: id, kind }); }
         catch (e) { setError((e as Error).message); }
         finally { setBusy(false); }
-      }}>{t(busy ? "Refreshing lineup..." : "Refresh driver lineup from FIA")}</button>
+          }}>{t(busy ? "Refreshing lineup..." : "Refresh driver lineup")}</button>
       {event?.[kind]?.published && <p className="muted">{t("Published session lineups cannot be refreshed.")}</p>}
       {kind === "sprint" && event?.sprintQualifying && Date.now() >= Date.parse(event.sprintQualifying) && <p className="muted">{t("Sprint has started; use the session replacement editor for changes.")}</p>}
       {event?.lineupSync?.kind === kind && <p role={event.lineupSync.status === "error" ? "alert" : "status"}>{date(event.lineupSync.lastAttempt)} · {t(event.lineupSync.message)}</p>}
-      {event?.driverLineups?.[kind] && <p className="tiny"><a href={event.driverLineups[kind]!.source} target="_blank" rel="noreferrer">{t("View official FIA entry list")}</a> · {event.driverLineups[kind]!.ids.length} {t("drivers")}</p>}
+          {event?.driverLineups?.[kind] && <p className="tiny"><a href={event.driverLineups[kind]!.source} target="_blank" rel="noreferrer">{t("View lineup source")}</a> · {event.driverLineups[kind]!.ids.length} {t("drivers")}</p>}
       {error && <p role="alert">{t(error)}</p>}
 
       {open && <form

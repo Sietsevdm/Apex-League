@@ -21,8 +21,8 @@ export type FIAEntryList = {
 };
 export class FIAConflict extends Error {}
 export class FIAEntryListUnavailable extends Error {
-  constructor() {
-    super("No verified FIA entry list is available for this weekend yet. The saved lineup is unchanged.");
+  constructor(message = "No verified FIA entry list is available for this weekend yet. The saved lineup is unchanged.") {
+    super(message);
     this.name = "FIAEntryListUnavailable";
   }
 }

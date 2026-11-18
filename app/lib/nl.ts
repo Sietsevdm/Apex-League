@@ -1,4 +1,10 @@
 export const dutch: Record<string, string> = {
+  "Refresh driver lineup": "Coureurslijst vernieuwen",
+  "View lineup source": "Bron van de coureurslijst bekijken",
+  "Refresh the selected session from the FIA entry list. While the list is pending, upcoming sessions can use Formula 1’s current roster. Existing picks follow the replacement driver.": "Vernieuw de geselecteerde sessie via de FIA-deelnemerslijst. Zolang die lijst ontbreekt, kunnen komende sessies de huidige coureurslijst van Formula 1 gebruiken. Bestaande voorspellingen volgen de vervangende coureur.",
+  "No verified FIA entry list is available for this weekend yet. Formula 1's current roster could not be verified. The saved lineup is unchanged.": "Er is nog geen geverifieerde FIA-deelnemerslijst voor dit weekend. De huidige coureurslijst van Formula 1 kon niet worden geverifieerd. De opgeslagen lijst blijft behouden.",
+  "Formula 1's current roster can only refresh an upcoming session in the same season.": "De huidige coureurslijst van Formula 1 kan alleen een komende sessie in hetzelfde seizoen vernieuwen.",
+  "Waiting for a complete, unambiguous official lineup.": "Wachten op een volledige, eenduidige officiële coureurslijst.",
   "No verified FIA entry list is available for this weekend yet. The saved lineup is unchanged.": "Er is nog geen geverifieerde FIA-deelnemerslijst beschikbaar voor dit weekend. De opgeslagen coureurslijst is ongewijzigd.",
   "Refresh driver lineup from FIA": "Coureurslijst vernieuwen via FIA",
   "Refreshing lineup...": "Coureurslijst vernieuwen...",

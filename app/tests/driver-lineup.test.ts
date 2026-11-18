@@ -8,6 +8,7 @@ import { planOfficialLineup, applyOfficialLineup } from "../lib/driver-lineup";
 import { predictionDrivers } from "../lib/season-controls";
 import { mappedPicks } from "../lib/enhancements";
 import { importSnapshot, validateImportSnapshot } from "../lib/manual-imports";
+import { formula1RosterURL, parseFormula1Roster } from "../lib/formula1-roster";
 
 process.env.DEMO_MODE = "true";
 process.env.DEMO_DATA_FILE = `driver-lineup-test-${process.pid}.json`;
@@ -214,6 +215,47 @@ test("an upcoming Las Vegas refresh reports waiting and preserves every saved li
     assert.deepEqual(after.seasons[0].drivers, before.seasons[0].drivers);
     assert.deepEqual(after.entries, before.entries);
     assert.equal(downloads, 0);
+  } finally {
+    globalThis.fetch = originalFetch;
+    await rm(new URL(`../.data/${process.env.DEMO_DATA_FILE}`, import.meta.url), { force: true });
+  }
+});
+
+test("Las Vegas refresh uses Formula 1's current roster when its FIA entry list is pending", async () => {
+  const { POST } = await import("../app/api/league/route");
+  const { transaction, readState } = await import("../lib/store");
+  const f = await fixture(), originalFetch = globalThis.fetch;
+  (globalThis as any).apexLimits?.clear();
+  Object.assign(f.event, { name: "Las Vegas Grand Prix", qualifying: "2100-11-21T04:00:00Z", race: "2100-11-22T06:00:00Z", raceGmtOffset: "-08:00" });
+  const rosterHTML = `<main><h1>F1 Drivers 2026</h1>${f.list.drivers.map(row => {
+    const name = row.code === "CAM" ? "Rafael Camara" : row.name;
+    const slug = name.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().replace(/[^a-z]+/g, "-");
+    return `<a href="/en/drivers/${slug}"><p>${name}</p><p>${row.team}</p><img alt="${name}"></a>`;
+  }).join("")}</main>`;
+  assert.throws(() => parseFormula1Roster(rosterHTML, 2025), /could not be verified/);
+  const roster = parseFormula1Roster(rosterHTML, 2026);
+  assert.throws(() => planOfficialLineup(f.s, f.season, { ...f.event, qualifying: "2000-01-01" }, "gp", roster), /upcoming session/);
+  try {
+    await transaction(s => { s.seasons[0] = f.season; s.events[0] = f.event; s.entries[0].picks.pole = "OCO"; });
+    globalThis.fetch = async input => String(input) === formula1RosterURL
+      ? new Response(rosterHTML)
+      : new Response(String(input).endsWith("/2026")
+        ? '<option value="/documents/championships/110/2026/event/Las%20Vegas%20Grand%20Prix">Las Vegas Grand Prix</option>'
+        : "");
+    const refresh = () => POST(new NextRequest("http://127.0.0.1:3000/api/league", {
+      method: "POST", headers: { origin: process.env.APP_URL!, cookie: "apex_demo=demo-admin", "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "driverLineupRefresh", eventId: f.event.id, kind: "gp" }),
+    }));
+    assert.equal((await refresh()).status, 200);
+    const saved = await readState(), event = saved.events[0], season = saved.seasons[0];
+    assert.match(event.lineupSync!.message, /Formula 1.*Esteban Ocon → Rafael Camara/);
+    assert.equal(event.driverLineups!.gp!.source, formula1RosterURL);
+    assert.equal(predictionDrivers(saved, season, event, "gp").some(d => d.id === "OCO"), false);
+    assert.equal(predictionDrivers(saved, season, event, "gp").some(d => d.name === "Rafael Camara"), true);
+    assert.equal(saved.entries[0].picks.pole, "OCO");
+    assert.equal(mappedPicks(saved.entries[0].picks, event.replacements!).pole, "openf1-rafaelcamara");
+    assert.equal((await refresh()).status, 200);
+    assert.equal((await readState()).events[0].replacements!.length, 1);
   } finally {
     globalThis.fetch = originalFetch;
     await rm(new URL(`../.data/${process.env.DEMO_DATA_FILE}`, import.meta.url), { force: true });
